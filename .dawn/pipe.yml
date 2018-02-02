@@ -1,0 +1,9 @@
+build:
+  - name: shell
+    script:
+      - tsc --locale zh-CN 
+
+dev:
+  - name: shell
+    script:
+      - dn build
