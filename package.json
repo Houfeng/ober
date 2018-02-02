@@ -1,6 +1,6 @@
 {
   "name": "ober",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "./lib/index.js",
   "scripts": {
@@ -9,7 +9,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "eify": "^1.0.1",
+    "eify": "^1.0.2",
     "ntils": "^3.1.11"
   }
 }
