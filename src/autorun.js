@@ -32,11 +32,10 @@ module.exports = class AutoRun {
     if (this.isSync()) {
       return this.trigger.call(this.context);
     }
-    if (!nextTick.handlers.some(handler => handler == this.trigger)) {
-      nextTick(this.trigger, this.context, true).catch(err => {
-        throw err;
-      });
-    }
+    const pending = nextTick(this.trigger, this.context, true);
+    if (pending) pending.catch(err => {
+      throw err;
+    });
   };
 
   run = (...args) => {

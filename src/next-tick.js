@@ -39,28 +39,32 @@ function createTimer() {
 
 const timer = createTimer();
 
-function nextTick(handler, ctx) {
+function nextTick(callback, ctx, unique) {
+  if (unique === true) {
+    const exists = handlers.find(h => h.callback === callback);
+    if (exists) return exists.promise;
+  }
   let resolve, reject;
-  handlers.push(() => {
+  const handler = () => {
     try {
-      const result = handler ? handler.call(ctx) : null;
+      const result = callback ? callback.call(ctx) : null;
       if (resolve) resolve(result);
     } catch (err) {
       if (reject) reject(err);
     }
-  });
+  };
+  handler.callback = callback;
+  handler.promise = typeof Promise !== 'undefined' ?
+    new Promise((_resolve, _reject) => {
+      resolve = _resolve;
+      reject = _reject;
+    }) : null;
+  handlers.push(handler);
   if (!pending) {
     pending = true;
     timer();
   }
-  if (handler && typeof Promise !== 'undefined') {
-    return new Promise((_resolve, _reject) => {
-      resolve = _resolve;
-      reject = _reject;
-    });
-  }
+  return handler.promise;
 }
-
-nextTick.handlers = handlers;
 
 module.exports = nextTick;
