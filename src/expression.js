@@ -1,6 +1,6 @@
 const VARIABLE_FILTER = /(\(|\[|\{|\+|\-|\*|\/|\>|\<|\=|\!|\,|\;|\?|\:|\&|\|)\s*([a-z\_0-9\$]+)/ig;
 const VARIABLE_NAME = /^[a-z\$\_]/i;
-const ALLOWED_WORD = /(\$scope|true|false|null|undefined|Date|Number|String|Object|Boolean|Array|RegExp|Math|JSON|parseInt|parseFloat|isNaN|isFinite)/; //eslint-disable-line
+const ALLOWED_WORD = /^(\$scope|true|false|null|undefined|Date|Number|String|Object|Boolean|Array|RegExp|Math|JSON|parseInt|parseFloat|isNaN|isFinite)$/; //eslint-disable-line
 const EXPRESSION_BLOCK = /\{\{([\s\S]+?)\}\}/;
 const EXPRESSION_CACHE = {};
 const TEMPLATE_CACHE = {};
