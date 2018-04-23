@@ -247,11 +247,12 @@ class Observer extends EventEmitter {
       return item;
     });
     final(array, 'unshift', function () {
+      [].unshift.apply(this, arguments);
       let items = [].slice.call(arguments);
       let observer = this[OBSERVER_PROP_NAME];
-      items.forEach(function (item) {
+      items.forEach(function (item, index) {
         //这里也会触发对应 index 的 change 事件
-        observer.set(0, item);
+        observer.set(index, item);
       }, this);
       observer.emitChange({ name: 'length', value: this.length });
       observer.emitChange({ value: this.length });

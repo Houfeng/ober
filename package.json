@@ -1,6 +1,6 @@
 {
   "name": "ober",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "",
   "main": "./lib/index.js",
   "scripts": {
@@ -11,5 +11,8 @@
   "dependencies": {
     "eify": "^1.0.3",
     "ntils": "^4.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^2.8.3"
   }
 }
