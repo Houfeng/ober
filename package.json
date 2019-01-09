@@ -1,6 +1,6 @@
 {
   "name": "ober",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "",
   "main": "./lib/index.js",
   "scripts": {
@@ -9,10 +9,13 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "eify": "^1.0.3",
-    "ntils": "^4.0.0"
+    "eify": "^2.0.4",
+    "ntils": "^4.0.4"
   },
   "devDependencies": {
+    "dn-middleware-lint": "^2.1.3",
+    "dn-middleware-shell": "^1.1.0",
+    "eslint-config-dawn": "^1.0.7",
     "typescript": "^2.8.3"
   }
 }

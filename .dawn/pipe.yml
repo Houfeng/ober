@@ -7,3 +7,7 @@ dev:
   - name: shell
     script:
       - dn build
+
+test:
+  - name: lint
+    source: ./src

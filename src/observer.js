@@ -223,7 +223,6 @@ class Observer extends EventEmitter {
   /**
    * 包裹数组
    * @param {array} array 源数组
-   * @returns {array} 处理后的数组
    */
   _wrapArray(array) {
     if (array._wrapped_) return;
