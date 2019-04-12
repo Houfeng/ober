@@ -20,7 +20,8 @@ class Watcher {
     let willExecute = isBoolean(force) ? force :
       !newValueJson === this.value;
     if (willExecute) {
-      this.handler.call(this.context, newValue, JSON.parse(this.value));
+      this.handler.call(this.context, newValue,
+        this.value && JSON.parse(this.value));
     }
     this.value = newValueJson;
   };
