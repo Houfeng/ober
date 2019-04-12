@@ -18,7 +18,7 @@ class Watcher {
     let newValue = this.calculator.call(this.context);
     let newValueJson = JSON.stringify(newValue);
     let willExecute = isBoolean(force) ? force :
-      !newValueJson === this.value;
+      !(newValueJson === this.value);
     if (willExecute) {
       this.handler.call(this.context, newValue,
         this.value && JSON.parse(this.value));
