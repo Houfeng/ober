@@ -1,4 +1,4 @@
-const { isFunction, isBoolean, getByPath, deepEqual, clone } = require('ntils');
+const { isFunction, isBoolean, getByPath } = require('ntils');
 
 class Watcher {
 
@@ -16,12 +16,13 @@ class Watcher {
   //force: true 强制执行，false 强制不执行，无参数根据计算结果决定
   calc = force => {
     let newValue = this.calculator.call(this.context);
+    let newValueJson = JSON.stringify(newValue);
     let willExecute = isBoolean(force) ? force :
-      !deepEqual(newValue, this.value);
+      !newValueJson === this.value;
     if (willExecute) {
-      this.handler.call(this.context, newValue, this.value);
+      this.handler.call(this.context, newValue, JSON.parse(this.value));
     }
-    this.value = clone(newValue);
+    this.value = newValueJson;
   };
 
 }

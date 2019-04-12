@@ -11,3 +11,4 @@ dev:
 test:
   - name: lint
     source: ./src
+  - name: unit
