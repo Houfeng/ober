@@ -12,3 +12,10 @@ test:
   - name: lint
     source: ./src
   - name: unit
+
+publish:
+  - name: shell
+    script:
+      - dn test
+      - dn build
+      - npm pu --registry=http://registry.npmjs.org
