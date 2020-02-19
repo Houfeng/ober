@@ -9,7 +9,8 @@
     "alwaysStrict": false
   },
   "exclude": [
-    "./lib"
+    "./lib",
+    "./node_modules"
   ],
   "include": [
     "./src/**/*.ts",
