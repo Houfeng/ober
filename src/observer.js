@@ -41,7 +41,7 @@ class Observer extends EventEmitter {
       throw new Error('Invalid target');
     }
     options = options || {};
-    let observer = target[OBSERVER_PROP_NAME];
+    const observer = target[OBSERVER_PROP_NAME];
     if (observer) {
       copy(options, observer.options);
       //当时一个组件 A 的为组件 B 的 prop 时，A 更新不会触发 B 更新
@@ -73,16 +73,16 @@ class Observer extends EventEmitter {
     }
     Object.defineProperty(this.target, name, {
       get() {
-        let observer = this[OBSERVER_PROP_NAME];
+        const observer = this[OBSERVER_PROP_NAME];
         observer.emitGet({ name: name, value: value });
         return observer.shadow[name];
       },
       set(value) {
-        let observer = this[OBSERVER_PROP_NAME];
-        let oldValue = observer.shadow[name];
+        const observer = this[OBSERVER_PROP_NAME];
+        const oldValue = observer.shadow[name];
         if (oldValue === value) return;
         if (isObject(value)) {
-          let childObserver = new Observer(value);
+          const childObserver = new Observer(value);
           observer.addChild(childObserver, name);
         }
         //移除旧值的父引用
@@ -107,9 +107,9 @@ class Observer extends EventEmitter {
     if (isArray(this.target)) {
       this._wrapArray(this.target);
     }
-    let names = this._getPropertyNames(this.target);
+    const names = this._getPropertyNames(this.target);
     names.forEach(function (name) {
-      let desc = Object.getOwnPropertyDescriptor(this.target, name);
+      const desc = Object.getOwnPropertyDescriptor(this.target, name);
       if (!('value' in desc)) return;
       this.set(name, this.target[name]);
     }, this);
@@ -157,7 +157,7 @@ class Observer extends EventEmitter {
   clearReference() {
     each(this.target, function (name, value) {
       if (isNull(value)) return;
-      let child = value[OBSERVER_PROP_NAME];
+      const child = value[OBSERVER_PROP_NAME];
       if (child) this.removeChild(child);
     }, this);
   }
@@ -211,7 +211,7 @@ class Observer extends EventEmitter {
    * @returns {Array} 所有成员名称列表
    */
   _getPropertyNames() {
-    let names = isArray(this.target) ?
+    const names = isArray(this.target) ?
       this.target.map(function (item, index) {
         return index;
       }) : Object.keys(this.target);
@@ -228,8 +228,8 @@ class Observer extends EventEmitter {
     if (array._wrapped_) return;
     final(array, '_wrapped_', true);
     final(array, 'push', function () {
-      let items = [].slice.call(arguments);
-      let observer = this[OBSERVER_PROP_NAME];
+      const items = [].slice.call(arguments);
+      const observer = this[OBSERVER_PROP_NAME];
       items.forEach(function (item) {
         //这里也会触发对应 index 的 change 事件
         observer.set(array.length, item);
@@ -238,8 +238,8 @@ class Observer extends EventEmitter {
       observer.emitChange({ value: this.length });
     });
     final(array, 'pop', function () {
-      let item = [].pop.apply(this, arguments);
-      let observer = this[OBSERVER_PROP_NAME];
+      const item = [].pop.apply(this, arguments);
+      const observer = this[OBSERVER_PROP_NAME];
       observer.emitChange({ name: this.length, value: item });
       observer.emitChange({ name: 'length', value: this.length });
       observer.emitChange({ value: this.length });
@@ -247,8 +247,8 @@ class Observer extends EventEmitter {
     });
     final(array, 'unshift', function () {
       [].unshift.apply(this, arguments);
-      let items = [].slice.call(arguments);
-      let observer = this[OBSERVER_PROP_NAME];
+      const items = [].slice.call(arguments);
+      const observer = this[OBSERVER_PROP_NAME];
       items.forEach(function (item, index) {
         //这里也会触发对应 index 的 change 事件
         observer.set(index, item);
@@ -257,29 +257,26 @@ class Observer extends EventEmitter {
       observer.emitChange({ value: this.length });
     });
     final(array, 'shift', function () {
-      let item = [].shift.apply(this, arguments);
-      let observer = this[OBSERVER_PROP_NAME];
+      const item = [].shift.apply(this, arguments);
+      const observer = this[OBSERVER_PROP_NAME];
       observer.emitChange({ name: 0, value: item });
       observer.emitChange({ name: 'length', value: this.length });
       observer.emitChange({ value: this.length });
       return item;
     });
     final(array, 'splice', function () {
-      let startIndex = arguments[0];
-      let endIndex = isNull(arguments[1])
-        ? startIndex + arguments[1]
-        : this.length - 1;
-      let observer = this[OBSERVER_PROP_NAME];
-      let items = [].splice.apply(this, arguments);
-      for (let i = startIndex; i <= endIndex; i++) {
-        observer.emitChange({ name: i, value: items[i - startIndex] });
-      }
+      const delItems = [].splice.call(this, arguments);
+      const items = [].slice.call(arguments, 2);
+      const observer = this[OBSERVER_PROP_NAME];
+      items.forEach(item => {
+        observer.set(this.indexOf(item), item);
+      });
       observer.emitChange({ name: 'length', value: this.length });
       observer.emitChange({ value: this.length });
-      return items;
+      return delItems;
     });
     final(array, 'set', function (index, value) {
-      let observer = this[OBSERVER_PROP_NAME];
+      const observer = this[OBSERVER_PROP_NAME];
       if (index >= this.length) {
         observer.emitChange({ name: 'length', value: this.length });
         observer.emitChange({ value: this.length });
@@ -292,7 +289,7 @@ class Observer extends EventEmitter {
     options = options || {};
     let { context, trigger, immed, deep } = options;
     context = context || this.target;
-    let auto = new AutoRun(handler, context, trigger, deep);
+    const auto = new AutoRun(handler, context, trigger, deep);
     this.on('get', auto.onGet);
     this.on('change', auto.onChange);
     if (immed) auto.run();
@@ -309,7 +306,7 @@ class Observer extends EventEmitter {
     options = options || {};
     let { context } = options;
     context = context || this.target;
-    let watcher = new Watcher(calculator, handler, context);
+    const watcher = new Watcher(calculator, handler, context);
     watcher.autoRef = this.run(watcher.calc, options);
     return watcher;
   }
