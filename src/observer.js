@@ -265,7 +265,7 @@ class Observer extends EventEmitter {
       return item;
     });
     final(array, 'splice', function () {
-      const delItems = [].splice.call(this, arguments);
+      const delItems = [].splice.apply(this, arguments);
       const items = [].slice.call(arguments, 2);
       const observer = this[OBSERVER_PROP_NAME];
       items.forEach(item => {
