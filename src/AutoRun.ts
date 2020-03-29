@@ -1,4 +1,5 @@
 import { nextTick } from "./Tick";
+import { IObserveEvent } from "./IObserveEvent";
 
 export class AutoRun {
   public handler: Function;
@@ -24,7 +25,7 @@ export class AutoRun {
     return false;
   }
 
-  onGet = (event: any) => {
+  onGet = (event: IObserveEvent) => {
     if (!this.runing || !event || !this.dependencies) return;
     this.dependencies[event.path] = true;
   };
@@ -38,7 +39,7 @@ export class AutoRun {
     return this.isDependent(paths.join("."));
   };
 
-  onChange = (event: any) => {
+  onChange = (event: IObserveEvent) => {
     if (this.runing || !event || !this.isDependent(event.path)) return;
     if (this.isSync()) {
       return this.trigger.call(this.context);

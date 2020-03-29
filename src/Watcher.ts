@@ -23,9 +23,11 @@ export class Watcher {
 
   // force: true 强制执行，false 强制不执行，无参数根据计算结果决定
   calc = (force: boolean) => {
-    let newValue = this.calculator.call(this.context);
-    let newValueJson = JSON.stringify(newValue);
-    let willExecute = isBoolean(force) ? force : !(newValueJson === this.value);
+    const newValue = this.calculator.call(this.context);
+    const newValueJson = JSON.stringify(newValue);
+    const willExecute = isBoolean(force)
+      ? force
+      : !(newValueJson === this.value);
     if (willExecute) {
       this.handler.call(
         this.context,
