@@ -6,10 +6,10 @@ export interface IHandler {
   callback: Function;
 }
 
-export const tickOwner: { handlers: IHandler[], pending: boolean } = {
+export const tickOwner: { handlers: IHandler[]; pending: boolean } = {
   handlers: [],
-  pending: false,
-}
+  pending: false
+};
 
 export function execHandlers() {
   tickOwner.pending = false;
@@ -19,14 +19,16 @@ export function execHandlers() {
 }
 
 export function createTimer() {
-  if (typeof Promise !== 'undefined') {
+  if (typeof Promise !== "undefined") {
     const promise = Promise.resolve();
     return () => {
       promise.then(execHandlers).catch(err => console.error(err));
     };
-  } else if (typeof MutationObserver !== 'undefined' ||
+  } else if (
+    typeof MutationObserver !== "undefined" ||
     // PhantomJS and iOS 7.x
-    window.MutationObserver.toString() === '[object MutationObserverConstructor]'
+    window.MutationObserver.toString() ===
+      "[object MutationObserverConstructor]"
   ) {
     // use MutationObserver where native Promise is not available,
     // e.g. PhantomJS IE11, iOS7, Android 4.4
@@ -51,8 +53,9 @@ export const tickTimer = createTimer();
 
 export function nextTick(callback: Function, ctx: any, unique: boolean) {
   if (unique === true) {
-    const exists = tickOwner.handlers
-      .find(handler => handler.callback === callback);
+    const exists = tickOwner.handlers.find(
+      handler => handler.callback === callback
+    );
     if (exists) return exists.promise;
   }
   const defer = new Defer();

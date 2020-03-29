@@ -18,6 +18,7 @@ dev:
 test:
   - name: lint
     source: ./src
+  - name: tslint
 
 publish:
   - name: version

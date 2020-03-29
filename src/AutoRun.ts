@@ -1,7 +1,6 @@
 import { nextTick } from "./Tick";
 
 export class AutoRun {
-
   public handler: Function;
   public context: any;
   public trigger: Function;
@@ -9,7 +8,12 @@ export class AutoRun {
   public dependencies: { [name: string]: boolean } = {};
   public runing: boolean;
 
-  constructor(handler: Function, context?: any, trigger?: Function, deep?: boolean) {
+  constructor(
+    handler: Function,
+    context?: any,
+    trigger?: Function,
+    deep?: boolean
+  ) {
     this.handler = handler;
     this.context = context || this;
     this.trigger = trigger || this.run;
@@ -29,9 +33,9 @@ export class AutoRun {
     if (!path) return false;
     if (!this.dependencies || this.dependencies[path]) return true;
     if (!this.deep) return false;
-    const paths = path.split('.');
+    const paths = path.split(".");
     paths.pop();
-    return this.isDependent(paths.join('.'));
+    return this.isDependent(paths.join("."));
   };
 
   onChange = (event: any) => {
@@ -40,9 +44,11 @@ export class AutoRun {
       return this.trigger.call(this.context);
     }
     const pending = nextTick(this.trigger, this.context, true);
-    if (pending) pending.catch((err: Error) => {
-      throw err;
-    });
+    if (pending) {
+      pending.catch((err: Error) => {
+        throw err;
+      });
+    }
   };
 
   run = (...args: any[]) => {
@@ -52,5 +58,4 @@ export class AutoRun {
     this.runing = false;
     return result;
   };
-
-};
+}
