@@ -1,0 +1,16 @@
+*.log
+.DS_Store
+node_modules/
+.nyc_output/
+coverage/
+debug/
+src/
+assets/
+test/
+examples/
+tslint.json
+tsconfig.json
+.eslintrc.yml
+server.yml
+.dawn/
+*.js.map

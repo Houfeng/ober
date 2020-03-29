@@ -1,9 +1,8 @@
-const {
-  isArray, isFunction, isNull, isObject, copy, final, each
-} = require('ntils');
-const EventEmitter = require('eify');
-const AutoRun = require('./autorun');
-const Watcher = require('./watcher');
+import { isArray, isFunction, isNull, isObject, copy, final } from "ntils";
+import { EventEmitter } from "eify";
+import { AutoRun } from "./AutoRun";
+import { Watcher } from "./Watcher";
+import { IObserveEvent } from "./IObserveEvent";
 
 const OBSERVER_PROP_NAME = '_observer_';
 const CHANGE_EVENT_NAME = 'change';
@@ -27,7 +26,30 @@ const IGNORE_REGEXPS = [/^\_(.*)\_$/, /^\_\_/, /^\$/];
  *   给构造函数添加一个 deep 属性，只有 deep 的 ob 对象，才放入到全局数组中，检查时逻辑同方案二
  *   但是因为要检查的对象会少很多，效率会更高一点。
  */
-class Observer extends EventEmitter {
+export class Observer extends EventEmitter {
+
+  /**
+   * 观察一个对象
+   * @param {Object} target 目标对象
+   * @return {Observer} 观察者对象
+   */
+  public static observe = (target: any) => {
+    return new Observer(target);
+  };
+
+  /**
+   * 检查是不是忽略的属性名
+   * @param {string} word 待检查的字符串
+   * @returns {void} 无返回
+   */
+  public static isIgnore = (word: string) => {
+    return IGNORE_REGEXPS.some(re => re.test(word));
+  };
+
+  public target: any;
+  protected _wrapped_: boolean;
+  public options: any;
+  public parents: ({ parent: Observer, name: string })[];
 
   /**
    * 通过目标对象构造一个观察对象
@@ -35,7 +57,7 @@ class Observer extends EventEmitter {
    * @param {Object} options 选项
    * @returns {void} 无返回
    */
-  constructor(target, options) {
+  constructor(target: any, options?: any) {
     super();
     if (isNull(target)) {
       throw new Error('Invalid target');
@@ -67,7 +89,7 @@ class Observer extends EventEmitter {
    * @param {Object} value 值
    * @returns {void} 无返回
    */
-  set(name, value) {
+  public set(name: string, value: any) {
     if (isFunction(value) || Observer.isIgnore(name)) {
       return;
     }
@@ -103,16 +125,16 @@ class Observer extends EventEmitter {
    * 自动应用所有动态添加的属性
    * @returns {void} 无返回
    */
-  apply() {
+  public apply() {
     if (isArray(this.target)) {
       this._wrapArray(this.target);
     }
     const names = this._getPropertyNames(this.target);
-    names.forEach(function (name) {
+    names.forEach((name: string) => {
       const desc = Object.getOwnPropertyDescriptor(this.target, name);
       if (!('value' in desc)) return;
       this.set(name, this.target[name]);
-    }, this);
+    });
   }
 
   /**
@@ -121,7 +143,7 @@ class Observer extends EventEmitter {
    * @param {String} name 属性名
    * @returns {void} 无返回
    */
-  addChild(child, name) {
+  addChild(child: Observer, name: string) {
     if (isNull(child) || isNull(name)) {
       throw new Error('Invalid paramaters');
     }
@@ -131,23 +153,19 @@ class Observer extends EventEmitter {
 
   /**
    * 移除子对象
-   * @param {Object} child 父对象
+   * @param {Object} child 子对象
    * @param {String} name 属性名
    * @returns {void} 无返回
    */
-  removeChild(child, name) {
+  removeChild(child: Observer, name?: string) {
     if (isNull(child)) {
       throw new Error('Invalid paramaters');
     }
-    let foundIndex = -1;
-    child.parents.forEach(function (item, index) {
-      if (item.parent === this && item.name === name) {
-        foundIndex = index;
-      }
-    }, this);
-    if (foundIndex > -1) {
-      child.parents.splice(foundIndex, 1);
-    }
+    const index = child.parents.findIndex((item) => {
+      return name ? item.parent === this && item.name === name
+        : item.parent === this;
+    });
+    if (index > -1) child.parents.splice(index, 1);
   }
 
   /**
@@ -155,11 +173,11 @@ class Observer extends EventEmitter {
    * @returns {void} 无返回
    */
   clearReference() {
-    each(this.target, function (name, value) {
+    Object.values(this.target).forEach((value: any) => {
       if (isNull(value)) return;
       const child = value[OBSERVER_PROP_NAME];
       if (child) this.removeChild(child);
-    }, this);
+    });
   }
 
   /**
@@ -167,7 +185,7 @@ class Observer extends EventEmitter {
    * @param {Object} event 事件对象
    * @returns {void} 无返回
    */
-  emitChange(event) {
+  emitChange(event: IObserveEvent) {
     event.path = event.name;
     this.dispatch(CHANGE_EVENT_NAME, event);
   }
@@ -177,7 +195,7 @@ class Observer extends EventEmitter {
    * @param {Object} event 事件对象
    * @returns {void} 无返回
    */
-  emitGet(event) {
+  emitGet(event: IObserveEvent) {
     event.path = event.name;
     this.dispatch(GET_EVENT_NAME, event);
   }
@@ -188,34 +206,34 @@ class Observer extends EventEmitter {
    * @param {Object} event 事件对象
    * @returns {void} 无返回
    */
-  dispatch(eventName, event) {
-    if (event._src_ === this) return;
-    event._src_ = event._src_ || this;
-    event._layer_ = event._layer_ || 0;
-    if ((event._layer_++) >= EVENT_MAX_DISPATCH_LAYER) return;
+  dispatch(eventName: string, event: IObserveEvent) {
+    if (event.src === this) return;
+    event.src = event.src || this;
+    event.layer = event.layer || 0;
+    if ((event.layer++) >= EVENT_MAX_DISPATCH_LAYER) return;
     this.emit(eventName, event);
     if (!this.parents || this.parents.length < 1) return;
-    this.parents.forEach(function (item) {
+    this.parents.forEach((item) => {
       if (!(item.name in item.parent.target)) {
         return item.parent.removeChild(this);
       }
-      let parentEvent = copy(event);
+      const parentEvent = copy(event);
       parentEvent.path = isNull(event.path) ? item.name :
         item.name + '.' + event.path;
       item.parent.dispatch(eventName, parentEvent);
-    }, this);
+    });
   }
 
   /**
    * 获取所有成员名称列表
    * @returns {Array} 所有成员名称列表
    */
-  _getPropertyNames() {
-    const names = isArray(this.target) ?
-      this.target.map(function (item, index) {
+  protected _getPropertyNames(target: any = this.target) {
+    const names = isArray(target) ?
+      this.target.map((_item: any, index: number) => {
         return index;
       }) : Object.keys(this.target);
-    return names.filter(function (name) {
+    return names.filter((name: string) => {
       return name !== OBSERVER_PROP_NAME;
     });
   }
@@ -224,16 +242,16 @@ class Observer extends EventEmitter {
    * 包裹数组
    * @param {array} array 源数组
    */
-  _wrapArray(array) {
-    if (array._wrapped_) return;
+  protected _wrapArray(array: any[]) {
+    if ((array as any)._wrapped_) return;
     final(array, '_wrapped_', true);
     final(array, 'push', function () {
-      const items = [].slice.call(arguments);
+      const items: any[] = [].slice.call(arguments);
       const observer = this[OBSERVER_PROP_NAME];
-      items.forEach(function (item) {
+      items.forEach((item) => {
         //这里也会触发对应 index 的 change 事件
         observer.set(array.length, item);
-      }, this);
+      });
       observer.emitChange({ name: 'length', value: this.length });
       observer.emitChange({ value: this.length });
     });
@@ -247,12 +265,12 @@ class Observer extends EventEmitter {
     });
     final(array, 'unshift', function () {
       [].unshift.apply(this, arguments);
-      const items = [].slice.call(arguments);
+      const items: any[] = [].slice.call(arguments);
       const observer = this[OBSERVER_PROP_NAME];
-      items.forEach(function (item, index) {
+      items.forEach((item, index) => {
         //这里也会触发对应 index 的 change 事件
         observer.set(index, item);
-      }, this);
+      });
       observer.emitChange({ name: 'length', value: this.length });
       observer.emitChange({ value: this.length });
     });
@@ -266,7 +284,7 @@ class Observer extends EventEmitter {
     });
     final(array, 'splice', function () {
       const delItems = [].splice.apply(this, arguments);
-      const items = [].slice.call(arguments, 2);
+      const items: any[] = [].slice.call(arguments, 2);
       const observer = this[OBSERVER_PROP_NAME];
       items.forEach(item => {
         observer.set(this.indexOf(item), item);
@@ -275,7 +293,7 @@ class Observer extends EventEmitter {
       observer.emitChange({ value: this.length });
       return delItems;
     });
-    final(array, 'set', function (index, value) {
+    final(array, 'set', function (index: number, value: any) {
       const observer = this[OBSERVER_PROP_NAME];
       if (index >= this.length) {
         observer.emitChange({ name: 'length', value: this.length });
@@ -285,24 +303,24 @@ class Observer extends EventEmitter {
     });
   }
 
-  run(handler, options) {
+  run(handler: Function, options: any) {
     options = options || {};
     let { context, trigger, immed, deep } = options;
     context = context || this.target;
-    const auto = new AutoRun(handler, context, trigger, deep);
-    this.on('get', auto.onGet);
-    this.on('change', auto.onChange);
-    if (immed) auto.run();
-    return auto;
+    const autoRun = new AutoRun(handler, context, trigger, deep);
+    this.on('get', autoRun.onGet);
+    this.on('change', autoRun.onChange);
+    if (immed) autoRun.run();
+    return autoRun;
   }
 
-  stop(autoRef) {
+  stop(autoRef: any) {
     if (!autoRef) return;
     this.off('get', autoRef.onGet);
     this.off('change', autoRef.onChange);
   }
 
-  watch(calculator, handler, options) {
+  watch(calculator: Function, handler: Function, options: any) {
     options = options || {};
     let { context } = options;
     context = context || this.target;
@@ -311,29 +329,9 @@ class Observer extends EventEmitter {
     return watcher;
   }
 
-  unWatch(watcher) {
+  unWatch(watcher: Watcher) {
     if (!watcher) return;
     this.stop(watcher.autoRef);
   }
 
 }
-
-/**
- * 观察一个对象
- * @param {Object} target 目标对象
- * @return {Observer} 观察者对象
- */
-Observer.observe = function (target) {
-  return new Observer(target);
-};
-
-/**
- * 检查是不是忽略的属性名
- * @param {string} word 待检查的字符串
- * @returns {void} 无返回
- */
-Observer.isIgnore = function (word) {
-  return IGNORE_REGEXPS.some(re => re.test(word));
-};
-
-module.exports = Observer;

@@ -1,8 +1,15 @@
-const nextTick = require('./next-tick');
+import { nextTick } from "./Tick";
 
-module.exports = class AutoRun {
+export class AutoRun {
 
-  constructor(handler, context, trigger, deep) {
+  public handler: Function;
+  public context: any;
+  public trigger: Function;
+  public deep: boolean;
+  public dependencies: { [name: string]: boolean } = {};
+  public runing: boolean;
+
+  constructor(handler: Function, context?: any, trigger?: Function, deep?: boolean) {
     this.handler = handler;
     this.context = context || this;
     this.trigger = trigger || this.run;
@@ -13,35 +20,35 @@ module.exports = class AutoRun {
     return false;
   }
 
-  onGet = event => {
+  onGet = (event: any) => {
     if (!this.runing || !event || !this.dependencies) return;
     this.dependencies[event.path] = true;
   };
 
-  isDependent = path => {
+  isDependent: (path: string) => boolean = (path: string) => {
     if (!path) return false;
     if (!this.dependencies || this.dependencies[path]) return true;
     if (!this.deep) return false;
-    let paths = path.split('.');
+    const paths = path.split('.');
     paths.pop();
     return this.isDependent(paths.join('.'));
   };
 
-  onChange = event => {
+  onChange = (event: any) => {
     if (this.runing || !event || !this.isDependent(event.path)) return;
     if (this.isSync()) {
       return this.trigger.call(this.context);
     }
     const pending = nextTick(this.trigger, this.context, true);
-    if (pending) pending.catch(err => {
+    if (pending) pending.catch((err: Error) => {
       throw err;
     });
   };
 
-  run = (...args) => {
+  run = (...args: any[]) => {
     this.dependencies = {};
     this.runing = true;
-    let result = this.handler.call(this.context, ...args);
+    const result = this.handler.call(this.context, ...args);
     this.runing = false;
     return result;
   };
