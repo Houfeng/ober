@@ -128,7 +128,7 @@ export class Observer extends EventEmitter {
     if (isArray(this.target)) {
       this._wrapArray(this.target);
     }
-    const names = this._getPropertyNames(this.target);
+    const names = this._getPropertyNames();
     names.forEach((name: string) => {
       const desc = Object.getOwnPropertyDescriptor(this.target, name);
       if (!("value" in desc)) return;
@@ -160,12 +160,15 @@ export class Observer extends EventEmitter {
     if (isNull(child)) {
       throw new Error("Invalid paramaters");
     }
-    const index = child.parents.findIndex(item => {
-      return name
-        ? item.parent === this && item.name === name
-        : item.parent === this;
+    let foundIndex = -1;
+    child.parents.forEach((item, index) => {
+      if (item.parent === this && item.name === name) {
+        foundIndex = index;
+      }
     });
-    if (index > -1) child.parents.splice(index, 1);
+    if (foundIndex > -1) {
+      child.parents.splice(foundIndex, 1);
+    }
   }
 
   /**
@@ -230,8 +233,8 @@ export class Observer extends EventEmitter {
    * 获取所有成员名称列表
    * @returns {Array} 所有成员名称列表
    */
-  protected _getPropertyNames(target: any = this.target) {
-    const names = isArray(target)
+  protected _getPropertyNames() {
+    const names = isArray(this.target)
       ? this.target.map((_item: any, index: number) => {
           return index;
         })
