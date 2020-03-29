@@ -1,6 +1,6 @@
 {
   "name": "ober",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "description": "",
   "main": "./dist/cjs/index.js",
   "module": "./dist/es/index.js",
@@ -11,8 +11,8 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "eify": "^3.0.1",
-    "ntils": "^5.0.1"
+    "eify": "^3.1.1",
+    "ntils": "^5.1.1"
   },
   "devDependencies": {
     "dn-middleware-clean": "^1.0.2",

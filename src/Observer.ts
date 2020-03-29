@@ -173,7 +173,8 @@ export class Observer extends EventEmitter {
    * @returns {void} 无返回
    */
   clearReference() {
-    Object.values(this.target).forEach((value: any) => {
+    Object.keys(this.target).forEach(key => {
+      const value = this.target[key];
       if (isNull(value)) return;
       const child = value[OBSERVER_PROP_NAME];
       if (child) this.removeChild(child);
