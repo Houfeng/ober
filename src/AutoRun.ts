@@ -6,7 +6,7 @@ export class AutoRun {
   public context: any;
   public trigger: Function;
   public deep: boolean;
-  public dependencies: { [name: string]: boolean } = {};
+  public dependencies: { [name: string]: boolean };
   public runing: boolean;
 
   constructor(
