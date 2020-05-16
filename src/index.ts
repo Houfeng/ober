@@ -5,3 +5,4 @@ export * from "./Observer";
 export * from "./Watcher";
 export * from "./Defer";
 export * from "./IObserveEvent";
+export * from "./ObserveBus";
