@@ -17,3 +17,5 @@ export function publish(name: string, data: IObserveEvent) {
   if (!ObserveHandlers[name]) return;
   ObserveHandlers[name].forEach((handler: Function) => handler(data));
 }
+
+(window as any).ObserveHandlers = ObserveHandlers;

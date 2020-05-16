@@ -198,7 +198,7 @@ export class Observer {
     context = context || this.target;
     const autoRun = new AutoRun(handler, context, trigger);
     subscribe("get", autoRun.onGet);
-    subscribe("set", autoRun.onChange);
+    subscribe("set", autoRun.onSet);
     if (immed) autoRun.run();
     return autoRun;
   }
@@ -206,7 +206,7 @@ export class Observer {
   stop(autoRef: any) {
     if (!autoRef) return;
     unsubscribe("get", autoRef.onGet);
-    unsubscribe("set", autoRef.onChange);
+    unsubscribe("set", autoRef.onSet);
   }
 
   watch(calculator: Function, handler: Function, options: any) {
