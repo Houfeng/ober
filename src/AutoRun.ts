@@ -1,5 +1,6 @@
 import { nextTick } from "./Tick";
 import { IObserveEvent } from "./IObserveEvent";
+import { Observer } from "./Observer";
 
 export class AutoRun {
   public handler: Function;
@@ -46,7 +47,9 @@ export class AutoRun {
   run = (...args: any[]) => {
     this.dependencies = {};
     this.runing = true;
+    Observer.states.getter = true;
     const result = this.handler.call(this.context, ...args);
+    Observer.states.getter = false;
     this.runing = false;
     return result;
   };

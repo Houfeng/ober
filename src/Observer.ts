@@ -8,14 +8,19 @@ const OBSERVER_PROP_NAME = "_observer_";
 const IGNORE_REGEXPS = [/^\_(.*)\_$/, /^\_\_/, /^\$/];
 
 export class Observer {
-  public static state = true;
+  public static states = {
+    getter: false,
+    setter: true
+  };
 
   public static pause() {
-    Observer.state = false;
+    Observer.states.getter = false;
+    Observer.states.setter = false;
   }
 
   public static resume() {
-    Observer.state = true;
+    Observer.states.getter = true;
+    Observer.states.setter = true;
   }
 
   /**
@@ -73,13 +78,13 @@ export class Observer {
       get() {
         const observer: Observer = this[OBSERVER_PROP_NAME];
         const id = observer.id;
-        if (Observer.state) publish("get", { id, member, value });
+        if (Observer.states.getter) publish("get", { id, member, value });
         return observer.shadow[member];
       },
       set(value) {
         const observer: Observer = this[OBSERVER_PROP_NAME];
         const oldValue = observer.shadow[member];
-        if (oldValue === value || !Observer.state) return;
+        if (oldValue === value || !Observer.states.setter) return;
         if (isObject(value)) Observer.observe(value);
         observer.shadow[member] = value;
         const id = observer.id;
