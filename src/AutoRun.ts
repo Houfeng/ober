@@ -5,20 +5,13 @@ export class AutoRun {
   public handler: Function;
   public context: any;
   public trigger: Function;
-  public deep: boolean;
   public dependencies: { [name: string]: boolean };
   public runing: boolean;
 
-  constructor(
-    handler: Function,
-    context?: any,
-    trigger?: Function,
-    deep?: boolean
-  ) {
+  constructor(handler: Function, context?: any, trigger?: Function) {
     this.handler = handler;
     this.context = context || this;
     this.trigger = trigger || this.run;
-    this.deep = deep || false;
   }
 
   isSync() {
@@ -27,20 +20,18 @@ export class AutoRun {
 
   onGet = (event: IObserveEvent) => {
     if (!this.runing || !event || !this.dependencies) return;
-    this.dependencies[event.path] = true;
+    const key = `${event.id}.${event.member}`;
+    this.dependencies[key] = true;
   };
 
-  isDependent: (path: string) => boolean = (path: string) => {
-    if (!path) return false;
-    if (!this.dependencies || this.dependencies[path]) return true;
-    if (!this.deep) return false;
-    const paths = path.split(".");
-    paths.pop();
-    return this.isDependent(paths.join("."));
+  isDependent: (key: string) => boolean = (key: string) => {
+    if (!key) return false;
+    return !this.dependencies || this.dependencies[key];
   };
 
   onChange = (event: IObserveEvent) => {
-    if (this.runing || !event || !this.isDependent(event.path)) return;
+    const key = `${event.id}.${event.member}`;
+    if (this.runing || !event || !this.isDependent(key)) return;
     if (this.isSync()) {
       return this.trigger.call(this.context);
     }
