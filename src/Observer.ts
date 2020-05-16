@@ -1,4 +1,4 @@
-import { isArray, isFunction, isNull, isObject, copy, final } from "ntils";
+import { isArray, isFunction, isNull, isObject, final } from "ntils";
 import { AutoRun } from "./AutoRun";
 import { Watcher } from "./Watcher";
 import { ObserveId } from "./ObserveId";
@@ -49,16 +49,10 @@ export class Observer {
    * @returns {void} 无返回
    */
   constructor(target: any, options?: any) {
-    if (isNull(target)) {
-      throw new Error("Invalid target");
-    }
-    options = options || {};
+    if (isNull(target)) throw new Error("Invalid target");
     const observer = target[OBSERVER_PROP_NAME];
-    if (observer) {
-      copy(options, observer.options);
-      observer.apply();
-      return observer;
-    }
+    if (observer) return observer;
+    options = options || {};
     final(this, "options", options);
     final(this, "shadow", {});
     final(this, "target", target);
