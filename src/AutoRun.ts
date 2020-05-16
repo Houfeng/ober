@@ -25,10 +25,10 @@ export class AutoRun {
     this.dependencies[key] = true;
   };
 
-  isDependent: (key: string) => boolean = (key: string) => {
+  isDependent(key: string): boolean {
     if (!key) return false;
     return !this.dependencies || this.dependencies[key];
-  };
+  }
 
   onChange = (event: IObserveEvent) => {
     const key = `${event.id}.${event.member}`;
@@ -45,7 +45,7 @@ export class AutoRun {
   };
 
   run = (...args: any[]) => {
-    this.dependencies = {};
+    this.dependencies = Object.create(null);
     this.runing = true;
     Observer.states.getter = true;
     const result = this.handler.call(this.context, ...args);
