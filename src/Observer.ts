@@ -27,6 +27,16 @@ const IGNORE_REGEXPS = [/^\_(.*)\_$/, /^\_\_/, /^\$/];
  *   但是因为要检查的对象会少很多，效率会更高一点。
  */
 export class Observer extends EventEmitter {
+  public static state = true;
+
+  public static pause() {
+    Observer.state = false;
+  }
+
+  public static resume() {
+    Observer.state = true;
+  }
+
   /**
    * 观察一个对象
    * @param {Object} target 目标对象
@@ -95,13 +105,13 @@ export class Observer extends EventEmitter {
     Object.defineProperty(this.target, name, {
       get() {
         const observer = this[OBSERVER_PROP_NAME];
-        observer.emitGet({ name, value });
+        if (Observer.state) observer.emitGet({ name, value });
         return observer.shadow[name];
       },
       set(value) {
         const observer = this[OBSERVER_PROP_NAME];
         const oldValue = observer.shadow[name];
-        if (oldValue === value) return;
+        if (oldValue === value || !Observer.state) return;
         if (isObject(value)) {
           const childObserver = new Observer(value);
           observer.addChild(childObserver, name);
@@ -211,7 +221,7 @@ export class Observer extends EventEmitter {
    * @returns {void} 无返回
    */
   dispatch(eventName: string, event: IObserveEvent) {
-    if (event.src === this) return;
+    if (event.src === this || !Observer.state) return;
     event.src = event.src || this;
     event.layer = event.layer || 0;
     if (event.layer++ >= EVENT_MAX_DISPATCH_LAYER) return;
