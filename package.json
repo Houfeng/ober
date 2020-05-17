@@ -17,6 +17,7 @@
   "devDependencies": {
     "dn-middleware-clean": "^1.0.2",
     "dn-middleware-copy": "^0.2.7",
+    "dn-middleware-file-header": "^1.0.5",
     "dn-middleware-lint": "^2.1.3",
     "dn-middleware-shell": "^1.1.0",
     "dn-middleware-submitter": "^1.0.1",

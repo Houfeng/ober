@@ -1,4 +1,8 @@
-import { ReactableArraySymbol, ReactableShadowSymbol } from "./Symbols";
+import {
+  ReactableArraySymbol,
+  ReactableShadowSymbol,
+  ReactableObjectSymbol
+} from "./Symbols";
 import { defineMember, isArray, isObject } from "./Util";
 
 export function createShadow(target: any) {
@@ -15,26 +19,25 @@ export function createReactableMember<T extends object>(
 ) {
   const desc = Object.getOwnPropertyDescriptor(target, member);
   if (!("value" in desc)) return;
+  const shadow = createShadow(target);
+  if (!(member in shadow)) shadow[member] = (target as any)[member];
   Object.defineProperty(target, member, {
     get() {
-      const shadow = createShadow(this);
-      const value = shadow[member];
-      handler.get(this, member, this);
+      const value = handler.get
+        ? handler.get(shadow, member, shadow)
+        : shadow[member];
       if (isArray(value)) {
-        createReactableObject(value, handler);
-        return wrapReactableArray(target, handler, () => {
+        return wrapReactableArray(value, handler, () => {
           handler.get(this, member, this);
         });
-      } else if (isObject(value)) {
-        return createReactableObject(target, handler);
       } else {
         return value;
       }
     },
     set(value) {
       const shadow = createShadow(this);
-      shadow[member] = value;
-      handler.set(this, member, value, this);
+      const success = handler.set && handler.set(shadow, member, value, shadow);
+      if (!success) shadow[member] = value;
     },
     configurable: true,
     enumerable: true
@@ -46,8 +49,8 @@ export function createReactableObject<T extends object>(
   handler: ProxyHandler<T>
 ) {
   if (!isObject(target)) return target;
-  if ((target as any)[ReactableArraySymbol]) return target;
-  defineMember(target, ReactableArraySymbol, true);
+  if ((target as any)[ReactableObjectSymbol]) return target;
+  defineMember(target, ReactableObjectSymbol, true);
   Object.keys(target).forEach((member: string) => {
     createReactableMember(target, member, handler);
   });

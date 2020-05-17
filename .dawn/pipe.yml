@@ -3,6 +3,11 @@ build:
     target:
       - dist
       - types
+  - name: file-header
+    text: 
+      - 'Copyright (c) 2015-present Houfeng'
+      - '@homepage https://github.com/Houfeng/ober'
+      - '@author Houfeng <admin@xhou.net>'
   - name: shell
     script:
       - tsc --locale zh-CN 

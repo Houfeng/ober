@@ -1,10 +1,13 @@
 import { ObserveData } from "./ObserveData";
 import { ObserveHandler } from "./ObserveHandler";
 import { ObserveKey } from "./ObserveKey";
+import { ObserveState } from "./ObserveState";
 
 export const ObserveHandlers = new Map<string, Set<ObserveHandler>>();
 
 export function subscribe(name: string, handler: ObserveHandler) {
+  if (!handler) throw new Error("Invalid ObserveHandler");
+  if (!name) throw new Error("Invalid ObserveName");
   if (!ObserveHandlers.has(name)) {
     ObserveHandlers.set(name, new Set<ObserveHandler>());
   }
@@ -19,8 +22,12 @@ export function unsubscribe(name: string, handler: ObserveHandler) {
 export function publish(name: string, data: ObserveData) {
   if (!ObserveHandlers.has(name)) return;
   ObserveHandlers.get(name).forEach((handler: ObserveHandler) => {
-    if (!handler.dependencies) return handler(data);
-    if (handler.dependencies.has(ObserveKey(data))) handler(data);
+    if (!handler.dependencies || handler.dependencies.has(ObserveKey(data))) {
+      const originSetState = ObserveState.set;
+      ObserveState.set = false;
+      handler(data);
+      ObserveState.set = originSetState;
+    }
   });
 }
 

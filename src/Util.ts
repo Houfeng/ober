@@ -1,5 +1,5 @@
 export function isString(value: any) {
-  return typeof value === "function";
+  return typeof value === "string";
 }
 
 export function isNumber(value: any) {
@@ -32,7 +32,8 @@ export function isNullOrUndefined(value: any) {
 
 export function isSymbol(value: any) {
   return (
-    typeof value === "symbol" || (isString(value) && /^Symbol\([\s\S]+\)$/)
+    typeof value === "symbol" ||
+    (isString(value) && /^Symbol\([\s\S]+\)$/.test(value))
   );
 }
 
@@ -43,7 +44,11 @@ export function isPrivateKey(value: any) {
 }
 
 export function defineMember(target: any, member: string | symbol, value: any) {
-  Object.defineProperty(target, member, { enumerable: false, value });
+  Object.defineProperty(target, member, {
+    configurable: true,
+    enumerable: false,
+    value
+  });
 }
 
 export function throwError(err: Error) {
