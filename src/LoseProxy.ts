@@ -1,11 +1,11 @@
-import { ArrayWrapedSymbol, LoseProxyShadowSymbol } from "./Symbols";
+import { ReactableArraySymbol, ReactableShadowSymbol } from "./Symbols";
 import { defineMember, isArray, isObject } from "./Util";
 
 export function createShadow(target: any) {
-  if (!target[LoseProxyShadowSymbol]) {
-    target[LoseProxyShadowSymbol] = Object.create(null);
+  if (!target[ReactableShadowSymbol]) {
+    target[ReactableShadowSymbol] = Object.create(null);
   }
-  return target[LoseProxyShadowSymbol];
+  return target[ReactableShadowSymbol];
 }
 
 export function createReactableMember<T extends object>(
@@ -13,14 +13,23 @@ export function createReactableMember<T extends object>(
   member: string | number | symbol,
   handler: ProxyHandler<T>
 ) {
+  const desc = Object.getOwnPropertyDescriptor(target, member);
+  if (!("value" in desc)) return;
   Object.defineProperty(target, member, {
     get() {
       const shadow = createShadow(this);
       const value = shadow[member];
       handler.get(this, member, this);
-      return isArray(value) || isObject(value)
-        ? new LoseProxy(target, handler)
-        : value;
+      if (isArray(value)) {
+        createReactableObject(value, handler);
+        return wrapReactableArray(target, handler, () => {
+          handler.get(this, member, this);
+        });
+      } else if (isObject(value)) {
+        return createReactableObject(target, handler);
+      } else {
+        return value;
+      }
     },
     set(value) {
       const shadow = createShadow(this);
@@ -37,21 +46,21 @@ export function createReactableObject<T extends object>(
   handler: ProxyHandler<T>
 ) {
   if (!isObject(target)) return target;
+  if ((target as any)[ReactableArraySymbol]) return target;
+  defineMember(target, ReactableArraySymbol, true);
   Object.keys(target).forEach((member: string) => {
-    const desc = Object.getOwnPropertyDescriptor(target, member);
-    if (!("value" in desc)) return;
     createReactableMember(target, member, handler);
   });
   return target;
 }
 
-export function createReactableArray<T extends object>(
+export function wrapReactableArray<T extends object>(
   target: T,
-  handler: ProxyHandler<T>
+  handler: ProxyHandler<T>,
+  triggerParent?: Function
 ) {
-  if (!isArray(target) || (target as any)[ArrayWrapedSymbol]) return target;
-  defineMember(target, ArrayWrapedSymbol, true);
-  createReactableObject(target, handler);
+  if (!isArray(target) || (target as any)[ReactableArraySymbol]) return target;
+  defineMember(target, ReactableArraySymbol, true);
   const { push, pop, shift, unshift, splice } = Array.prototype;
   defineMember(target, "push", function() {
     const start = this.length;
@@ -61,11 +70,13 @@ export function createReactableArray<T extends object>(
       handler.set(this, i, this[i], this);
     }
     handler.set(this, "length", this.length, this);
+    if (triggerParent) triggerParent();
   });
   defineMember(target, "pop", function() {
     const item = pop.apply(this, arguments);
     handler.set(this, this.length, item, this);
     handler.set(this, "length", this.length, this);
+    if (triggerParent) triggerParent();
     return item;
   });
   defineMember(target, "unshift", function() {
@@ -75,11 +86,13 @@ export function createReactableArray<T extends object>(
       handler.set(this, i, this[i], this);
     }
     handler.set(this, "length", this.length, this);
+    if (triggerParent) triggerParent();
   });
   defineMember(target, "shift", function() {
     const item = shift.apply(this, arguments);
     handler.set(this, 0, item, this);
     handler.set(this, "length", this.length, this);
+    if (triggerParent) triggerParent();
     return item;
   });
   defineMember(target, "splice", function(
@@ -93,6 +106,7 @@ export function createReactableArray<T extends object>(
       handler.set(this, i, this[i], this);
     }
     handler.set(this, "length", this.length, this);
+    if (triggerParent) triggerParent();
     return removeItems;
   });
   return target;
@@ -100,8 +114,7 @@ export function createReactableArray<T extends object>(
 
 export class LoseProxy<T extends object> {
   constructor(target: T, handler: ProxyHandler<T>) {
-    if (isArray(target)) return createReactableArray(target, handler);
-    else if (isObject(target)) return createReactableObject(target, handler);
+    if (isObject(target)) return createReactableObject(target, handler);
     else throw new Error("Invalid LoseProxy target");
   }
 }

@@ -6,5 +6,7 @@ export function createSymbol(description: string) {
 
 export const ObserveSymbol = createSymbol("Observe");
 export const ProxySymbol = createSymbol("Proxy");
-export const ArrayWrapedSymbol = createSymbol("ArrayWraped");
-export const LoseProxyShadowSymbol = createSymbol("LoseProxyShadow");
+
+export const ReactableObjectSymbol = createSymbol("ReactableObject");
+export const ReactableArraySymbol = createSymbol("ReactableArray");
+export const ReactableShadowSymbol = createSymbol("ReactableShadow");
