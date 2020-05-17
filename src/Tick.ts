@@ -28,7 +28,7 @@ export function createTickTimer() {
     typeof MutationObserver !== "undefined" ||
     // PhantomJS and iOS 7.x
     window.MutationObserver.toString() ===
-    "[object MutationObserverConstructor]"
+      "[object MutationObserverConstructor]"
   ) {
     // use MutationObserver where native Promise is not available,
     // e.g. PhantomJS IE11, iOS7, Android 4.4

@@ -24,6 +24,7 @@
     "dn-middleware-unit": "^0.2.1",
     "dn-middleware-version": "^1.0.4",
     "eslint-config-dawn": "^1.0.7",
+    "tslint-config-dawn": "^1.0.3",
     "typescript": "3.7.5"
   }
 }

@@ -1,6 +1,6 @@
 export const ObserveState = {
   get: true,
-  set: true,
+  set: true
 };
 
 export function disableObserve() {

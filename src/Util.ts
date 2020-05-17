@@ -31,15 +31,21 @@ export function isNullOrUndefined(value: any) {
 }
 
 export function isSymbol(value: any) {
-  return typeof value === 'symbol' ||
-    (isString(value) && /^Symbol\([\s\S]+\)$/);
+  return (
+    typeof value === "symbol" || (isString(value) && /^Symbol\([\s\S]+\)$/)
+  );
 }
 
 export function isPrivateKey(value: any) {
-  return isString(value) && [/^\_(.*)\_$/, /^\_\_/]
-    .some(expr => expr.test(value));
+  return (
+    isString(value) && [/^\_(.*)\_$/, /^\_\_/].some(expr => expr.test(value))
+  );
 }
 
 export function defineMember(target: any, member: string | symbol, value: any) {
   Object.defineProperty(target, member, { enumerable: false, value });
+}
+
+export function throwError(err: Error) {
+  throw err;
 }

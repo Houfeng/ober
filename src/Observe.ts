@@ -4,15 +4,22 @@
  * @author Houfeng <admin@xhou.net>
  */
 
-import { publish } from "./ObserveBus";
+import {
+  defineMember,
+  isNumber,
+  isObject,
+  isPrivateKey,
+  isString,
+  isSymbol
+} from "./Util";
 import { ObserveId } from "./ObserveId";
-import { ObserveSymbol, ProxySymbol } from "./Symbols";
-import { ObserveState } from './ObserveState';
-import { isSymbol, isPrivateKey, isObject, isNumber, isString, defineMember } from './Util';
 import { ObserveProxy } from "./ObserveProxy";
+import { ObserveState } from "./ObserveState";
+import { ObserveSymbol, ProxySymbol } from "./Symbols";
+import { publish } from "./ObserveBus";
 
 export function observe(target: any) {
-  if (!isObject(target)) throw new Error('Invalid observe target');
+  if (!isObject(target)) throw new Error("Invalid observe target");
   if (!target.hasOwnProperty(ObserveSymbol)) {
     const id = ObserveId();
     const proxy = new ObserveProxy(target, {
@@ -20,7 +27,7 @@ export function observe(target: any) {
         if (member === ProxySymbol) return true;
         const value = target[member];
         if (!ObserveState.get || isSymbol(member)) return value;
-        if (!isPrivateKey(member)) publish('get', { id, member, value });
+        if (!isPrivateKey(member)) publish("get", { id, member, value });
         return isObject(value) ? observe(value).proxy : value;
       },
       set(target: any, member: string | number | symbol, value: any) {
@@ -29,10 +36,10 @@ export function observe(target: any) {
         if (!ObserveState.set || isSymbol(member)) return true;
         if (isPrivateKey(member)) return true;
         if (isNumber(member) || isString(member)) {
-          publish('set', { id, member, value });
+          publish("set", { id, member, value });
         }
         return true;
-      },
+      }
     });
     defineMember(target, ObserveSymbol, { id, proxy, target });
   }

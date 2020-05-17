@@ -1,3 +1,3 @@
-import { LoseProxy } from './LoseProxy';
+import { LoseProxy } from "./LoseProxy";
 
 export const ObserveProxy = LoseProxy || Proxy;
