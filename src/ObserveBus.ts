@@ -1,21 +1,32 @@
-import { IObserveEvent } from "./IObserveEvent";
+import { ObserveData } from "./ObserveData";
 
-export const ObserveHandlers: any = {};
+export const ObserveHandlers = new Map<string, Set<Function>>();
 
 export function subscribe(name: string, handler: Function) {
-  if (!ObserveHandlers[name]) ObserveHandlers[name] = [];
-  ObserveHandlers[name].push(handler);
+  if (!ObserveHandlers.has(name)) {
+    ObserveHandlers.set(name, new Set<Function>());
+  }
+  ObserveHandlers.get(name).add(handler);
 }
 
 export function unsubscribe(name: string, handler: Function) {
-  if (!ObserveHandlers[name]) return;
-  const index = ObserveHandlers[name].indexOf(handler);
-  ObserveHandlers[name].splice(index, 1);
+  if (!ObserveHandlers.has(name)) return;
+  ObserveHandlers.get(name).delete(handler);
 }
 
-export function publish(name: string, data: IObserveEvent) {
-  if (!ObserveHandlers[name]) return;
-  ObserveHandlers[name].forEach((handler: Function) => handler(data));
+export function publish(name: string, data: ObserveData) {
+  if (!ObserveHandlers.has(name)) return;
+  ObserveHandlers.get(name).forEach((handler: Function) => handler(data));
 }
 
-(window as any).ObserveHandlers = ObserveHandlers;
+export function track(func: Function, ...args: any[]) {
+  const dependencies = new Set<string>();
+  const collect = ({ id, member }: ObserveData) => {
+    const key = `${id}.${String(member)}`;
+    dependencies.add(key);
+  }
+  subscribe('get', collect);
+  const result = func(...args);
+  unsubscribe('get', collect);
+  return { result, dependencies };
+}

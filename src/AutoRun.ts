@@ -1,56 +1,29 @@
+import { subscribe, unsubscribe, track } from "./ObserveBus";
+import { ObserveData } from './ObserveData';
 import { nextTick } from "./Tick";
-import { IObserveEvent } from "./IObserveEvent";
-import { Observer } from "./Observer";
 
-export class AutoRun {
-  public handler: Function;
-  public context: any;
-  public trigger: Function;
-  public dependencies = new Map<string, boolean>();
-  public runing: boolean;
+export interface AutorunWrapper {
+  dependencies?: Set<string>;
+  destory?: Function;
+  (): any;
+}
 
-  constructor(handler: Function, context?: any, trigger?: Function) {
-    this.handler = handler;
-    this.context = context || this;
-    this.trigger = trigger || this.run;
-  }
-
-  isSync() {
-    return false;
-  }
-
-  isDependent(key: string): boolean {
-    if (!key) return false;
-    return this.dependencies.get(key);
-  }
-
-  onGet = (event: IObserveEvent) => {
-    if (!this.runing || !event || !this.dependencies) return;
-    const key = `${event.id}.${event.member}`;
-    this.dependencies.set(key, true);
-  };
-
-  onSet = (event: IObserveEvent) => {
-    const key = `${event.id}.${event.member}`;
-    if (this.runing || !event || !this.isDependent(key)) return;
-    if (this.isSync()) {
-      return this.trigger.call(this.context);
-    }
-    const pending = nextTick(this.trigger, this.context, true);
-    if (pending) {
-      pending.catch((err: Error) => {
-        throw err;
-      });
-    }
-  };
-
-  run = (...args: any[]) => {
-    this.dependencies.clear();
-    this.runing = true;
-    Observer.states.getter = true;
-    const result = this.handler.call(this.context, ...args);
-    Observer.states.getter = false;
-    this.runing = false;
+export function autorun(handler: Function, immed = true) {
+  const func: AutorunWrapper = () => {
+    const { result, dependencies } = track(handler);
+    func.dependencies = dependencies;
     return result;
   };
+  const onSet = ({ id, member }: ObserveData) => {
+    if (typeof member === 'symbol') return;
+    if (!func.dependencies.has(`${id}.${member}`)) return;
+    const pending = nextTick(func, null, true);
+    if (pending) pending.catch((err) => { throw err; });
+  };
+  subscribe('set', onSet);
+  func.destory = () => {
+    unsubscribe('set', onSet);
+  };
+  if (immed !== false) func();
+  return func;
 }

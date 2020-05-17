@@ -1,39 +1,39 @@
 import { Defer } from "./Defer";
 
-export interface IHandler {
+export interface ITickHandler {
   (): void;
   promise: Promise<any>;
   callback: Function;
 }
 
-export const tickOwner: { handlers: IHandler[]; pending: boolean } = {
+export const tickOwner: { handlers: ITickHandler[]; pending: boolean } = {
   handlers: [],
   pending: false
 };
 
-export function execHandlers() {
+export function execTickHandlers() {
   tickOwner.pending = false;
   const copies = tickOwner.handlers.slice(0);
   tickOwner.handlers.length = 0;
   copies.forEach(handler => handler());
 }
 
-export function createTimer() {
+export function createTickTimer() {
   if (typeof Promise !== "undefined") {
     const promise = Promise.resolve();
     return () => {
-      promise.then(execHandlers).catch(err => console.error(err));
+      promise.then(execTickHandlers).catch(err => console.error(err));
     };
   } else if (
     typeof MutationObserver !== "undefined" ||
     // PhantomJS and iOS 7.x
     window.MutationObserver.toString() ===
-      "[object MutationObserverConstructor]"
+    "[object MutationObserverConstructor]"
   ) {
     // use MutationObserver where native Promise is not available,
     // e.g. PhantomJS IE11, iOS7, Android 4.4
     let counter = 1;
-    const observer = new MutationObserver(execHandlers);
+    const observer = new MutationObserver(execTickHandlers);
     const textNode = document.createTextNode(String(counter));
     observer.observe(textNode, { characterData: true });
     return () => {
@@ -44,12 +44,12 @@ export function createTimer() {
     // fallback to setTimeout
     /* istanbul ignore next */
     return () => {
-      setTimeout(execHandlers, 0);
+      setTimeout(execTickHandlers, 0);
     };
   }
 }
 
-export const tickTimer = createTimer();
+export const tickTimer = createTickTimer();
 
 export function nextTick(callback: Function, ctx: any, unique: boolean) {
   if (unique === true) {
@@ -58,8 +58,8 @@ export function nextTick(callback: Function, ctx: any, unique: boolean) {
     );
     if (exists) return exists.promise;
   }
-  const defer = new Defer();
-  const handler: IHandler = () => {
+  const defer = Defer();
+  const handler: ITickHandler = () => {
     try {
       const result = callback ? callback.call(ctx) : null;
       if (defer.resolve) defer.resolve(result);
