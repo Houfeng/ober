@@ -12,15 +12,17 @@ export interface AutorunWrapper {
 }
 
 export function autorun(handler: Function, immed = true) {
-  const func: AutorunWrapper = () => {
+  let onSet: ObserveHandler;
+  let func: AutorunWrapper;
+  func = () => {
     const { result, dependencies } = track(handler);
     func.dependencies = dependencies;
-    onSet.dependencies = func.dependencies;
+    onSet.dependencies = dependencies;
     return result;
   };
-  const onSet: ObserveHandler = (data: ObserveData) => {
+  onSet = (data: ObserveData) => {
     if (isSymbol(data.member) || isPrivateKey(data.member)) return;
-    if (!func.dependencies.has(ObserveKey(data))) return;
+    if (!func.dependencies?.has(ObserveKey(data))) return;
     const pending = nextTick(func, null, true);
     if (pending) pending.catch(err => throwError(err));
   };
