@@ -1,4 +1,4 @@
-import { autorun } from "./Autorun";
+import { autorun } from "./AutoRun";
 
 export function watch(clac: Function, handler: Function, immed = false) {
   let result: any;

@@ -1,4 +1,4 @@
-export * from "./Autorun";
+export * from "./AutoRun";
 export * from "./Defer";
 export * from "./Expression";
 export * from "./LoseProxy";
