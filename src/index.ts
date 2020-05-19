@@ -12,6 +12,7 @@ export * from "./ObserveId";
 export * from "./ObserveKey";
 export * from "./ObserveProxy";
 export * from "./ObserveState";
+export * from "./ObserveTrack";
 export * from "./Symbols";
 export * from "./Tick";
 export * from "./Util";
