@@ -57,7 +57,7 @@ export function createTickTimer() {
 
 export const tickTimer = createTickTimer();
 
-export function nextTick(callback: Function, ctx: any, unique: boolean) {
+export function nextTick(callback: Function, ctx?: any, unique?: boolean) {
   if (unique === true) {
     const exists = tickOwner.handlers.find(
       handler => handler.callback === callback

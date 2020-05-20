@@ -6,6 +6,7 @@
 
 import { autorun } from "./AutoRun";
 import { isObject } from "./Util";
+import { WatchInitialSymbol } from "./Symbols";
 
 const hasOwn = Object.prototype.hasOwnProperty;
 
@@ -40,11 +41,13 @@ export function shallowEqual(objA: any, objB: any) {
 }
 
 export function watch(clac: Function, handler: Function, immed = false) {
-  let prev: any;
+  let prev: any = WatchInitialSymbol;
   return autorun(() => {
     const result = clac();
     const next = isObject(result) ? { ...result } : result;
-    if (shallowEqual(next, prev) && (prev !== undefined || immed)) handler();
+    if (!shallowEqual(next, prev) && (prev !== WatchInitialSymbol || immed)) {
+      handler();
+    }
     prev = next;
   });
 }

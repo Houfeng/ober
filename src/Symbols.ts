@@ -16,3 +16,4 @@ export const ProxySymbol = createSymbol("Proxy");
 export const ReactableObjectSymbol = createSymbol("ReactableObject");
 export const ReactableArraySymbol = createSymbol("ReactableArray");
 export const ReactableShadowSymbol = createSymbol("ReactableShadow");
+export const WatchInitialSymbol = createSymbol("WatchInitial");

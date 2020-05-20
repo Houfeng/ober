@@ -12,7 +12,7 @@ export function observable<T extends object | Function>(taregt: T): T {
   if (typeof taregt === "function") {
     if (ObserveConfig.mode !== "proxy") {
       const func: any = taregt;
-      const factory: any = (...args: any[]) => {
+      const factory: any = function Class(...args: any[]) {
         return observe(new func(...args)).proxy;
       };
       return factory as T;
