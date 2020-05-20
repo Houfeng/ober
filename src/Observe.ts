@@ -15,7 +15,7 @@ import {
 import { ObserveId } from "./ObserveId";
 import { ObserveProxy } from "./ObserveProxy";
 import { ObserveState } from "./ObserveState";
-import { ObserveSymbol, ProxySymbol, ReactableShadowSymbol } from "./Symbols";
+import { ObserveSymbol, ProxySymbol } from "./Symbols";
 import { publish } from "./ObserveBus";
 
 export interface ObserveInfo<T> {
@@ -24,15 +24,16 @@ export interface ObserveInfo<T> {
   target: T;
 }
 
+const { hasOwnProperty } = Object.prototype;
+
 export function observe<T extends object>(target: T): ObserveInfo<T> {
   if (!target || !isObject(target)) throw new Error("Invalid observe target");
-  if (!target.hasOwnProperty(ObserveSymbol)) {
+  if (!hasOwnProperty.call(target, ObserveSymbol)) {
     const id = ObserveId();
     const proxy = new ObserveProxy(target, {
       get(target: any, member: string | number | symbol) {
         if (member === ProxySymbol) return true;
-        const owner = target[ReactableShadowSymbol] || target;
-        const value = owner[member];
+        const value = target[member];
         if (!ObserveState.get || isSymbol(member)) return value;
         if (!isPrivateKey(member)) publish("get", { id, member, value });
         return isObject(value) ? observe(value).proxy : value;

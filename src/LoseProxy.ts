@@ -11,8 +11,10 @@ import {
 } from "./Symbols";
 import { defineMember, isArray, isObject } from "./Util";
 
+const { hasOwnProperty } = Object.prototype;
+
 export function createShadow(target: any) {
-  if (!target[ReactableShadowSymbol]) {
+  if (!hasOwnProperty.call(target, ReactableShadowSymbol)) {
     defineMember(target, ReactableShadowSymbol, Object.create(null));
   }
   return target[ReactableShadowSymbol];
