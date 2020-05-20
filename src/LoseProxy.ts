@@ -10,18 +10,17 @@ import {
   ReactableObjectSymbol
 } from "./Symbols";
 import {
+  isValidMember,
+  isValidValue,
   defineMember,
   isArray,
-  isObject,
-  isFunction,
-  isSymbol,
-  isPrivateKey
+  isObject
 } from "./Util";
 
-const { hasOwnProperty } = Object.prototype;
+const hasOwn = Object.prototype.hasOwnProperty;
 
 export function createShadow(target: any) {
-  if (!hasOwnProperty.call(target, ReactableShadowSymbol)) {
+  if (!hasOwn.call(target, ReactableShadowSymbol)) {
     defineMember(target, ReactableShadowSymbol, Object.create(null));
   }
   return target[ReactableShadowSymbol];
@@ -32,11 +31,9 @@ export function createReactableMember<T extends object>(
   member: string | number | symbol,
   handler: ProxyHandler<T>
 ) {
-  if (isSymbol(member) || isPrivateKey(member)) return;
+  if (!isValidMember(member)) return;
   const desc = Object.getOwnPropertyDescriptor(target, member);
-  if (!("value" in desc) || isFunction(desc.value) || isSymbol(desc.value)) {
-    return;
-  }
+  if (!("value" in desc) || !isValidValue(desc.value)) return;
   const shadow = createShadow(target);
   if (!(member in shadow)) shadow[member] = (target as any)[member];
   Object.defineProperty(target, member, {
@@ -45,15 +42,12 @@ export function createReactableMember<T extends object>(
         ? handler.get(shadow, member, shadow)
         : shadow[member];
       if (isArray(value)) {
-        return wrapReactableArray(value, handler, () => {
-          // handler.get(shadow, member, shadow);
-        });
+        return wrapReactableArray(value, handler);
       } else {
         return value;
       }
     },
     set(value) {
-      const shadow = createShadow(this);
       const success = handler.set && handler.set(shadow, member, value, shadow);
       if (!success) shadow[member] = value;
     },
@@ -67,7 +61,7 @@ export function createReactableObject<T extends object>(
   handler: ProxyHandler<T>
 ) {
   if (!isObject(target)) return target;
-  if ((target as any)[ReactableObjectSymbol]) return target;
+  if (hasOwn.call(target, ReactableObjectSymbol)) return target;
   defineMember(target, ReactableObjectSymbol, true);
   Object.keys(target).forEach((member: string) => {
     createReactableMember(target, member, handler);
@@ -80,7 +74,9 @@ export function wrapReactableArray<T extends object>(
   handler: ProxyHandler<T>,
   triggerParent?: Function
 ) {
-  if (!isArray(target) || (target as any)[ReactableArraySymbol]) return target;
+  if (!isArray(target) || hasOwn.call(target, ReactableArraySymbol)) {
+    return target;
+  }
   defineMember(target, ReactableArraySymbol, true);
   const { push, pop, shift, unshift, splice } = Array.prototype;
   defineMember(target, "push", function() {

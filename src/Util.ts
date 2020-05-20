@@ -57,6 +57,18 @@ export function defineMember(target: any, member: string | symbol, value: any) {
   });
 }
 
+export function isValidMember(member: any) {
+  return (
+    (isString(member) || isNumber(member)) &&
+    !isSymbol(member) &&
+    !isPrivateKey(member)
+  );
+}
+
+export function isValidValue(value: any) {
+  return !isFunction(value) && !isSymbol(value);
+}
+
 export function throwError(err: Error) {
   throw err;
 }
