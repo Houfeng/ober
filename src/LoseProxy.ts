@@ -13,7 +13,7 @@ import { defineMember, isArray, isObject } from "./Util";
 
 export function createShadow(target: any) {
   if (!target[ReactableShadowSymbol]) {
-    target[ReactableShadowSymbol] = Object.create(null);
+    defineMember(target, ReactableShadowSymbol, Object.create(null));
   }
   return target[ReactableShadowSymbol];
 }
