@@ -7,6 +7,7 @@
 import { observe } from "./Observe";
 import { ProxySymbol } from "./Symbols";
 import { ObserveConfig } from "./ObserveConfig";
+import { isObject } from "./Util";
 
 export function observable<T extends object | Function>(taregt: T): T {
   if (typeof taregt === "function") {
@@ -25,7 +26,9 @@ export function observable<T extends object | Function>(taregt: T): T {
         return observe(new taregt(...args)).proxy;
       }
     });
-  } else {
+  } else if (isObject(taregt)) {
     return observe(taregt).proxy;
+  } else {
+    return taregt;
   }
 }

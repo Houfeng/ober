@@ -25,7 +25,7 @@ export interface ObserveInfo<T> {
 }
 
 export function observe<T extends object>(target: T): ObserveInfo<T> {
-  if (!isObject(target)) throw new Error("Invalid observe target");
+  if (!target || !isObject(target)) throw new Error("Invalid observe target");
   if (!target.hasOwnProperty(ObserveSymbol)) {
     const id = ObserveId();
     const proxy = new ObserveProxy(target, {
