@@ -13,7 +13,7 @@ export function isNumber(value: any) {
 }
 
 export function isObject(value: any) {
-  return typeof value === "object";
+  return !isNullOrUndefined(value) && typeof value === "object";
 }
 
 export function isArray(value: any) {
