@@ -9,7 +9,14 @@ import {
   ReactableShadowSymbol,
   ReactableObjectSymbol
 } from "./Symbols";
-import { defineMember, isArray, isObject } from "./Util";
+import {
+  defineMember,
+  isArray,
+  isObject,
+  isFunction,
+  isSymbol,
+  isPrivateKey
+} from "./Util";
 
 const { hasOwnProperty } = Object.prototype;
 
@@ -25,8 +32,11 @@ export function createReactableMember<T extends object>(
   member: string | number | symbol,
   handler: ProxyHandler<T>
 ) {
+  if (isSymbol(member) || isPrivateKey(member)) return;
   const desc = Object.getOwnPropertyDescriptor(target, member);
-  if (!("value" in desc)) return;
+  if (!("value" in desc) || isFunction(desc.value) || isSymbol(desc.value)) {
+    return;
+  }
   const shadow = createShadow(target);
   if (!(member in shadow)) shadow[member] = (target as any)[member];
   Object.defineProperty(target, member, {
