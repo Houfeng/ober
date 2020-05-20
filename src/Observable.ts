@@ -8,9 +8,15 @@ import { observe } from "./Observe";
 import { ProxySymbol } from "./Symbols";
 import { ObserveConfig } from "./ObserveConfig";
 
-export function observable<T extends object>(taregt: T): T {
-  if (ObserveConfig.mode !== "proxy") return taregt;
+export function observable<T extends object | Function>(taregt: T): T {
   if (typeof taregt === "function") {
+    if (ObserveConfig.mode !== "proxy") {
+      const func: any = taregt;
+      const factory: any = (...args: any[]) => {
+        return observe(new func(...args)).proxy;
+      };
+      return factory as T;
+    }
     return new Proxy(taregt, {
       get(_target, member) {
         if (member === ProxySymbol) return true;
