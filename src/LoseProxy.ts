@@ -34,7 +34,7 @@ export function createReactableMember<T extends object>(
         : shadow[member];
       if (isArray(value)) {
         return wrapReactableArray(value, handler, () => {
-          handler.get(this, member, this);
+          handler.get(shadow, member, shadow);
         });
       } else {
         return value;
