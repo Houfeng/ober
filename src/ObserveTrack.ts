@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) 2014-present Houfeng
+ * @homepage https://github.com/Houfeng/ober
+ * @author Houfeng <admin@xhou.net>
+ */
+
 import { isPrivateKey, isSymbol } from "./Util";
 import { ObserveData } from "./ObserveData";
 import { ObserveHandler } from "./ObserveHandler";

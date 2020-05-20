@@ -4,8 +4,9 @@ build:
       - dist
       - types
   - name: file-header
+    files: ./src/**/*.ts
     text: 
-      - 'Copyright (c) 2015-present Houfeng'
+      - 'Copyright (c) 2014-present Houfeng'
       - '@homepage https://github.com/Houfeng/ober'
       - '@author Houfeng <admin@xhou.net>'
   - name: shell

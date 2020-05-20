@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015-present Houfeng
+ * Copyright (c) 2014-present Houfeng
  * @homepage https://github.com/Houfeng/ober
  * @author Houfeng <admin@xhou.net>
  */
@@ -18,7 +18,13 @@ import { ObserveState } from "./ObserveState";
 import { ObserveSymbol, ProxySymbol, ReactableShadowSymbol } from "./Symbols";
 import { publish } from "./ObserveBus";
 
-export function observe<T extends object>(target: T) {
+export interface ObserveInfo<T> {
+  id: number;
+  proxy: T;
+  target: T;
+}
+
+export function observe<T extends object>(target: T): ObserveInfo<T> {
   if (!isObject(target)) throw new Error("Invalid observe target");
   if (!target.hasOwnProperty(ObserveSymbol)) {
     const id = ObserveId();

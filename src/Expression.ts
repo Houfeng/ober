@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) 2014-present Houfeng
+ * @homepage https://github.com/Houfeng/ober
+ * @author Houfeng <admin@xhou.net>
+ */
+
 const VARIABLE_FILTER = /(\(|\[|\{|\+|\-|\*|\/|\>|\<|\=|\!|\,|\;|\?|\:|\&|\|)\s*([a-z\_0-9\$]+)/gi;
 const VARIABLE_NAME = /^[a-z\$\_]/i;
 const ALLOWED_WORD = /^(\$scope|true|false|null|undefined|Date|Number|String|Object|Boolean|Array|RegExp|Math|JSON|parseInt|parseFloat|isNaN|isFinite)$/; // eslint-disable-line
