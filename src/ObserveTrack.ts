@@ -17,7 +17,7 @@ export function track(func: Function, ...args: any[]) {
 
 export interface Trackable {
   dependencies?: Set<string>;
-  destory?: Function;
+  destroy?: Function;
   (): any;
 }
 
@@ -37,6 +37,6 @@ export function trackable(func: Function, onUpdate: Function) {
     if (!wapper.dependencies.has(ObserveKey(data))) return;
     if (onUpdate) onUpdate(data);
   };
-  wapper.destory = () => unsubscribe("set", onSet);
+  wapper.destroy = () => unsubscribe("set", onSet);
   return wapper;
 }
