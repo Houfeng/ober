@@ -6,6 +6,10 @@
 
 export const ObserveConfig: {
   mode: "proxy" | "property";
+  maxDependencies: number;
+  maxHandlers: number;
 } = {
-  mode: "property"
+  mode: "property",
+  maxDependencies: 1000,
+  maxHandlers: 100
 };

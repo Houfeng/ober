@@ -9,6 +9,7 @@ import { ObserveData } from "./ObserveData";
 import { ObserveHandler, ObserveHandlerStore } from "./ObserveHandler";
 import { ObserveKey } from "./ObserveKey";
 import { ObserveState } from "./ObserveState";
+import { ObserveConfig } from "./ObserveConfig";
 
 export const ObserveHandlers: ObserveHandlerStore = {};
 
@@ -39,16 +40,21 @@ export function unsubscribe(name: string, handler: ObserveHandler) {
   }
 }
 
-export function publish(name: string, data: ObserveData, matchKey = false) {
+export function publish(name: string, data: ObserveData, matchOnly = false) {
   if (!ObserveHandlers[name]) return;
   if (isSymbol(data.member) || isPrivateKey(data.member)) return;
   const originSetState = ObserveState.set;
   ObserveState.set = false;
   const observeKey = ObserveKey(data);
-  if (ObserveHandlers[name][observeKey]) {
-    ObserveHandlers[name][observeKey].forEach(handler => handler(data));
+  const matchedHandlers = ObserveHandlers[name][observeKey];
+  const matchedCount = (matchedHandlers && matchedHandlers.size) || 0;
+  if (matchedCount > ObserveConfig.maxHandlers) {
+    console.warn(
+      `Find ${matchedCount} handlers to trigger execution, and confirm whether there is a performance problem`
+    );
   }
-  if (!matchKey && ObserveHandlers[name]["*"]) {
+  if (matchedHandlers) matchedHandlers.forEach(handler => handler(data));
+  if (!matchOnly && ObserveHandlers[name]["*"]) {
     ObserveHandlers[name]["*"].forEach(handler => handler(data));
   }
   ObserveState.set = originSetState;

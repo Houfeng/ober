@@ -9,6 +9,7 @@ import { ObserveData } from "./ObserveData";
 import { ObserveHandler } from "./ObserveHandler";
 import { ObserveKey } from "./ObserveKey";
 import { subscribe, unsubscribe } from "./ObserveBus";
+import { ObserveConfig } from "./ObserveConfig";
 
 export function track(func: Function, ...args: any[]) {
   const dependencies = new Set<string>();
@@ -18,6 +19,12 @@ export function track(func: Function, ...args: any[]) {
   subscribe("get", collect);
   const result = func(...args);
   unsubscribe("get", collect);
+  const count = dependencies && dependencies.size;
+  if (count > ObserveConfig.maxDependencies) {
+    console.warn(
+      `A single function has ${count} dependencies to confirm whether there is a performance problem`
+    );
+  }
   return { result, dependencies };
 }
 
