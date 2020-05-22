@@ -10,6 +10,7 @@ import { ObserveHandler } from "./ObserveHandler";
 import { ObserveKey } from "./ObserveKey";
 import { subscribe, unsubscribe } from "./ObserveBus";
 import { ObserveConfig } from "./ObserveConfig";
+import { disableObserve, enableObserve } from "./ObserveState";
 
 export function track(func: Function, ...args: any[]) {
   const dependencies = new Set<string>();
@@ -26,6 +27,18 @@ export function track(func: Function, ...args: any[]) {
     );
   }
   return { result, dependencies };
+}
+
+export function untrack(func: Function, ...args: any[]) {
+  if (!func) return;
+  disableObserve();
+  const result = func(...args);
+  enableObserve();
+  return result;
+}
+
+export function untrackable(func: Function) {
+  return (...args: any) => untrack(func, ...args);
 }
 
 export interface Trackable {
