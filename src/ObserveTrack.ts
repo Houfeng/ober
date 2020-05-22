@@ -12,13 +12,13 @@ import { subscribe, unsubscribe } from "./ObserveBus";
 import { ObserveConfig } from "./ObserveConfig";
 import { disableObserve, enableObserve } from "./ObserveState";
 
-export function track(func: Function, ...args: any[]) {
+export function track<T = any>(func: Function, ...args: any[]) {
   const dependencies = new Set<string>();
   const collect = (data: ObserveData) => {
     dependencies.add(ObserveKey(data));
   };
   subscribe("get", collect);
-  const result = func(...args);
+  const result: T = func(...args);
   unsubscribe("get", collect);
   const count = dependencies && dependencies.size;
   if (count > ObserveConfig.maxDependencies) {
@@ -29,7 +29,7 @@ export function track(func: Function, ...args: any[]) {
   return { result, dependencies };
 }
 
-export function untrack<T>(func: Function, ...args: any[]): T {
+export function untrack<T = any>(func: Function, ...args: any[]): T {
   if (!func) return;
   disableObserve();
   const result = func(...args);
@@ -37,26 +37,26 @@ export function untrack<T>(func: Function, ...args: any[]): T {
   return result as T;
 }
 
-export function untrackable<T>(func: Function) {
+export function untrackable<T = any>(func: Function) {
   return (...args: any[]) => untrack<T>(func, ...args);
 }
 
-export interface Trackable {
+export interface Trackable<T = any> {
   dependencies?: Set<string>;
   destroy?: Function;
-  (): any;
+  (): T;
 }
 
-export function trackable(func: Function, onUpdate: Function) {
+export function trackable<T = any>(func: Function, onUpdate: Function) {
   let onSet: ObserveHandler;
-  let wapper: Trackable;
+  let wapper: Trackable<T>;
   wapper = () => {
     unsubscribe("set", onSet);
     const { result, dependencies } = track(func);
     wapper.dependencies = dependencies;
     onSet.dependencies = dependencies;
     subscribe("set", onSet);
-    return result;
+    return result as T;
   };
   onSet = (data: ObserveData) => {
     if (isSymbol(data.member) || isPrivateKey(data.member)) return;
