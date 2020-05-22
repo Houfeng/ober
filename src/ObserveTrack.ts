@@ -12,7 +12,7 @@ import { subscribe, unsubscribe } from "./ObserveBus";
 import { ObserveConfig } from "./ObserveConfig";
 import { disableObserve, enableObserve } from "./ObserveState";
 
-export type AnyFunction = (...args: any) => any;
+export type AnyFunction = (...args: any[]) => any;
 
 export function track<T extends AnyFunction>(func: T, ...args: any[]) {
   const dependencies = new Set<string>();
