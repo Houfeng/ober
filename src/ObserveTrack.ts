@@ -29,16 +29,16 @@ export function track(func: Function, ...args: any[]) {
   return { result, dependencies };
 }
 
-export function untrack(func: Function, ...args: any[]) {
+export function untrack<T>(func: Function, ...args: any[]): T {
   if (!func) return;
   disableObserve();
   const result = func(...args);
   enableObserve();
-  return result;
+  return result as T;
 }
 
-export function untrackable(func: Function) {
-  return (...args: any) => untrack(func, ...args);
+export function untrackable<T>(func: Function) {
+  return (...args: any[]) => untrack<T>(func, ...args);
 }
 
 export interface Trackable {
