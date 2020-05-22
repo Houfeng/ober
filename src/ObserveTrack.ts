@@ -12,13 +12,15 @@ import { subscribe, unsubscribe } from "./ObserveBus";
 import { ObserveConfig } from "./ObserveConfig";
 import { disableObserve, enableObserve } from "./ObserveState";
 
-export function track<T = any>(func: Function, ...args: any[]) {
+export type AnyFunction = (...args: any) => any;
+
+export function track<T extends AnyFunction>(func: T, ...args: any[]) {
   const dependencies = new Set<string>();
   const collect = (data: ObserveData) => {
     dependencies.add(ObserveKey(data));
   };
   subscribe("get", collect);
-  const result: T = func(...args);
+  const result: ReturnType<T> = func(...args);
   unsubscribe("get", collect);
   const count = dependencies && dependencies.size;
   if (count > ObserveConfig.maxDependencies) {
@@ -29,34 +31,22 @@ export function track<T = any>(func: Function, ...args: any[]) {
   return { result, dependencies };
 }
 
-export function untrack<T = any>(func: Function, ...args: any[]): T {
-  if (!func) return;
-  disableObserve();
-  const result = func(...args);
-  enableObserve();
-  return result as T;
-}
-
-export function untrackable<T = any>(func: Function) {
-  return (...args: any[]) => untrack<T>(func, ...args);
-}
-
-export interface Trackable<T = any> {
+export interface Trackable {
   dependencies?: Set<string>;
   destroy?: Function;
-  (): T;
+  (...args: any[]): any;
 }
 
-export function trackable<T = any>(func: Function, onUpdate: Function) {
+export function trackable<T extends Trackable>(func: T, onUpdate?: Function) {
   let onSet: ObserveHandler;
-  let wapper: Trackable<T>;
-  wapper = () => {
+  let wapper: Trackable;
+  wapper = (...args: any[]) => {
     unsubscribe("set", onSet);
-    const { result, dependencies } = track(func);
+    const { result, dependencies } = track(func, ...args);
     wapper.dependencies = dependencies;
     onSet.dependencies = dependencies;
     subscribe("set", onSet);
-    return result as T;
+    return result;
   };
   onSet = (data: ObserveData) => {
     if (isSymbol(data.member) || isPrivateKey(data.member)) return;
@@ -64,5 +54,18 @@ export function trackable<T = any>(func: Function, onUpdate: Function) {
     if (onUpdate) onUpdate(data);
   };
   wapper.destroy = () => unsubscribe("set", onSet);
-  return wapper;
+  return wapper as T;
+}
+
+export function untrack<T extends AnyFunction>(func: T, ...args: any[]) {
+  if (!func) return;
+  disableObserve();
+  const result = func(...args);
+  enableObserve();
+  return result as ReturnType<T>;
+}
+
+export function untrackable<T extends AnyFunction>(func: T) {
+  const wrapper: any = (...args: any[]) => untrack(func, ...args);
+  return wrapper as T;
 }

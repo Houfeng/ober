@@ -6,9 +6,9 @@
 
 import { nextTick } from "./Tick";
 import { throwError } from "./Util";
-import { trackable } from "./ObserveTrack";
+import { trackable, AnyFunction } from "./ObserveTrack";
 
-export function autorun(func: Function, immed = true) {
+export function autorun(func: AnyFunction, immed = true) {
   const wrapper = trackable(func, () => {
     const pending = nextTick(wrapper, null, true);
     if (pending) pending.catch(err => throwError(err));
