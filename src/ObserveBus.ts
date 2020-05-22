@@ -10,6 +10,9 @@ import { ObserveHandler, ObserveHandlerStore } from "./ObserveHandler";
 import { ObserveKey } from "./ObserveKey";
 import { ObserveState } from "./ObserveState";
 import { ObserveConfig } from "./ObserveConfig";
+import { ObservePerf } from "./ObservePerf";
+
+const { onSubscribe, onUnsubscribe, onPublish } = ObservePerf;
 
 export const ObserveHandlers: ObserveHandlerStore = {};
 
@@ -26,6 +29,7 @@ export function subscribe(name: string, handler: ObserveHandler) {
     if (!ObserveHandlers[name]["*"]) ObserveHandlers[name]["*"] = new Set();
     ObserveHandlers[name]["*"].add(handler);
   }
+  if (onSubscribe) onSubscribe({ name, handler });
 }
 
 export function unsubscribe(name: string, handler: ObserveHandler) {
@@ -38,6 +42,7 @@ export function unsubscribe(name: string, handler: ObserveHandler) {
   } else if (ObserveHandlers[name]["*"]) {
     ObserveHandlers[name]["*"].delete(handler);
   }
+  if (onUnsubscribe) onUnsubscribe({ name, handler });
 }
 
 export function publish(name: string, data: ObserveData, matchOnly = false) {
@@ -58,4 +63,5 @@ export function publish(name: string, data: ObserveData, matchOnly = false) {
     ObserveHandlers[name]["*"].forEach(handler => handler(data));
   }
   ObserveState.set = originSetState;
+  if (onPublish) onPublish({ name, data, matchedHandlers, matchOnly });
 }
