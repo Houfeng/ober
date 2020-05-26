@@ -10,7 +10,6 @@ import { ObserveState } from "./ObserveState";
 import { ObserveSymbol, ProxySymbol } from "./Symbols";
 import { publish } from "./ObserveBus";
 import { defineMember, isObject, isValidMember, isValidValue } from "./Util";
-import { nextTick } from "./Tick";
 
 export interface ObserveInfo<T> {
   id: number;
@@ -48,7 +47,7 @@ export function observe<T extends object>(target: T): ObserveInfo<T> {
         ) {
           return false;
         }
-        nextTick(() => publish("set", { id, member, value }));
+        publish("set", { id, member, value });
         return true;
       }
     });
