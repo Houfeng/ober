@@ -15,15 +15,14 @@ import { ObserveState } from "./ObserveState";
 export type AnyFunction = (...args: any[]) => any;
 
 export function track<T extends AnyFunction>(func: T, ...args: any[]) {
-  ObserveState.get = true;
-  const originSetState = ObserveState.set;
-  ObserveState.set = false;
   const dependencies = new Set<string>();
   const collect = (data: ObserveData) => {
     dependencies.add(ObserveKey(data));
   };
   subscribe("get", collect);
+  ObserveState.get = true;
   const result: ReturnType<T> = func(...args);
+  ObserveState.get = false;
   unsubscribe("get", collect);
   const count = dependencies && dependencies.size;
   if (count > ObserveConfig.maxDependencies) {
@@ -31,8 +30,6 @@ export function track<T extends AnyFunction>(func: T, ...args: any[]) {
       `A single function has ${count} dependencies to confirm whether there is a performance problem`
     );
   }
-  ObserveState.get = false;
-  ObserveState.set = originSetState;
   return { result, dependencies };
 }
 
@@ -44,10 +41,9 @@ export interface Trackable {
 
 export function trackable<T extends Trackable>(func: T, onUpdate?: Function) {
   let onSet: ObserveHandler;
-  let wapper: Trackable;
-  wapper = (...args: any[]) => {
-    unsubscribe("set", onSet);
+  const wapper: Trackable = (...args: any[]) => {
     const { result, dependencies } = track(func, ...args);
+    unsubscribe("set", onSet);
     wapper.dependencies = dependencies;
     onSet.dependencies = dependencies;
     subscribe("set", onSet);
@@ -55,6 +51,7 @@ export function trackable<T extends Trackable>(func: T, onUpdate?: Function) {
   };
   onSet = (data: ObserveData) => {
     if (isSymbol(data.member) || isPrivateKey(data.member)) return;
+    if (!wapper.dependencies) return;
     if (!wapper.dependencies.has(ObserveKey(data))) return;
     if (onUpdate) onUpdate(data);
   };
@@ -64,9 +61,9 @@ export function trackable<T extends Trackable>(func: T, onUpdate?: Function) {
 
 export function untrack<T extends AnyFunction>(func: T, ...args: any[]) {
   if (!func) return;
-  ObserveState.get = false;
   const originSetState = ObserveState.set;
   ObserveState.set = false;
+  ObserveState.get = false;
   const result = func(...args);
   ObserveState.set = originSetState;
   return result as ReturnType<T>;

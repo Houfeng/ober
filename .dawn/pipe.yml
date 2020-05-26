@@ -19,7 +19,7 @@ build:
 dev:
   - name: shell
     script:
-      - dn build
+      - ts-node ./debug/index.ts
 
 test:
   - name: tslint

@@ -27,26 +27,16 @@ export function observe<T extends object>(target: T): ObserveInfo<T> {
       get(target: any, member: string | number | symbol) {
         if (member === ProxySymbol) return true;
         const value = target[member];
-        if (
-          !ObserveState.get ||
-          !isValidMember(member) ||
-          !isValidValue(value)
-        ) {
-          return value;
-        }
+        if (!ObserveState.get) return value;
+        if (!isValidMember(member) || !isValidValue(value)) return value;
         publish("get", { id, member, value });
         return isObject(value) ? observe(value).proxy : value;
       },
       set(target: any, member: string | number | symbol, value: any) {
         if (target[member] === value) return true;
         target[member] = value;
-        if (
-          !ObserveState.set ||
-          !isValidMember(member) ||
-          !isValidValue(value)
-        ) {
-          return false;
-        }
+        if (!ObserveState.set) return true;
+        if (!isValidMember(member) || !isValidValue(value)) return false;
         publish("set", { id, member, value });
         return true;
       }
