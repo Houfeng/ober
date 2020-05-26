@@ -48,6 +48,8 @@ export function publish(name: string, data: ObserveData, matchOnly = false) {
   if (isSymbol(data.member) || isPrivateKey(data.member)) return;
   const originSetState = ObserveState.set;
   ObserveState.set = false;
+  const originGetState = ObserveState.get;
+  ObserveState.get = false;
   const observeKey = ObserveKey(data);
   const matchedHandlers = ObserveHandlers[name][observeKey];
   const matchedCount = (matchedHandlers && matchedHandlers.size) || 0;
@@ -61,6 +63,7 @@ export function publish(name: string, data: ObserveData, matchOnly = false) {
     ObserveHandlers[name]["*"].forEach(handler => handler(data));
   }
   ObserveState.set = originSetState;
+  ObserveState.get = originGetState;
   if (perf.onPublish) {
     perf.onPublish({ name, data, matchedHandlers, matchOnly });
   }
