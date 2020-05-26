@@ -5,18 +5,6 @@ import { ObserveData } from '../src/ObserveData';
 
 describe('observable', () => {
 
-  it('访问可观察对象', (done) => {
-    const model = observable({ value: 1 });
-    const onGet = ({ member, value }: ObserveData) => {
-      equal(member, "value");
-      equal(value, 1);
-      unsubscribe("get", onGet);
-      done();
-    };
-    subscribe("get", onGet);
-    equal(model.value, 1);
-  });
-
   it('设置可观察对象', (done) => {
     const model = observable({ value: 1 });
     equal(model.value, 1);

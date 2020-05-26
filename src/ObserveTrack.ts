@@ -10,11 +10,13 @@ import { ObserveHandler } from "./ObserveHandler";
 import { ObserveKey } from "./ObserveKey";
 import { subscribe, unsubscribe } from "./ObserveBus";
 import { ObserveConfig } from "./ObserveConfig";
-import { disableObserve, enableObserve } from "./ObserveState";
+import { ObserveState } from "./ObserveState";
 
 export type AnyFunction = (...args: any[]) => any;
 
 export function track<T extends AnyFunction>(func: T, ...args: any[]) {
+  ObserveState.set = false;
+  ObserveState.get = true;
   const dependencies = new Set<string>();
   const collect = (data: ObserveData) => {
     dependencies.add(ObserveKey(data));
@@ -28,6 +30,8 @@ export function track<T extends AnyFunction>(func: T, ...args: any[]) {
       `A single function has ${count} dependencies to confirm whether there is a performance problem`
     );
   }
+  ObserveState.get = false;
+  ObserveState.set = true;
   return { result, dependencies };
 }
 
@@ -59,9 +63,11 @@ export function trackable<T extends Trackable>(func: T, onUpdate?: Function) {
 
 export function untrack<T extends AnyFunction>(func: T, ...args: any[]) {
   if (!func) return;
-  disableObserve();
+  ObserveState.set = false;
+  ObserveState.get = false;
   const result = func(...args);
-  enableObserve();
+  ObserveState.set = true;
+  ObserveState.get = false;
   return result as ReturnType<T>;
 }
 

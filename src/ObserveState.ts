@@ -5,16 +5,6 @@
  */
 
 export const ObserveState = {
-  get: true,
+  get: false,
   set: true
 };
-
-export function disableObserve() {
-  ObserveState.get = false;
-  ObserveState.set = false;
-}
-
-export function enableObserve() {
-  ObserveState.get = true;
-  ObserveState.set = true;
-}
