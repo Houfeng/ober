@@ -8,9 +8,9 @@ import { isPrivateKey, isSymbol } from "./Util";
 import { ObserveData } from "./ObserveData";
 import { ObserveHandler, ObserveHandlerStore } from "./ObserveHandler";
 import { ObserveKey } from "./ObserveKey";
-import { ObserveState } from "./ObserveState";
 import { ObserveConfig } from "./ObserveConfig";
 import { ObservePerf as perf } from "./ObservePerf";
+import { ObserveState } from "./ObserveState";
 
 export const ObserveHandlers: ObserveHandlerStore = {};
 
@@ -47,9 +47,7 @@ export function publish(name: string, data: ObserveData, matchOnly = false) {
   if (!ObserveHandlers[name]) return;
   if (isSymbol(data.member) || isPrivateKey(data.member)) return;
   const originSetState = ObserveState.set;
-  const originGetStage = ObserveState.get;
   ObserveState.set = false;
-  ObserveState.get = false;
   const observeKey = ObserveKey(data);
   const matchedHandlers = ObserveHandlers[name][observeKey];
   const matchedCount = (matchedHandlers && matchedHandlers.size) || 0;
@@ -63,7 +61,6 @@ export function publish(name: string, data: ObserveData, matchOnly = false) {
     ObserveHandlers[name]["*"].forEach(handler => handler(data));
   }
   ObserveState.set = originSetState;
-  ObserveState.get = originGetStage;
   if (perf.onPublish) {
     perf.onPublish({ name, data, matchedHandlers, matchOnly });
   }

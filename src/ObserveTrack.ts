@@ -15,7 +15,6 @@ import { ObserveState } from "./ObserveState";
 export type AnyFunction = (...args: any[]) => any;
 
 export function track<T extends AnyFunction>(func: T, ...args: any[]) {
-  ObserveState.set = false;
   ObserveState.get = true;
   const dependencies = new Set<string>();
   const collect = (data: ObserveData) => {
@@ -31,7 +30,6 @@ export function track<T extends AnyFunction>(func: T, ...args: any[]) {
     );
   }
   ObserveState.get = false;
-  ObserveState.set = true;
   return { result, dependencies };
 }
 
@@ -63,11 +61,11 @@ export function trackable<T extends Trackable>(func: T, onUpdate?: Function) {
 
 export function untrack<T extends AnyFunction>(func: T, ...args: any[]) {
   if (!func) return;
+  ObserveState.get = false;
+  const originSetState = ObserveState.set;
   ObserveState.set = false;
-  ObserveState.get = false;
   const result = func(...args);
-  ObserveState.set = true;
-  ObserveState.get = false;
+  ObserveState.set = originSetState;
   return result as ReturnType<T>;
 }
 
