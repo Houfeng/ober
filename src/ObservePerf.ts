@@ -9,11 +9,11 @@ import { ObserveHandler } from "./ObserveHandler";
 
 export const ObservePerf: {
   onPublish?: (info: {
-    name: string;
+    type: string;
     data: ObserveData;
     matchOnly: boolean;
     matchedHandlers: Set<ObserveHandler>;
   }) => void;
-  onSubscribe?: (info: { name: string; handler: ObserveHandler }) => void;
-  onUnsubscribe?: (info: { name: string; handler: ObserveHandler }) => void;
+  onSubscribe?: (info: { type: string; handler: ObserveHandler }) => void;
+  onUnsubscribe?: (info: { type: string; handler: ObserveHandler }) => void;
 } = {};

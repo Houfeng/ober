@@ -13,40 +13,40 @@ import { ObservePerf as perf } from "./ObservePerf";
 
 export const ObserveHandlers: ObserveHandlerStore = {};
 
-export function subscribe(name: string, handler: ObserveHandler) {
+export function subscribe(type: string, handler: ObserveHandler) {
   if (!handler) throw new Error("Invalid ObserveHandler");
-  if (!name) throw new Error("Invalid ObserveName");
-  if (!ObserveHandlers[name]) ObserveHandlers[name] = {};
+  if (!type) throw new Error("Invalid ObserveName");
+  if (!ObserveHandlers[type]) ObserveHandlers[type] = {};
   if (handler.dependencies) {
     handler.dependencies.forEach(key => {
-      if (!ObserveHandlers[name][key]) ObserveHandlers[name][key] = new Set();
-      ObserveHandlers[name][key].add(handler);
+      if (!ObserveHandlers[type][key]) ObserveHandlers[type][key] = new Set();
+      ObserveHandlers[type][key].add(handler);
     });
   } else {
-    if (!ObserveHandlers[name]["*"]) ObserveHandlers[name]["*"] = new Set();
-    ObserveHandlers[name]["*"].add(handler);
+    if (!ObserveHandlers[type]["*"]) ObserveHandlers[type]["*"] = new Set();
+    ObserveHandlers[type]["*"].add(handler);
   }
-  if (perf.onSubscribe) perf.onSubscribe({ name, handler });
+  if (perf.onSubscribe) perf.onSubscribe({ type, handler });
 }
 
-export function unsubscribe(name: string, handler: ObserveHandler) {
-  if (!ObserveHandlers[name] || !handler) return;
+export function unsubscribe(type: string, handler: ObserveHandler) {
+  if (!ObserveHandlers[type] || !handler) return;
   if (handler.dependencies) {
     handler.dependencies.forEach(key => {
-      if (!ObserveHandlers[name][key]) return;
-      ObserveHandlers[name][key].delete(handler);
+      if (!ObserveHandlers[type][key]) return;
+      ObserveHandlers[type][key].delete(handler);
     });
-  } else if (ObserveHandlers[name]["*"]) {
-    ObserveHandlers[name]["*"].delete(handler);
+  } else if (ObserveHandlers[type]["*"]) {
+    ObserveHandlers[type]["*"].delete(handler);
   }
-  if (perf.onUnsubscribe) perf.onUnsubscribe({ name, handler });
+  if (perf.onUnsubscribe) perf.onUnsubscribe({ type, handler });
 }
 
-export function publish(name: string, data: ObserveData, matchOnly = false) {
-  if (!ObserveHandlers[name]) return;
+export function publish(type: string, data: ObserveData, matchOnly = false) {
+  if (!ObserveHandlers[type]) return;
   if (isSymbol(data.member) || isPrivateKey(data.member)) return;
   const observeKey = ObserveKey(data);
-  const matchedHandlers = ObserveHandlers[name][observeKey];
+  const matchedHandlers = ObserveHandlers[type][observeKey];
   const matchedCount = (matchedHandlers && matchedHandlers.size) || 0;
   if (matchedCount > ObserveConfig.maxHandlers) {
     console.warn(
@@ -54,10 +54,10 @@ export function publish(name: string, data: ObserveData, matchOnly = false) {
     );
   }
   if (matchedHandlers) matchedHandlers.forEach(handler => handler(data));
-  if (!matchOnly && ObserveHandlers[name]["*"]) {
-    ObserveHandlers[name]["*"].forEach(handler => handler(data));
+  if (!matchOnly && ObserveHandlers[type]["*"]) {
+    ObserveHandlers[type]["*"].forEach(handler => handler(data));
   }
   if (perf.onPublish) {
-    perf.onPublish({ name, data, matchedHandlers, matchOnly });
+    perf.onPublish({ type, data, matchedHandlers, matchOnly });
   }
 }

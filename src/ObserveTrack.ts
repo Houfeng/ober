@@ -41,22 +41,22 @@ export interface Trackable {
 
 export function trackable<T extends Trackable>(func: T, onUpdate?: Function) {
   let onSet: ObserveHandler;
-  const wapper: Trackable = (...args: any[]) => {
+  const wrapper: Trackable = (...args: any[]) => {
     const { result, dependencies } = track(func, ...args);
     unsubscribe("set", onSet);
-    wapper.dependencies = dependencies;
+    wrapper.dependencies = dependencies;
     onSet.dependencies = dependencies;
     subscribe("set", onSet);
     return result;
   };
   onSet = (data: ObserveData) => {
     if (isSymbol(data.member) || isPrivateKey(data.member)) return;
-    if (!wapper.dependencies) return;
-    if (!wapper.dependencies.has(ObserveKey(data))) return;
+    if (!wrapper.dependencies) return;
+    if (!wrapper.dependencies.has(ObserveKey(data))) return;
     if (onUpdate) onUpdate(data);
   };
-  wapper.destroy = () => unsubscribe("set", onSet);
-  return wapper as T;
+  wrapper.destroy = () => unsubscribe("set", onSet);
+  return wrapper as T;
 }
 
 export function untrack<T extends AnyFunction>(func: T, ...args: any[]) {
