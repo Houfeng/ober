@@ -16,6 +16,8 @@ export type AnyFunction = (...args: any[]) => any;
 
 export function track<T extends AnyFunction>(func: T, ...args: any[]) {
   ObserveState.get = true;
+  const originSetState = ObserveState.set;
+  ObserveState.set = false;
   const dependencies = new Set<string>();
   const collect = (data: ObserveData) => {
     dependencies.add(ObserveKey(data));
@@ -30,6 +32,7 @@ export function track<T extends AnyFunction>(func: T, ...args: any[]) {
     );
   }
   ObserveState.get = false;
+  ObserveState.set = originSetState;
   return { result, dependencies };
 }
 
