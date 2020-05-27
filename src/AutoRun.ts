@@ -4,15 +4,10 @@
  * @author Houfeng <admin@xhou.net>
  */
 
-import { nextTick } from "./Tick";
-import { throwError } from "./Util";
-import { trackable, AnyFunction } from "./ObserveTrack";
+import { trackable, Trackable } from "./ObserveTrack";
 
-export function autorun(func: AnyFunction, immed = true) {
-  const wrapper = trackable(func, () => {
-    const pending = nextTick(wrapper, null, true);
-    if (pending) pending.catch(err => throwError(err));
-  });
+export function autorun<T extends Trackable>(func: T, immed = true) {
+  const wrapper = trackable(func);
   if (immed !== false) wrapper();
   return wrapper;
 }

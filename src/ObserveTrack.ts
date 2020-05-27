@@ -44,16 +44,16 @@ export function trackable<T extends Trackable>(func: T, onUpdate?: Function) {
   const wrapper: Trackable = (...args: any[]) => {
     const { result, dependencies } = track(func, ...args);
     unsubscribe("set", onSet);
-    wrapper.dependencies = dependencies;
     onSet.dependencies = dependencies;
     subscribe("set", onSet);
+    wrapper.dependencies = dependencies;
     return result;
   };
   onSet = (data: ObserveData) => {
     if (isSymbol(data.member) || isPrivateKey(data.member)) return;
     if (!wrapper.dependencies) return;
     if (!wrapper.dependencies.has(ObserveKey(data))) return;
-    if (onUpdate) onUpdate(data);
+    return onUpdate ? onUpdate(data) : wrapper();
   };
   wrapper.destroy = () => unsubscribe("set", onSet);
   return wrapper as T;

@@ -46,14 +46,16 @@ export function publish(type: string, data: ObserveData, matchOnly = false) {
   if (!ObserveHandlers[type]) return;
   if (isSymbol(data.member) || isPrivateKey(data.member)) return;
   const observeKey = ObserveKey(data);
-  const matchedHandlers = ObserveHandlers[type][observeKey];
+  const matchedHandlers = new Set(ObserveHandlers[type][observeKey]);
   const matchedCount = (matchedHandlers && matchedHandlers.size) || 0;
   if (matchedCount > ObserveConfig.maxHandlers) {
     console.warn(
       `Find ${matchedCount} handlers to trigger execution, and confirm whether there is a performance problem`
     );
   }
-  if (matchedHandlers) matchedHandlers.forEach(handler => handler(data));
+  if (matchedHandlers && matchedCount > 0) {
+    matchedHandlers.forEach(handler => handler(data));
+  }
   if (!matchOnly && ObserveHandlers[type]["*"]) {
     ObserveHandlers[type]["*"].forEach(handler => handler(data));
   }
