@@ -56,10 +56,11 @@ export function publish(type: string, data: ObserveData, matchOnly = false) {
   if (matchedHandlers && matchedCount > 0) {
     matchedHandlers.forEach(handler => handler(data));
   }
-  if (!matchOnly && ObserveHandlers[type]["*"]) {
+  const commonHandlers = new Set(ObserveHandlers[type]["*"]);
+  if (!matchOnly && commonHandlers && commonHandlers.size > 0) {
     ObserveHandlers[type]["*"].forEach(handler => handler(data));
   }
   if (perf.onPublish) {
-    perf.onPublish({ type, data, matchedHandlers, matchOnly });
+    perf.onPublish({ type, data, matchedHandlers, commonHandlers, matchOnly });
   }
 }
