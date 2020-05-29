@@ -24,4 +24,3 @@ export * from "./Symbols";
 export * from "./Tick";
 export * from "./Util";
 export * from "./Watch";
-export * from "./Watch";

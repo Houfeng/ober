@@ -4,7 +4,10 @@
  * @author Houfeng <admin@xhou.net>
  */
 
+import { publish } from "./ObserveBus";
+import { untrack } from "./ObserveTrack";
 import {
+  ObserveSymbol,
   ReactableArraySymbol,
   ReactableShadowSymbol,
   ReactableObjectSymbol
@@ -42,6 +45,8 @@ export function createReactableMember<T extends object>(
         ? handler.get(shadow, member, shadow)
         : shadow[member];
       if (isArray(value)) {
+        const { id } = value[ObserveSymbol] || {};
+        publish("get", { id, member: "length", value });
         return wrapReactableArray(value, handler);
       } else {
         return value;
@@ -71,45 +76,46 @@ export function createReactableObject<T extends object>(
 
 export function wrapReactableArray<T extends object>(
   target: T,
-  handler: ProxyHandler<T>,
-  triggerParent?: Function
+  handler: ProxyHandler<T>
 ) {
   if (!isArray(target) || hasOwn.call(target, ReactableArraySymbol)) {
     return target;
   }
   defineMember(target, ReactableArraySymbol, true);
-  const { push, pop, shift, unshift, splice } = Array.prototype;
-  defineMember(target, "push", function() {
+  const { id } = (target as any)[ObserveSymbol] || {};
+  const triggerMember = (member: string | number, value: any) =>
+    publish("set", { id, member, value });
+  const triggerWhole = () => triggerMember("length", target);
+  const { push, pop, shift, unshift, splice, reverse } = Array.prototype;
+  defineMember(target, "push", function(...args: any[]) {
     const start = this.length;
-    push.apply(this, arguments);
+    const result = untrack(() => push.apply(this, args));
     for (let i = start; i < this.length; i++) {
       createReactableMember(this, i, handler);
-      handler.set(this, i, this[i], this);
+      triggerMember(i, this[i]);
     }
-    handler.set(this, "length", this.length, this);
-    if (triggerParent) triggerParent();
+    triggerWhole();
+    return result;
   });
-  defineMember(target, "pop", function() {
-    const item = pop.apply(this, arguments);
-    handler.set(this, this.length, item, this);
-    handler.set(this, "length", this.length, this);
-    if (triggerParent) triggerParent();
+  defineMember(target, "pop", function(...args: any[]) {
+    const item = untrack(() => pop.apply(this, args));
+    triggerMember(this.length, item);
+    triggerWhole();
     return item;
   });
-  defineMember(target, "unshift", function() {
-    unshift.apply(this, arguments);
-    for (let i = 0; i < arguments.length; i++) {
+  defineMember(target, "unshift", function(...args: any[]) {
+    const result = untrack(() => unshift.apply(this, args));
+    for (let i = 0; i < args.length; i++) {
       createReactableMember(this, i, handler);
-      handler.set(this, i, this[i], this);
+      triggerMember(i, this[i]);
     }
-    handler.set(this, "length", this.length, this);
-    if (triggerParent) triggerParent();
+    triggerWhole();
+    return result;
   });
-  defineMember(target, "shift", function() {
-    const item = shift.apply(this, arguments);
-    handler.set(this, 0, item, this);
-    handler.set(this, "length", this.length, this);
-    if (triggerParent) triggerParent();
+  defineMember(target, "shift", function(...args: any[]) {
+    const item = untrack(() => shift.apply(this, args));
+    triggerMember(0, item);
+    triggerWhole();
     return item;
   });
   defineMember(target, "splice", function(
@@ -117,14 +123,19 @@ export function wrapReactableArray<T extends object>(
     count: number,
     ...items: any[]
   ) {
-    const removeItems = splice.call(this, start, count, ...items);
-    for (let i = start; i < items.length; i++) {
+    const delItems = untrack(() => splice.call(this, start, count, ...items));
+    for (let i = start; i < count; i++) {
       createReactableMember(this, i, handler);
-      handler.set(this, i, this[i], this);
+      triggerMember(i, this[i]);
     }
-    handler.set(this, "length", this.length, this);
-    if (triggerParent) triggerParent();
-    return removeItems;
+    triggerWhole();
+    return delItems;
+  });
+  defineMember(target, "reverse", function(...args: any[]) {
+    const result = untrack(() => reverse.apply(this, args));
+    this.forEach((item: any, index: number) => triggerMember(index, item));
+    triggerWhole();
+    return result;
   });
   return target;
 }

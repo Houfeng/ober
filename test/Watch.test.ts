@@ -2,7 +2,7 @@ import { equal } from "assert";
 import { watch } from '../src/Watch';
 import { observable } from '../src/Observable';
 
-describe('watch', () => {
+describe('Watch', () => {
 
   it('监听数据的变化', (done) => {
     const model = observable({ value: 1 });
@@ -11,6 +11,15 @@ describe('watch', () => {
       done();
     });
     model.value = 2;
+  });
+
+  it('监听数据的变化(浅对比)', (done) => {
+    const model = observable({ value: { a: 1, b: 2 } });
+    watch(() => model.value, () => {
+      equal(model.value.a, 2);
+      done();
+    });
+    model.value.a = 2;
   });
 
 });

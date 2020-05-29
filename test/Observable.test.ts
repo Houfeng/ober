@@ -3,7 +3,7 @@ import { observable } from '../src/Observable';
 import { subscribe, unsubscribe } from '../src/ObserveBus';
 import { ObserveData } from '../src/ObserveData';
 
-describe('observable', () => {
+describe('Observable', () => {
 
   it('设置可观察对象', (done) => {
     const model = observable({ value: 1 });

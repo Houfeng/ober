@@ -1,7 +1,7 @@
 import { equal } from "assert";
 import { nextTick } from "../src/Tick";
 
-describe('nextTick', () => {
+describe('Tick', () => {
 
   it('异步执行', (done) => {
     let value = 0;
