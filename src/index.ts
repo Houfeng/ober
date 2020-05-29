@@ -6,7 +6,6 @@
 
 export * from "./AutoRun";
 export * from "./Defer";
-export * from "./Expression";
 export * from "./LoseProxy";
 export * from "./Observable";
 export * from "./Observe";
