@@ -34,9 +34,9 @@ export function createReactableMember<T extends object>(
   member: string | number | symbol,
   handler: ProxyHandler<T>
 ) {
-  if (!isValidMember(member)) return;
+  if (!target || !isValidMember(member)) return;
   const desc = Object.getOwnPropertyDescriptor(target, member);
-  if (!("value" in desc) || !isValidValue(desc.value)) return;
+  if (!desc || !("value" in desc) || !isValidValue(desc.value)) return;
   const shadow = createShadow(target);
   if (!(member in shadow)) shadow[member] = (target as any)[member];
   Object.defineProperty(target, member, {
@@ -124,7 +124,8 @@ export function wrapReactableArray<T extends object>(
     ...items: any[]
   ) {
     const delItems = untrack(() => splice.call(this, start, count, ...items));
-    for (let i = start; i < count; i++) {
+    const insertEndIndex = start + (items ? items.length : 0);
+    for (let i = start; i < insertEndIndex; i++) {
       createReactableMember(this, i, handler);
       triggerMember(i, this[i]);
     }
