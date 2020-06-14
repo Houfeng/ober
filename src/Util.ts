@@ -4,6 +4,13 @@
  * @author Houfeng <admin@xhou.net>
  */
 
+import { Symbols } from "./Symbols";
+/**
+ * Copyright (c) 2014-present Houfeng
+ * @homepage https://github.com/Houfeng/ober
+ * @author Houfeng <admin@xhou.net>
+ */
+
 export function isString(value: any) {
   return typeof value === "string";
 }
@@ -44,12 +51,10 @@ export function isSymbol(value: any) {
 }
 
 export function isPrivateKey(value: any) {
-  return (
-    isString(value) && [/^\_(.*)\_$/, /^\_\_/].some(expr => expr.test(value))
-  );
+  return isString(value) && value.substr(0, 2) === "__";
 }
 
-export function defineMember(target: any, member: string | symbol, value: any) {
+export function define(target: any, member: string | symbol, value: any) {
   Object.defineProperty(target, member, {
     configurable: true,
     enumerable: false,
@@ -57,11 +62,9 @@ export function defineMember(target: any, member: string | symbol, value: any) {
   });
 }
 
-export function isValidMember(member: any) {
+export function isValidKey(key: any) {
   return (
-    (isString(member) || isNumber(member)) &&
-    !isSymbol(member) &&
-    !isPrivateKey(member)
+    (isString(key) || isNumber(key)) && !isSymbol(key) && !isPrivateKey(key)
   );
 }
 
@@ -71,4 +74,10 @@ export function isValidValue(value: any) {
 
 export function throwError(err: Error) {
   throw err;
+}
+
+export const hasOwn = Object.prototype.hasOwnProperty;
+
+export function isProxy(target: any) {
+  return target && target[Symbols.IsProxy];
 }

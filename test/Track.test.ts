@@ -1,7 +1,7 @@
 import { equal } from "assert";
 import { track, trackable, untrack, untrackable } from '../src/ObserveTrack';
 import { observable } from "../src/Observable";
-import { ObserveSymbol } from "../src/Symbols";
+import { observeInfo } from "../src/ObserveInfo";
 
 describe('Track', () => {
 
@@ -9,7 +9,7 @@ describe('Track', () => {
     const model = observable({ a: 1, b: 2 });
     const { result, dependencies } = track(() => model.a);
     equal(result, 1);
-    const id = (model as any)[ObserveSymbol].id;
+    const { id } = observeInfo(model);
     equal(dependencies.has(`${id}.a`), true);
     equal(dependencies.has(`${id}.b`), false);
     done();

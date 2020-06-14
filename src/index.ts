@@ -8,7 +8,6 @@ export * from "./AutoRun";
 export * from "./Defer";
 export * from "./LoseProxy";
 export * from "./Observable";
-export * from "./Observe";
 export * from "./ObserveBus";
 export * from "./ObserveConfig";
 export * from "./ObserveData";

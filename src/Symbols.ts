@@ -4,16 +4,14 @@
  * @author Houfeng <admin@xhou.net>
  */
 
-export function createSymbol(description: string) {
-  return typeof Symbol !== "undefined"
+export function createSymbol(description: string): symbol {
+  return (typeof Symbol !== "undefined"
     ? Symbol(description)
-    : `Symbol(${description})`;
+    : `Symbol(${description})`) as symbol;
 }
 
-export const ObserveSymbol = createSymbol("Observe");
-export const ProxySymbol = createSymbol("Proxy");
-
-export const ReactableObjectSymbol = createSymbol("ReactableObject");
-export const ReactableArraySymbol = createSymbol("ReactableArray");
-export const ReactableShadowSymbol = createSymbol("ReactableShadow");
-export const WatchInitialSymbol = createSymbol("WatchInitial");
+export const Symbols = {
+  Observable: createSymbol("Observable"),
+  IsProxy: createSymbol("IsProxy"),
+  Nothing: createSymbol("Nothing")
+};

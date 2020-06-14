@@ -24,6 +24,18 @@ describe('Observable Array', () => {
     equal(model.items.length, 4);
   });
 
+  it('pop && push', (done) => {
+    const model = observable({ items: [1, 2, 3] });
+    model.items.pop();
+    equal(model.items.length, 2);
+    watch(() => model.items.length, () => {
+      equal(model.items.join(','), '1,2,4');
+      done();
+    });
+    model.items.push(4);
+    equal(model.items.length, 3);
+  });
+
   it('pop', (done) => {
     const model = observable({ items: [1, 2, 3] });
     watch(() => model.items, () => {
@@ -81,6 +93,18 @@ describe('Observable Array', () => {
       done();
     });
     model.items.splice(1, 0, 4);
+  });
+
+  it('splice : remove & insert', (done) => {
+    const model = observable({ items: [1, 2, 3] });
+    model.items.splice(1, 1);
+    equal(model.items.length, 2);
+    watch(() => model.items.length, () => {
+      equal(model.items.join(','), '1,3,4');
+      done();
+    });
+    model.items.push(4);
+    equal(model.items.length, 3);
   });
 
   it('reverse', (done) => {
