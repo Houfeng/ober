@@ -11,8 +11,12 @@ import { Symbols } from "./Symbols";
 import { publish } from "./ObserveBus";
 import { isObject, isValidKey, isValidValue } from "./Util";
 import { observeInfo } from "./ObserveInfo";
+import { verifyStrictMode } from "./ObserveAction";
 
-export const ObserveProxy = ObserveConfig.mode === "proxy" ? Proxy : LoseProxy;
+export const ObserveProxy = (() => {
+  if (typeof Proxy !== "undefined") return LoseProxy;
+  return ObserveConfig.mode === "proxy" ? Proxy : LoseProxy;
+})();
 
 export function createProxy<T extends object>(target: T): T {
   const info = observeInfo(target);
@@ -27,6 +31,7 @@ export function createProxy<T extends object>(target: T): T {
       return isObject(value) ? createProxy(value) : value;
     },
     set(target: any, member: string | number | symbol, value: any) {
+      verifyStrictMode();
       if (target[member] === value) return true;
       target[member] = value;
       if (!ObserveState.set) return true;

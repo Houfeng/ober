@@ -95,7 +95,7 @@ describe('Observable Array', () => {
     model.items.splice(1, 0, 4);
   });
 
-  it('splice : remove & insert', (done) => {
+  it('splice : remove & insert #1', (done) => {
     const model = observable({ items: [1, 2, 3] });
     model.items.splice(1, 1);
     equal(model.items.length, 2);
@@ -105,6 +105,18 @@ describe('Observable Array', () => {
     });
     model.items.push(4);
     equal(model.items.length, 3);
+  });
+
+  it('splice : remove & insert #2', (done) => {
+    const model = observable({ items: [{ v: 1 }, { v: 2 }, { v: 3 }] });
+    equal('[{"v":1},{"v":2},{"v":3}]', JSON.stringify(model.items));
+    const items = model.items.splice(1, 1);
+    equal('[{"v":1},{"v":3}]', JSON.stringify(model.items));
+    watch(() => model.items.length, () => {
+      equal('[{"v":1},{"v":3},{"v":2}]', JSON.stringify(model.items));
+      done();
+    });
+    model.items.push(...items);
   });
 
   it('reverse', (done) => {

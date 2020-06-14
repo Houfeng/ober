@@ -8,6 +8,7 @@ import { publish } from "./ObserveBus";
 import { untrack } from "./ObserveTrack";
 import { isValidKey, isValidValue, define, isArray, isObject } from "./Util";
 import { observeInfo } from "./ObserveInfo";
+import { verifyStrictMode } from "./ObserveAction";
 
 export function createObservableMember<T extends object>(
   target: T,
@@ -63,6 +64,7 @@ export function createObservableArray<T extends object>(
   const triggerWhole = () => triggerMember("length", target);
   const { push, pop, shift, unshift, splice, reverse } = Array.prototype;
   define(target, "push", function(...args: any[]) {
+    verifyStrictMode();
     const start = this.length;
     const result = untrack(() => push.apply(this, args));
     for (let i = start; i < this.length; i++) {
@@ -73,12 +75,14 @@ export function createObservableArray<T extends object>(
     return result;
   });
   define(target, "pop", function(...args: any[]) {
+    verifyStrictMode();
     const item = untrack(() => pop.apply(this, args));
     triggerMember(this.length, item);
     triggerWhole();
     return item;
   });
   define(target, "unshift", function(...args: any[]) {
+    verifyStrictMode();
     const result = untrack(() => unshift.apply(this, args));
     for (let i = 0; i < args.length; i++) {
       createObservableMember(this, i, handler);
@@ -88,6 +92,7 @@ export function createObservableArray<T extends object>(
     return result;
   });
   define(target, "shift", function(...args: any[]) {
+    verifyStrictMode();
     const item = untrack(() => shift.apply(this, args));
     triggerMember(0, item);
     triggerWhole();
@@ -98,6 +103,7 @@ export function createObservableArray<T extends object>(
     count: number,
     ...items: any[]
   ) {
+    verifyStrictMode();
     const delItems = untrack(() => splice.call(this, start, count, ...items));
     const insertEndIndex = start + (items ? items.length : 0);
     for (let i = start; i < insertEndIndex; i++) {
@@ -108,6 +114,7 @@ export function createObservableArray<T extends object>(
     return delItems;
   });
   define(target, "reverse", function(...args: any[]) {
+    verifyStrictMode();
     const result = untrack(() => reverse.apply(this, args));
     this.forEach((item: any, index: number) => triggerMember(index, item));
     triggerWhole();
