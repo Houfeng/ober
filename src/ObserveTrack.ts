@@ -8,7 +8,7 @@ import { isPrivateKey, isSymbol } from "./Util";
 import { ObserveData } from "./ObserveData";
 import { ObserveHandler } from "./ObserveHandler";
 import { ObserveKey } from "./ObserveKey";
-import { subscribe, unsubscribe } from "./ObserveBus";
+import { ObserveEvent, subscribe, unsubscribe } from "./ObserveBus";
 import { ObserveConfig } from "./ObserveConfig";
 import { ObserveState } from "./ObserveState";
 
@@ -19,11 +19,11 @@ export function track<T extends AnyFunction>(func: T, ...args: any[]) {
   const collect = (data: ObserveData) => {
     dependencies.add(ObserveKey(data));
   };
-  subscribe("get", collect);
+  subscribe(ObserveEvent.get, collect);
   ObserveState.get = true;
   const result: ReturnType<T> = func(...args);
   ObserveState.get = false;
-  unsubscribe("get", collect);
+  unsubscribe(ObserveEvent.get, collect);
   const count = dependencies && dependencies.size;
   if (count > ObserveConfig.maxDependencies) {
     console.warn(
@@ -43,9 +43,9 @@ export function trackable<T extends Trackable>(func: T, onUpdate?: Function) {
   let onSet: ObserveHandler;
   const wrapper: Trackable = (...args: any[]) => {
     const { result, dependencies } = track(func, ...args);
-    unsubscribe("set", onSet);
+    unsubscribe(ObserveEvent.get, onSet);
     onSet.dependencies = dependencies;
-    subscribe("set", onSet);
+    subscribe(ObserveEvent.set, onSet);
     wrapper.dependencies = dependencies;
     return result;
   };
@@ -55,7 +55,7 @@ export function trackable<T extends Trackable>(func: T, onUpdate?: Function) {
     if (!wrapper.dependencies.has(ObserveKey(data))) return;
     return onUpdate ? onUpdate(data) : wrapper();
   };
-  wrapper.destroy = () => unsubscribe("set", onSet);
+  wrapper.destroy = () => unsubscribe(ObserveEvent.set, onSet);
   return wrapper as T;
 }
 

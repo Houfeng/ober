@@ -1,4 +1,4 @@
-import { observable, watch } from "../src";
+import { observable, ObserveEvent, ObserveState, subscribe, watch } from "../src";
 //import { ObserveConfig } from '../src/ObserveConfig';
 //import { action } from "../src/ObserveAction";
 
@@ -10,6 +10,9 @@ import { observable, watch } from "../src";
 // });
 
 //ObserveConfig.strict = true;
+
+ObserveState.get = false;
+subscribe(ObserveEvent.get, info => console.log("GET", info));
 
 const model = observable({ items: [{ v: 1 }, { v: 2 }, { v: 3 }] });
 console.log("#0:", JSON.stringify(model.items));

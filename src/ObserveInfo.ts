@@ -5,7 +5,7 @@
  */
 
 import { Symbols } from "./Symbols";
-import { define, hasOwn, isObject } from "./Util";
+import { define, hasOwn, isObject, isArray } from "./Util";
 import { ObserveId } from "./ObserveId";
 
 export interface ObserveInfo<T extends object> {
@@ -21,7 +21,7 @@ export function observeInfo<T extends object>(target: T): ObserveInfo<T> {
   if (!target || !isObject(target)) throw new Error("Invalid observe target");
   if (!hasOwn.call(target, Symbols.Observable)) {
     const id = ObserveId();
-    const shadow = Object.create(null);
+    const shadow = isArray(target) ? [] : Object.create(null);
     define(target, Symbols.Observable, { id, shadow, target });
   }
   return (target as any)[Symbols.Observable] as ObserveInfo<T>;

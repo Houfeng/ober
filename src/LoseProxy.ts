@@ -4,7 +4,7 @@
  * @author Houfeng <admin@xhou.net>
  */
 
-import { publish } from "./ObserveBus";
+import { ObserveEvent, publish } from "./ObserveBus";
 import { untrack } from "./ObserveTrack";
 import { isValidKey, isValidValue, define, isArray, isObject } from "./Util";
 import { observeInfo } from "./ObserveInfo";
@@ -56,11 +56,11 @@ export function createObservableArray<T extends object>(
 ) {
   const info = observeInfo(target);
   const { id, isWrappedArray } = info;
-  publish("get", { id, member: "length", value: target });
+  publish(ObserveEvent.get, { id, member: "length", value: target });
   if (!isArray(target) || isWrappedArray) return target;
   info.isWrappedArray = true;
   const triggerMember = (member: string | number, value: any) =>
-    publish("set", { id, member, value });
+    publish(ObserveEvent.set, { id, member, value });
   const triggerWhole = () => triggerMember("length", target);
   const { push, pop, shift, unshift, splice, reverse } = Array.prototype;
   define(target, "push", function(...args: any[]) {
