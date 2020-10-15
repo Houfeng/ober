@@ -9,7 +9,7 @@ import { ObserveConfig, ObserveMode } from "./ObserveConfig";
 import { ObserveState } from "./ObserveState";
 import { Symbols } from "./Symbols";
 import { ObserveEvent, publish } from "./ObserveBus";
-import { isObject, isValidKey, isValidValue } from "./Util";
+import { isSetLength, isObject, isValidKey, isValidValue } from "./Util";
 import { observeInfo } from "./ObserveInfo";
 import { verifyStrictMode } from "./ObserveAction";
 
@@ -43,7 +43,7 @@ export function createProxy<T extends object>(target: T): T {
     },
     set(target: any, member: string | number | symbol, value: any) {
       verifyStrictMode();
-      if (target[member] === value) return true;
+      if (target[member] === value && !isSetLength(target, member)) return true;
       target[member] = value;
       if (!ObserveState.set) return true;
       if (!isValidKey(member) || !isValidValue(value)) return false;

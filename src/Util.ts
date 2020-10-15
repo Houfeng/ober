@@ -67,6 +67,10 @@ export function isValidValue(value: any) {
   return !isFunction(value) && !isSymbol(value);
 }
 
+export function isSetLength(target: any, member: string | number | symbol) {
+  return isArray(target) && member === "length";
+}
+
 export function throwError(err: Error) {
   throw err;
 }

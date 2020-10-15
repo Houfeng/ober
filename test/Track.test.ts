@@ -1,4 +1,5 @@
-import { equal } from "assert";
+import "./mode";
+import { strictEqual } from "assert";
 import { track, trackable, untrack, untrackable } from '../src/ObserveTrack';
 import { observable } from "../src/Observable";
 import { observeInfo } from "../src/ObserveInfo";
@@ -8,17 +9,17 @@ describe('Track', () => {
   it('track', (done) => {
     const model = observable({ a: 1, b: 2 });
     const { result, dependencies } = track(() => model.a);
-    equal(result, 1);
+    strictEqual(result, 1);
     const { id } = observeInfo(model);
-    equal(dependencies.has(`${id}.a`), true);
-    equal(dependencies.has(`${id}.b`), false);
+    strictEqual(dependencies.has(`${id}.a`), true);
+    strictEqual(dependencies.has(`${id}.b`), false);
     done();
   });
 
   it('创建 trackable 函数', (done) => {
     const model = observable({ a: 1, b: 2 });
     const func = trackable((num: number) => model.a + num);
-    equal(func(1), 2);
+    strictEqual(func(1), 2);
     done();
   });
 
@@ -28,9 +29,9 @@ describe('Track', () => {
       model.b = model.a * 2;
       return model.b;
     });
-    equal(func(), 4);
+    strictEqual(func(), 4);
     model.a = 4;
-    equal(model.b, 8);
+    strictEqual(model.b, 8);
     done();
   });
 
@@ -40,9 +41,9 @@ describe('Track', () => {
       model.b = model.a * 2;
       return model.b;
     });
-    equal(func(), 4);
+    strictEqual(func(), 4);
     untrack(() => model.a = 4);
-    equal(model.b, 4);
+    strictEqual(model.b, 4);
     done();
   });
 
@@ -52,9 +53,9 @@ describe('Track', () => {
       model.b = model.a * 2;
       return model.b;
     });
-    equal(func(), 4);
+    strictEqual(func(), 4);
     untrackable(() => model.a = 4)();
-    equal(model.b, 4);
+    strictEqual(model.b, 4);
     done();
   });
 
