@@ -2,7 +2,7 @@ import { equal } from "assert";
 import { observable } from '../src/Observable';
 import { watch } from '../src/Watch';
 
-describe('Observable Array', () => {
+describe.skip('Observable Array', () => {
 
   it('创建可观察的数组', (done) => {
     const model = observable({ items: [1, 2, 3] });

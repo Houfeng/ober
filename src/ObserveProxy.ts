@@ -5,7 +5,7 @@
  */
 
 import { LoseProxy } from "./LoseProxy";
-import { ObserveConfig } from "./ObserveConfig";
+import { ObserveConfig, ObserveMode } from "./ObserveConfig";
 import { ObserveState } from "./ObserveState";
 import { Symbols } from "./Symbols";
 import { ObserveEvent, publish } from "./ObserveBus";
@@ -13,14 +13,24 @@ import { isObject, isValidKey, isValidValue } from "./Util";
 import { observeInfo } from "./ObserveInfo";
 import { verifyStrictMode } from "./ObserveAction";
 
-export const ObserveProxy = (() => {
-  if (typeof Proxy !== "undefined") return LoseProxy;
-  return ObserveConfig.mode === "proxy" ? Proxy : LoseProxy;
-})();
+export const NativeProxy = typeof Proxy !== "undefined" ? Proxy : null;
+
+export function getProxyClass() {
+  switch (ObserveConfig.mode) {
+    case ObserveMode.proxy:
+      return NativeProxy;
+    case ObserveMode.property:
+      return LoseProxy;
+    case ObserveMode.auto:
+    default:
+      return NativeProxy || LoseProxy;
+  }
+}
 
 export function createProxy<T extends object>(target: T): T {
   const info = observeInfo(target);
   if (info.proxy) return info.proxy;
+  const ObserveProxy = getProxyClass();
   info.proxy = new ObserveProxy(target, {
     get(target: any, member: string | number | symbol) {
       if (member === Symbols.IsProxy) return true;
