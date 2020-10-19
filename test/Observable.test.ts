@@ -1,20 +1,21 @@
-import { equal } from "assert";
+import "./mode";
+import { strictEqual } from "assert";
 import { observable } from '../src/Observable';
-import { subscribe, unsubscribe } from '../src/ObserveBus';
+import { ObserveEvent, subscribe, unsubscribe } from '../src/ObserveBus';
 import { ObserveData } from '../src/ObserveData';
 
 describe('Observable', () => {
 
   it('设置可观察对象', (done) => {
     const model = observable({ value: 1 });
-    equal(model.value, 1);
+    strictEqual(model.value, 1);
     const onSet = ({ member, value }: ObserveData) => {
-      equal(member, "value");
-      equal(value, 2);
-      unsubscribe("set", onSet);
+      strictEqual(member, "value");
+      strictEqual(value, 2);
+      unsubscribe(ObserveEvent.set, onSet);
       done();
     };
-    subscribe("set", onSet);
+    subscribe(ObserveEvent.set, onSet);
     model.value = 2;
   });
 
@@ -23,14 +24,14 @@ describe('Observable', () => {
       value = 1;
     });
     const model = new Model();
-    equal(model.value, 1);
+    strictEqual(model.value, 1);
     const onSet = ({ member, value }: ObserveData) => {
-      equal(member, "value");
-      equal(value, 2);
-      unsubscribe("set", onSet);
+      strictEqual(member, "value");
+      strictEqual(value, 2);
+      unsubscribe(ObserveEvent.set, onSet);
       done();
     };
-    subscribe("set", onSet);
+    subscribe(ObserveEvent.set, onSet);
     model.value = 2;
   });
 

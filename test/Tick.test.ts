@@ -1,4 +1,5 @@
-import { equal } from "assert";
+import "./mode";
+import { strictEqual } from "assert";
 import { nextTick } from "../src/Tick";
 
 describe('Tick', () => {
@@ -7,18 +8,18 @@ describe('Tick', () => {
     let value = 0;
     setTimeout(() => {
       value++;
-      equal(value, 4);
+      strictEqual(value, 4);
       done();
     });
     nextTick(() => {
       value++;
-      equal(value, 2);
+      strictEqual(value, 2);
     });
     nextTick(() => {
       value++;
-      equal(value, 3);
+      strictEqual(value, 3);
     });
-    equal(value, 0);
+    strictEqual(value, 0);
     value++;
   });
 

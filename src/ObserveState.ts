@@ -6,5 +6,6 @@
 
 export const ObserveState = {
   get: false,
-  set: true
+  set: true,
+  action: false
 };
