@@ -21,7 +21,8 @@ export function observeInfo<T extends object>(target: T): ObserveInfo<T> {
   if (!target || !isObject(target)) throw new Error("Invalid observe target");
   if (!hasOwn.call(target, Symbols.Observable)) {
     const id = ObserveId();
-    const shadow = isArray(target) ? [] : Object.create(null);
+    // @ts-ignore
+    const shadow = isArray(target) ? target.slice(0) : Object.create(null);
     define(target, Symbols.Observable, { id, shadow, target });
   }
   return (target as any)[Symbols.Observable] as ObserveInfo<T>;

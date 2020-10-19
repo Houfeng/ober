@@ -5,7 +5,6 @@
  */
 
 import { ObserveEvent, publish } from "./ObserveBus";
-import { untrack } from "./ObserveTrack";
 import { isValidKey, isValidValue, define, isArray, isObject } from "./Util";
 import { observeInfo } from "./ObserveInfo";
 import { verifyStrictMode } from "./ObserveAction";
@@ -55,70 +54,27 @@ export function createObservableArray<T extends object>(
   handler: ProxyHandler<T>
 ) {
   const info = observeInfo(target);
-  const { id, isWrappedArray } = info;
+  const { id, shadow, isWrappedArray } = info;
   publish(ObserveEvent.get, { id, member: "length", value: target });
   if (!isArray(target) || isWrappedArray) return target;
   info.isWrappedArray = true;
-  const triggerMember = (member: string | number, value: any) =>
-    publish(ObserveEvent.set, { id, member, value });
-  const triggerWhole = () => triggerMember("length", target);
-  const { push, pop, shift, unshift, splice, reverse } = Array.prototype;
-  define(target, "push", function(...args: any[]) {
-    verifyStrictMode();
-    const start = this.length;
-    const result = untrack(() => push.apply(this, args));
-    for (let i = start; i < this.length; i++) {
-      createObservableMember(this, i, handler);
-      triggerMember(i, this[i]);
-    }
-    triggerWhole();
-    return result;
-  });
-  define(target, "pop", function(...args: any[]) {
-    verifyStrictMode();
-    const item = untrack(() => pop.apply(this, args));
-    triggerMember(this.length, item);
-    triggerWhole();
-    return item;
-  });
-  define(target, "unshift", function(...args: any[]) {
-    verifyStrictMode();
-    const result = untrack(() => unshift.apply(this, args));
-    for (let i = 0; i < args.length; i++) {
-      createObservableMember(this, i, handler);
-      triggerMember(i, this[i]);
-    }
-    triggerWhole();
-    return result;
-  });
-  define(target, "shift", function(...args: any[]) {
-    verifyStrictMode();
-    const item = untrack(() => shift.apply(this, args));
-    triggerMember(0, item);
-    triggerWhole();
-    return item;
-  });
-  define(target, "splice", function(
-    start: number,
-    count: number,
-    ...items: any[]
-  ) {
-    verifyStrictMode();
-    const delItems = untrack(() => splice.call(this, start, count, ...items));
-    const insertEndIndex = start + (items ? items.length : 0);
-    for (let i = start; i < insertEndIndex; i++) {
-      createObservableMember(this, i, handler);
-      triggerMember(i, this[i]);
-    }
-    triggerWhole();
-    return delItems;
-  });
-  define(target, "reverse", function(...args: any[]) {
-    verifyStrictMode();
-    const result = untrack(() => reverse.apply(this, args));
-    this.forEach((item: any, index: number) => triggerMember(index, item));
-    triggerWhole();
-    return result;
+  const methods = ["push", "pop", "shift", "unshift", "splice", "reverse"];
+  methods.forEach((method: string) => {
+    define(target, method, (...args: any[]) => {
+      verifyStrictMode();
+      // @ts-ignore
+      const func: Function = Array.prototype[method];
+      const result = func.apply(shadow, args);
+      // @ts-ignore
+      target.length = 0;
+      for (let i = 0; i < shadow.length; i++) {
+        // @ts-ignore
+        target[i] = shadow[i];
+        createObservableMember(target, i, handler);
+      }
+      publish(ObserveEvent.set, { id, member: "length", value: target });
+      return result;
+    });
   });
   return target;
 }

@@ -56,8 +56,9 @@ describe('Observable Array', () => {
       strictEqual(model.items.join(','), '0,1,2,3');
       done();
     });
+    //subscribe(ObserveEvent.set, (...args) => console.log("set", ...args));
     model.items.unshift(0);
-    strictEqual(model.items.length, 4);
+    strictEqual(model.items.join(','), '0,1,2,3');
   });
 
   it('shift', (done) => {

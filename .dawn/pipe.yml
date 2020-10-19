@@ -31,7 +31,7 @@ test:
   - name: shell
     script:
       - dn run exec_test -e proxy
-      # - dn run exec_test -e property
+      - dn run exec_test -e property
 
 publish:
   - name: version
