@@ -4,12 +4,20 @@
  * @author Houfeng <admin@xhou.net>
  */
 
+export enum ObserveMode {
+  proxy = "proxy",
+  property = "property",
+  auto = "auto"
+}
+
 export const ObserveConfig: {
-  mode: "proxy" | "property";
+  mode: ObserveMode;
+  strict: boolean;
   maxDependencies: number;
   maxHandlers: number;
 } = {
-  mode: "property",
+  mode: ObserveMode.property,
+  strict: false,
   maxDependencies: 1000,
   maxHandlers: 100
 };

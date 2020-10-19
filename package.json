@@ -1,6 +1,6 @@
 {
   "name": "ober",
-  "version": "4.3.7",
+  "version": "4.4.0",
   "description": "",
   "main": "./dist/cjs/index.js",
   "module": "./dist/es/index.js",
@@ -22,7 +22,6 @@
     "dn-middleware-unit": "^0.2.1",
     "dn-middleware-version": "^1.0.4",
     "eslint-config-dawn": "^1.0.7",
-    "mobx": "^5.15.4",
     "ts-node": "^8.10.1",
     "tslint-config-dawn": "^1.0.3",
     "typescript": "3.7.5"

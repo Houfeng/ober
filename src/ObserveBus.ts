@@ -10,10 +10,16 @@ import { ObserveHandler, ObserveHandlerStore } from "./ObserveHandler";
 import { ObserveKey } from "./ObserveKey";
 import { ObserveConfig } from "./ObserveConfig";
 import { ObservePerf as perf } from "./ObservePerf";
+import { ObserveState } from "./ObserveState";
 
 export const ObserveHandlers: ObserveHandlerStore = {};
 
-export function subscribe(type: string, handler: ObserveHandler) {
+export enum ObserveEvent {
+  get = "get",
+  set = "set"
+}
+
+export function subscribe(type: ObserveEvent, handler: ObserveHandler) {
   if (!handler) throw new Error("Invalid ObserveHandler");
   if (!type) throw new Error("Invalid ObserveName");
   if (!ObserveHandlers[type]) ObserveHandlers[type] = {};
@@ -29,7 +35,7 @@ export function subscribe(type: string, handler: ObserveHandler) {
   if (perf.onSubscribe) perf.onSubscribe({ type, handler });
 }
 
-export function unsubscribe(type: string, handler: ObserveHandler) {
+export function unsubscribe(type: ObserveEvent, handler: ObserveHandler) {
   if (!ObserveHandlers[type] || !handler) return;
   if (handler.dependencies) {
     handler.dependencies.forEach(key => {
@@ -42,8 +48,14 @@ export function unsubscribe(type: string, handler: ObserveHandler) {
   if (perf.onUnsubscribe) perf.onUnsubscribe({ type, handler });
 }
 
-export function publish(type: string, data: ObserveData, matchOnly = false) {
+export function publish(
+  type: ObserveEvent,
+  data: ObserveData,
+  matchOnly = false
+) {
   if (!ObserveHandlers[type]) return;
+  if (!ObserveState.get && type === ObserveEvent.get) return;
+  if (!ObserveState.set && type === ObserveEvent.set) return;
   if (isSymbol(data.member) || isPrivateKey(data.member)) return;
   const observeKey = ObserveKey(data);
   const matchedHandlers = new Set(ObserveHandlers[type][observeKey]);

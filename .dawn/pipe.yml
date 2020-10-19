@@ -21,11 +21,17 @@ dev:
     script:
       - ts-node --skip-project ./debug/index.ts
 
-test:
+exec_test:
   - name: tslint
   - name: unit
     env: typescript
-    files: ./test/**/*.ts
+    files: ./test/**/*.test.ts
+
+test: 
+  - name: shell
+    script:
+      - dn run exec_test -e proxy
+      - dn run exec_test -e property
 
 publish:
   - name: version
