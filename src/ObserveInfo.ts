@@ -4,9 +4,11 @@
  * @author Houfeng <admin@xhou.net>
  */
 
-import { Symbols } from "./Symbols";
-import { define, hasOwn, isObject, isArray } from "./Util";
+import { define, hasOwn, isArray, isObject } from "./Util";
+
+import { ObserveError } from "./ObserveError";
 import { ObserveId } from "./ObserveId";
+import { Symbols } from "./Symbols";
 
 export interface ObserveInfo<T extends object> {
   id: number;
@@ -18,7 +20,9 @@ export interface ObserveInfo<T extends object> {
 }
 
 export function observeInfo<T extends object>(target: T): ObserveInfo<T> {
-  if (!target || !isObject(target)) throw new Error("Invalid observe target");
+  if (!target || !isObject(target)) {
+    throw ObserveError("Invalid observe target");
+  }
   if (!hasOwn.call(target, Symbols.Observable)) {
     const id = ObserveId();
     // @ts-ignore

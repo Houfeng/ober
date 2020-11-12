@@ -4,9 +4,10 @@
  * @author Houfeng <admin@xhou.net>
  */
 
-import { isFunction } from "./Util";
-import { ObserveState } from "./ObserveState";
 import { ObserveConfig } from "./ObserveConfig";
+import { ObserveError } from "./ObserveError";
+import { ObserveState } from "./ObserveState";
+import { isFunction } from "./Util";
 
 export function action<T extends Function>(target: T, ctx?: any): T;
 export function action(target: any, ctx: string) {
@@ -27,7 +28,7 @@ export function action(target: any, ctx: string) {
 
 export function verifyStrictMode() {
   if (ObserveConfig.strict && !ObserveState.action) {
-    throw new Error("Strict mode change model, must be in action");
+    throw ObserveError("Strict mode change model, must be in action");
   }
 }
 

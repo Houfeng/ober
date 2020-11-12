@@ -6,12 +6,13 @@
 
 export * from "./AutoRun";
 export * from "./Defer";
-export * from "./LoseProxy";
+export * from "./LowProxy";
 export * from "./Observable";
 export * from "./ObserveAction";
 export * from "./ObserveBus";
 export * from "./ObserveConfig";
 export * from "./ObserveData";
+export * from "./ObserveError";
 export * from "./ObserveHandler";
 export * from "./ObserveId";
 export * from "./ObserveKey";

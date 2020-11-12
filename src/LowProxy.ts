@@ -5,7 +5,9 @@
  */
 
 import { ObserveEvent, publish } from "./ObserveBus";
-import { isValidKey, isValidValue, define, isArray, isObject } from "./Util";
+import { define, isArray, isObject, isValidKey, isValidValue } from "./Util";
+
+import { ObserveError } from "./ObserveError";
 import { observeInfo } from "./ObserveInfo";
 import { verifyStrictMode } from "./ObserveAction";
 
@@ -79,9 +81,9 @@ export function createObservableArray<T extends object>(
   return target;
 }
 
-export class LoseProxy<T extends object> {
+export class LowProxy<T extends object> {
   constructor(target: T, handler: ProxyHandler<T>) {
     if (isObject(target)) return createObservableObject(target, handler);
-    else throw new Error("Invalid LoseProxy target");
+    else throw ObserveError("Invalid LowProxy target");
   }
 }

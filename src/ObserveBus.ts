@@ -4,13 +4,15 @@
  * @author Houfeng <admin@xhou.net>
  */
 
-import { isPrivateKey, isSymbol } from "./Util";
-import { ObserveData } from "./ObserveData";
 import { ObserveHandler, ObserveHandlerStore } from "./ObserveHandler";
-import { ObserveKey } from "./ObserveKey";
+import { isPrivateKey, isSymbol } from "./Util";
+
 import { ObserveConfig } from "./ObserveConfig";
-import { ObservePerf as perf } from "./ObservePerf";
+import { ObserveData } from "./ObserveData";
+import { ObserveError } from "./ObserveError";
+import { ObserveKey } from "./ObserveKey";
 import { ObserveState } from "./ObserveState";
+import { ObservePerf as perf } from "./ObservePerf";
 
 export const ObserveHandlers: ObserveHandlerStore = {};
 
@@ -20,8 +22,8 @@ export enum ObserveEvent {
 }
 
 export function subscribe(type: ObserveEvent, handler: ObserveHandler) {
-  if (!handler) throw new Error("Invalid ObserveHandler");
-  if (!type) throw new Error("Invalid ObserveName");
+  if (!handler) throw ObserveError("Invalid ObserveHandler");
+  if (!type) throw ObserveError("OBER: Invalid ObserveName");
   if (!ObserveHandlers[type]) ObserveHandlers[type] = {};
   if (handler.dependencies) {
     handler.dependencies.forEach(key => {

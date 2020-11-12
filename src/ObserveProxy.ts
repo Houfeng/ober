@@ -4,12 +4,14 @@
  * @author Houfeng <admin@xhou.net>
  */
 
-import { LoseProxy } from "./LoseProxy";
 import { ObserveConfig, ObserveMode } from "./ObserveConfig";
+import { ObserveEvent, publish } from "./ObserveBus";
+import { isObject, isSetLength, isValidKey, isValidValue } from "./Util";
+
+import { LowProxy } from "./LowProxy";
+import { ObserveError } from "./ObserveError";
 import { ObserveState } from "./ObserveState";
 import { Symbols } from "./Symbols";
-import { ObserveEvent, publish } from "./ObserveBus";
-import { isSetLength, isObject, isValidKey, isValidValue } from "./Util";
 import { observeInfo } from "./ObserveInfo";
 import { verifyStrictMode } from "./ObserveAction";
 
@@ -17,13 +19,13 @@ export const NativeProxy = typeof Proxy !== "undefined" ? Proxy : null;
 
 export function getProxyClass() {
   switch (ObserveConfig.mode) {
-    case ObserveMode.proxy:
-      return NativeProxy;
     case ObserveMode.property:
-      return LoseProxy;
+      return LowProxy;
     case ObserveMode.auto:
+      return NativeProxy || LowProxy;
+    case ObserveMode.proxy:
     default:
-      return NativeProxy || LoseProxy;
+      return NativeProxy;
   }
 }
 
@@ -31,6 +33,10 @@ export function createProxy<T extends object>(target: T): T {
   const info = observeInfo(target);
   if (info.proxy) return info.proxy;
   const ObserveProxy = getProxyClass();
+  if (!ObserveProxy) {
+    const { mode } = ObserveConfig;
+    throw ObserveError(`Current environment does not support '${mode}'`);
+  }
   info.proxy = new ObserveProxy(target, {
     get(target: any, member: string | number | symbol) {
       if (member === Symbols.IsProxy) return true;
