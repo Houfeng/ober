@@ -56,7 +56,7 @@ export function createProxy<T extends object>(target: T): T {
       }
       target[member] = value;
       if (!ObserveState.set) return true;
-      if (!isValidKey(member) || !isValidValue(value)) return false;
+      if (!isValidKey(member) || !isValidValue(value)) return true;
       publish(ObserveEvent.set, { id: info.id, member, value });
       return true;
     }
