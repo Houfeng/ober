@@ -4,8 +4,12 @@
  * @author Houfeng <admin@xhou.net>
  */
 
-export function ObserveError(message: string) {
-  return new Error(`${ObserveError.prefix}: ${message}`);
+import { ObserveConfig } from "./ObserveConfig";
+
+export function ObserveText(message: string) {
+  return `${ObserveConfig.logPrefix}: ${message}`;
 }
 
-ObserveError.prefix = "OBER";
+export function ObserveError(message: string) {
+  return new Error(ObserveText(message));
+}

@@ -1,4 +1,4 @@
-import { observable, ObserveConfig, ObserveEvent, ObserveMode, ObserveState, subscribe, watch } from "../src";
+import { ObserveConfig, ObserveEvent, ObserveMode, ObserveState, observable, subscribe, watch } from "../src";
 //import { ObserveConfig } from '../src/ObserveConfig';
 //import { action } from "../src/ObserveAction";
 
@@ -12,7 +12,7 @@ import { observable, ObserveConfig, ObserveEvent, ObserveMode, ObserveState, sub
 //ObserveConfig.strict = true;
 
 ObserveState.get = true;
-ObserveConfig.mode = ObserveMode.proxy;
+ObserveConfig.mode = ObserveMode.auto;
 
 subscribe(ObserveEvent.get, info => console.log("GET", info));
 
@@ -25,3 +25,6 @@ watch(() => model.items.length, () => {
 });
 model.items.push({ v: 4 });
 model.items.splice(2, 0, ...items);
+
+//@ts-ignore
+model.xxx = 1;

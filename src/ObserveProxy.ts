@@ -5,11 +5,11 @@
  */
 
 import { ObserveConfig, ObserveMode } from "./ObserveConfig";
+import { ObserveError, ObserveText } from "./ObserveError";
 import { ObserveEvent, publish } from "./ObserveBus";
 import { isObject, isSetLength, isValidKey, isValidValue } from "./Util";
 
 import { LowProxy } from "./LowProxy";
-import { ObserveError } from "./ObserveError";
 import { ObserveState } from "./ObserveState";
 import { Symbols } from "./Symbols";
 import { observeInfo } from "./ObserveInfo";
@@ -50,6 +50,10 @@ export function createProxy<T extends object>(target: T): T {
     set(target: any, member: string | number | symbol, value: any) {
       verifyStrictMode();
       if (target[member] === value && !isSetLength(target, member)) return true;
+      if (ObserveConfig.mode !== ObserveMode.proxy && !(member in target)) {
+        console.error(ObserveText(`Uninitialized member '${String(member)}'`));
+        console.error(ObserveText(`Target Object`), target);
+      }
       target[member] = value;
       if (!ObserveState.set) return true;
       if (!isValidKey(member) || !isValidValue(value)) return false;

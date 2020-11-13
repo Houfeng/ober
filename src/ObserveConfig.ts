@@ -15,9 +15,11 @@ export const ObserveConfig: {
   strict: boolean;
   maxDependencies: number;
   maxHandlers: number;
+  logPrefix: string;
 } = {
-  mode: ObserveMode.property,
+  mode: ObserveMode.auto,
   strict: false,
   maxDependencies: 1000,
-  maxHandlers: 100
+  maxHandlers: 100,
+  logPrefix: "OBER"
 };
