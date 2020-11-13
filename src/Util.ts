@@ -63,8 +63,50 @@ export function isValidKey(key: any): key is string {
   );
 }
 
+export function isDomNode(value: any) {
+  return typeof Node !== "undefined" && value instanceof Node;
+}
+
+export function isEventTarget(value: any) {
+  return typeof EventTarget !== "undefined" && value instanceof EventTarget;
+}
+
+export function isError(value: any) {
+  return typeof Error !== "undefined" && value instanceof Error;
+}
+
+export function isDOMError(value: any) {
+  return typeof DOMError !== "undefined" && value instanceof DOMError;
+}
+
+export function isEvent(value: any) {
+  return typeof Event !== "undefined" && value instanceof Event;
+}
+
+export function isPromise(value: any) {
+  return typeof Promise !== "undefined" && value instanceof Promise;
+}
+
+export function isDate(value: any) {
+  return typeof Date !== "undefined" && value instanceof Date;
+}
+
+export function isURL(value: any) {
+  return typeof URL !== "undefined" && value instanceof URL;
+}
+
 export function isValidValue(value: any): value is any {
-  return !isFunction(value) && !isSymbol(value);
+  return (
+    !isFunction(value) &&
+    !isSymbol(value) &&
+    !isDomNode(value) &&
+    !isError(value) &&
+    !isPromise(value) &&
+    !isEvent(value) &&
+    !isEventTarget(value) &&
+    !isURL(value) &&
+    !isDOMError(value)
+  );
 }
 
 export function isSetLength(target: any, member: string | number | symbol) {
