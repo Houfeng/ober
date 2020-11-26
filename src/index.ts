@@ -7,7 +7,7 @@
 export { autorun } from "./AutoRun";
 export { observable } from "./Observable";
 export { action, mutation } from "./ObserveAction";
-export { publish, subscribe, ObserveEvent } from "./ObserveBus";
+export { publish, subscribe, unsubscribe, ObserveEvent } from "./ObserveBus";
 export { ObserveConfig, ObserveMode } from "./ObserveConfig";
 export { ObserveData } from "./ObserveData";
 export { ObserveHandler } from "./ObserveHandler";
