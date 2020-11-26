@@ -1,6 +1,6 @@
 {
   "name": "ober",
-  "version": "6.1.2",
+  "version": "6.2.0",
   "description": "",
   "main": "./dist/cjs/index.js",
   "module": "./dist/es/index.js",
@@ -10,7 +10,9 @@
   },
   "author": "",
   "license": "MIT",
-  "dependencies": {},
+  "dependencies": {
+    "tslib": "^2.0.3"
+  },
   "devDependencies": {
     "dn-middleware-clean": "^1.0.2",
     "dn-middleware-copy": "^0.2.7",
