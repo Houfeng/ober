@@ -12,9 +12,7 @@ build:
   - name: shell
     script:
       - tsc --locale zh-CN 
-      - rollup ./dist/es/index.js --file ./dist/cjs/index.js -f cjs
-      - rollup ./dist/es/index.js --file ./dist/umd/index.js -f umd -n ober
-      - rollup ./dist/es/index.js --file ./dist/iife/index.js -f iife -n ober
+      - rollup -c
 
 dev:
   - name: shell

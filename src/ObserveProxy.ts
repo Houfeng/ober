@@ -7,7 +7,13 @@
 import { ObserveConfig, ObserveMode } from "./ObserveConfig";
 import { ObserveError, ObserveText } from "./ObserveError";
 import { ObserveEvent, publish } from "./ObserveBus";
-import { isObject, isSetLength, isValidKey, isValidValue } from "./Util";
+import {
+  isArray,
+  isObject,
+  isSetLength,
+  isValidKey,
+  isValidValue
+} from "./Util";
 
 import { LowProxy } from "./LowProxy";
 import { ObserveState } from "./ObserveState";
@@ -15,9 +21,9 @@ import { Symbols } from "./Symbols";
 import { observeInfo } from "./ObserveInfo";
 import { verifyStrictMode } from "./ObserveAction";
 
-export const NativeProxy = typeof Proxy !== "undefined" ? Proxy : null;
+const NativeProxy = typeof Proxy !== "undefined" ? Proxy : null;
 
-export function getProxyClass() {
+function getProxyClass() {
   switch (ObserveConfig.mode) {
     case ObserveMode.property:
       return LowProxy;
@@ -27,6 +33,15 @@ export function getProxyClass() {
     default:
       return NativeProxy;
   }
+}
+
+function isUninitializedMember(target: any, member: string | symbol | number) {
+  return (
+    ObserveConfig.mode !== ObserveMode.proxy &&
+    !(member in target) &&
+    !isNaN(member as number) &&
+    !isArray(target)
+  );
 }
 
 export function createProxy<T extends object>(target: T): T {
@@ -50,7 +65,7 @@ export function createProxy<T extends object>(target: T): T {
     set(target: any, member: string | number | symbol, value: any) {
       verifyStrictMode();
       if (target[member] === value && !isSetLength(target, member)) return true;
-      if (ObserveConfig.mode !== ObserveMode.proxy && !(member in target)) {
+      if (isUninitializedMember(target, member)) {
         console.error(ObserveText(`Uninitialized member '${String(member)}'`));
         console.error(ObserveText(`Target Object`), target);
       }

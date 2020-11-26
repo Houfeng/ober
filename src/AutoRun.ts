@@ -4,7 +4,7 @@
  * @author Houfeng <admin@xhou.net>
  */
 
-import { trackable, Trackable } from "./ObserveTrack";
+import { Trackable, trackable } from "./ObserveTrack";
 
 export function autorun<T extends Trackable>(func: T, immed = true) {
   const wrapper = trackable(func);

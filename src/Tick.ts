@@ -12,19 +12,19 @@ export interface ITickHandler {
   callback: Function;
 }
 
-export const tickOwner: { handlers: ITickHandler[]; pending: boolean } = {
+const tickOwner: { handlers: ITickHandler[]; pending: boolean } = {
   handlers: [],
   pending: false
 };
 
-export function execTickHandlers() {
+function execTickHandlers() {
   tickOwner.pending = false;
   const copies = tickOwner.handlers.slice(0);
   tickOwner.handlers.length = 0;
   copies.forEach(handler => handler());
 }
 
-export function createTickTimer() {
+function createTickTimer() {
   if (typeof Promise !== "undefined") {
     const promise = Promise.resolve();
     return () => {
@@ -55,7 +55,7 @@ export function createTickTimer() {
   }
 }
 
-export const tickTimer = createTickTimer();
+const tickTimer = createTickTimer();
 
 export function nextTick(callback: Function, ctx?: any, unique?: boolean) {
   if (unique === true) {

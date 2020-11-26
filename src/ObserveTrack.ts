@@ -4,12 +4,13 @@
  * @author Houfeng <admin@xhou.net>
  */
 
+import { ObserveEvent, subscribe, unsubscribe } from "./ObserveBus";
 import { isPrivateKey, isSymbol } from "./Util";
+
+import { ObserveConfig } from "./ObserveConfig";
 import { ObserveData } from "./ObserveData";
 import { ObserveHandler } from "./ObserveHandler";
 import { ObserveKey } from "./ObserveKey";
-import { ObserveEvent, subscribe, unsubscribe } from "./ObserveBus";
-import { ObserveConfig } from "./ObserveConfig";
 import { ObserveState } from "./ObserveState";
 
 export type AnyFunction = (...args: any[]) => any;

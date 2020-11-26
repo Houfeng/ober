@@ -11,7 +11,7 @@ import { ObserveError } from "./ObserveError";
 import { observeInfo } from "./ObserveInfo";
 import { verifyStrictMode } from "./ObserveAction";
 
-export function createObservableMember<T extends object>(
+function createObservableMember<T extends object>(
   target: T,
   member: string | number | symbol,
   handler: ProxyHandler<T>
@@ -37,7 +37,7 @@ export function createObservableMember<T extends object>(
   });
 }
 
-export function createObservableObject<T extends object>(
+function createObservableObject<T extends object>(
   target: T,
   handler: ProxyHandler<T>
 ) {
@@ -51,7 +51,7 @@ export function createObservableObject<T extends object>(
   return target;
 }
 
-export function createObservableArray<T extends object>(
+function createObservableArray<T extends object>(
   target: T,
   handler: ProxyHandler<T>
 ) {

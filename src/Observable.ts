@@ -4,10 +4,10 @@
  * @author Houfeng <admin@xhou.net>
  */
 
-import { createProxy } from "./ObserveProxy";
-import { isObject } from "./Util";
 import { ObserveConfig } from "./ObserveConfig";
 import { Symbols } from "./Symbols";
+import { createProxy } from "./ObserveProxy";
+import { isObject } from "./Util";
 
 export function observable<T extends object | Function>(target: T): T {
   if (typeof target === "function") {
