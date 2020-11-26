@@ -11,7 +11,10 @@ export { publish, subscribe, ObserveEvent } from "./ObserveBus";
 export { ObserveConfig, ObserveMode } from "./ObserveConfig";
 export { ObserveData } from "./ObserveData";
 export { ObserveHandler } from "./ObserveHandler";
+export { ObserveState } from "./ObserveState";
 export { ObservePerf } from "./ObservePerf";
+export { ObserveError } from "./ObserveError";
+export { createSymbol } from "./Symbols";
 export {
   track,
   trackable,
@@ -22,3 +25,17 @@ export {
 } from "./ObserveTrack";
 export { nextTick } from "./Tick";
 export { watch } from "./Watch";
+export {
+  define,
+  isArray,
+  isObject,
+  isFunction,
+  isNull,
+  isNullOrUndefined,
+  isNumber,
+  isDate,
+  isError,
+  isProxy,
+  isPromise,
+  isString
+} from "./Util";
