@@ -14,6 +14,8 @@ export { ObserveHandler } from "./ObserveHandler";
 export { ObserveState } from "./ObserveState";
 export { ObservePerf } from "./ObservePerf";
 export { ObserveError } from "./ObserveError";
+export { ObserveKey } from "./ObserveKey";
+export { ObserveId } from "./ObserveId";
 export { createSymbol } from "./Symbols";
 export {
   track,
