@@ -22,7 +22,7 @@ export function isArray(value: any) {
   return Array.isArray ? Array.isArray(value) : value instanceof Array;
 }
 
-export function isFunction(value: any): value is Function {
+export function isFunction<T = Function>(value: any): value is T {
   return typeof value === "function";
 }
 

@@ -4,18 +4,25 @@
  * @author Houfeng <admin@xhou.net>
  */
 
-import { ObserveConfig } from "./ObserveConfig";
-import { Symbols } from "./Symbols";
-import { createProxy } from "./ObserveProxy";
-import { isObject } from "./Util";
+import { NativeProxy, createProxy } from "./ObserveProxy";
+import { ObserveConfig, ObserveMode } from "./ObserveConfig";
+import { isFunction, isObject } from "./Util";
 
-export function observable<T extends object | Function>(target: T): T {
-  if (typeof target === "function") {
-    if (ObserveConfig.mode !== "proxy") {
-      const func: any = target;
+import { Symbols } from "./Symbols";
+
+export type Class = new (...args: any[]) => any;
+
+export function observable<T = any>(target: T): T {
+  if (isFunction<Class>(target)) {
+    if (
+      ObserveConfig.mode === ObserveMode.property ||
+      (ObserveConfig.mode === ObserveMode.auto && !NativeProxy)
+    ) {
       const factory: any = function Class(...args: any[]) {
-        return createProxy(new func(...args));
+        return createProxy(new target(...args));
       };
+      Object.setPrototypeOf(factory, target);
+      factory.prototype = target.prototype;
       factory[Symbols.IsProxy] = true;
       return factory as T;
     }

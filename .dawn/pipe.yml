@@ -30,6 +30,7 @@ test:
     script:
       - dn run exec_test -e proxy
       - dn run exec_test -e property
+      - dn run exec_test -e auto
 
 publish:
   - name: version

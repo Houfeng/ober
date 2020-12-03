@@ -21,7 +21,7 @@ import { Symbols } from "./Symbols";
 import { observeInfo } from "./ObserveInfo";
 import { verifyStrictMode } from "./ObserveAction";
 
-const NativeProxy = typeof Proxy !== "undefined" ? Proxy : null;
+export const NativeProxy = typeof Proxy !== "undefined" ? Proxy : null;
 
 function getProxyClass() {
   switch (ObserveConfig.mode) {
