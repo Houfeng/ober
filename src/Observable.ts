@@ -10,7 +10,7 @@ import { isFunction, isObject } from "./Util";
 
 import { Symbols } from "./Symbols";
 
-export type Class = new (...args: any[]) => any;
+type Class = new (...args: any[]) => any;
 
 export function observable<T = any>(target: T): T {
   if (isFunction<Class>(target)) {

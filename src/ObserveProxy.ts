@@ -10,6 +10,7 @@ import { ObserveEvent, publish } from "./ObserveBus";
 import {
   isArray,
   isObject,
+  isProxy,
   isSetLength,
   isValidKey,
   isValidValue
@@ -45,6 +46,7 @@ function isUninitializedMember(target: any, member: string | symbol | number) {
 }
 
 export function createProxy<T extends object>(target: T): T {
+  if (isProxy(target)) return target;
   const info = observeInfo(target);
   if (info.proxy) return info.proxy;
   const ObserveProxy = getProxyClass();
