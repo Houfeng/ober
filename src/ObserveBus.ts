@@ -4,12 +4,12 @@
  * @author Houfeng <admin@xhou.net>
  */
 
+import { ObserveError, ObserveText } from "./ObserveError";
 import { ObserveHandler, ObserveHandlerStore } from "./ObserveHandler";
 import { isPrivateKey, isSymbol } from "./Util";
 
 import { ObserveConfig } from "./ObserveConfig";
 import { ObserveData } from "./ObserveData";
-import { ObserveError } from "./ObserveError";
 import { ObserveKey } from "./ObserveKey";
 import { ObserveState } from "./ObserveState";
 import { ObservePerf as perf } from "./ObservePerf";
@@ -23,7 +23,7 @@ export enum ObserveEvent {
 
 export function subscribe(type: ObserveEvent, handler: ObserveHandler) {
   if (!handler) throw ObserveError("Invalid ObserveHandler");
-  if (!type) throw ObserveError("OBER: Invalid ObserveName");
+  if (!type) throw ObserveError("Invalid ObserveEvent");
   if (!ObserveHandlers[type]) ObserveHandlers[type] = {};
   if (handler.dependencies) {
     handler.dependencies.forEach(key => {
@@ -63,16 +63,14 @@ export function publish(
   const matchedHandlers = new Set(ObserveHandlers[type][observeKey]);
   const matchedCount = (matchedHandlers && matchedHandlers.size) || 0;
   if (matchedCount > ObserveConfig.maxHandlers) {
-    console.warn(
-      `Find ${matchedCount} handlers to trigger execution, and confirm whether there is a performance problem`
-    );
+    console.warn(ObserveText(`Trigger ${matchedCount} handlers`));
   }
   if (matchedHandlers && matchedCount > 0) {
     matchedHandlers.forEach(handler => handler(data));
   }
   const commonHandlers = new Set(ObserveHandlers[type]["*"]);
   if (!matchOnly && commonHandlers && commonHandlers.size > 0) {
-    ObserveHandlers[type]["*"].forEach(handler => handler(data));
+    commonHandlers.forEach(handler => handler(data));
   }
   if (perf.onPublish) {
     perf.onPublish({ type, data, matchedHandlers, commonHandlers, matchOnly });

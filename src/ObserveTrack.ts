@@ -12,6 +12,7 @@ import { ObserveData } from "./ObserveData";
 import { ObserveHandler } from "./ObserveHandler";
 import { ObserveKey } from "./ObserveKey";
 import { ObserveState } from "./ObserveState";
+import { ObserveText } from "./ObserveError";
 
 export type AnyFunction = (...args: any[]) => any;
 
@@ -27,9 +28,7 @@ export function track<T extends AnyFunction>(func: T, ...args: any[]) {
   unsubscribe(ObserveEvent.get, collect);
   const count = dependencies && dependencies.size;
   if (count > ObserveConfig.maxDependencies) {
-    console.warn(
-      `A single function has ${count} dependencies to confirm whether there is a performance problem`
-    );
+    console.warn(ObserveText(`A single function has ${count} dependencies`));
   }
   return { result, dependencies };
 }
@@ -43,8 +42,8 @@ export interface Trackable {
 export function trackable<T extends Trackable>(func: T, onUpdate?: Function) {
   let onSet: ObserveHandler;
   const wrapper: Trackable = (...args: any[]) => {
+    unsubscribe(ObserveEvent.set, onSet);
     const { result, dependencies } = track(func, ...args);
-    unsubscribe(ObserveEvent.get, onSet);
     onSet.dependencies = dependencies;
     subscribe(ObserveEvent.set, onSet);
     wrapper.dependencies = dependencies;
