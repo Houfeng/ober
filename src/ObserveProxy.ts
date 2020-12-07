@@ -17,6 +17,7 @@ import {
 } from "./Util";
 
 import { LowProxy } from "./LowProxy";
+import { ObserveReflect } from "./ObserveReflect";
 import { ObserveState } from "./ObserveState";
 import { Symbols } from "./Symbols";
 import { observeInfo } from "./ObserveInfo";
@@ -55,23 +56,31 @@ export function createProxy<T extends object>(target: T): T {
     throw ObserveError(`Current environment does not support '${mode}'`);
   }
   info.proxy = new ObserveProxy(target, {
-    get(target: any, member: string | number | symbol) {
+    get(target: any, member: string | number | symbol, receiver: any) {
       if (member === Symbols.IsProxy) return true;
-      const value = target[member];
+      const value = ObserveReflect.get(target, member, receiver);
       if (!isValidKey(member) || !isValidValue(value)) return value;
       const wrappedValue = isObject(value) ? createProxy(value) : value;
       if (!ObserveState.get) return wrappedValue;
       publish(ObserveEvent.get, { id: info.id, member, value });
       return wrappedValue;
     },
-    set(target: any, member: string | number | symbol, value: any) {
+    set(
+      target: any,
+      member: string | number | symbol,
+      value: any,
+      receiver: any
+    ) {
       verifyStrictMode();
-      if (target[member] === value && !isSetLength(target, member)) return true;
+      if (info.shadow[member] === value && !isSetLength(target, member)) {
+        return true;
+      }
       if (isUninitializedMember(target, member)) {
         console.error(ObserveText(`Uninitialized member '${String(member)}'`));
         console.error(ObserveText(`Target Object`), target);
       }
-      target[member] = value;
+      ObserveReflect.set(target, member, value, receiver);
+      info.shadow[member] = value;
       if (!ObserveState.set) return true;
       if (!isValidKey(member) || !isValidValue(value)) return true;
       publish(ObserveEvent.set, { id: info.id, member, value });

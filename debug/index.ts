@@ -16,15 +16,33 @@ ObserveConfig.mode = ObserveMode.auto;
 
 subscribe(ObserveEvent.get, info => console.log("GET", info));
 
-const model = observable({ items: [{ v: 1 }, { v: 2 }, { v: 3 }] });
-console.log("#0:", JSON.stringify(model.items));
-const items = model.items.splice(1, 1);
-console.log("#1:", JSON.stringify(model.items));
-watch(() => model.items.length, () => {
-  console.log("#2:", JSON.stringify(model.items));
-});
-model.items.push({ v: 4 });
-model.items.splice(2, 0, ...items);
+// const model = observable({ items: [{ v: 1 }, { v: 2 }, { v: 3 }] });
+// console.log("#0:", JSON.stringify(model.items));
+// const items = model.items.splice(1, 1);
+// console.log("#1:", JSON.stringify(model.items));
+// watch(() => model.items.length, () => {
+//   console.log("#2:", JSON.stringify(model.items));
+// });
+// model.items.push({ v: 4 });
+// model.items.splice(2, 0, ...items);
 
-//@ts-ignore
-model.xxx = 1;
+// //@ts-ignore
+// model.xxx = 1;
+
+const originModel = {
+  _name: "test",
+  get name() {
+    console.log("getter");
+    return this._name;
+  },
+  set name(value: string) {
+    console.log("setter");
+    this._name = value;
+  }
+};
+// originModel.name = '1';
+
+const model = observable(originModel);
+console.log("name", model.name);
+model.name = '2';
+// console.log("name", model.name);

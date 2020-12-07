@@ -26,7 +26,7 @@ export function observeInfo<T extends object>(target: T): ObserveInfo<T> {
   if (!hasOwn.call(target, Symbols.Observable)) {
     const id = ObserveId();
     /// @ts-ignore
-    const shadow = isArray(target) ? target.slice(0) : { ...target };
+    const shadow = isArray(target) ? target.slice(0) : {};
     define(target, Symbols.Observable, { id, shadow, target });
   }
   return (target as any)[Symbols.Observable] as ObserveInfo<T>;

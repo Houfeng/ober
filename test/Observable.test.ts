@@ -1,6 +1,7 @@
 import "./mode";
 
 import { ObserveEvent, subscribe, unsubscribe } from '../src/ObserveBus';
+import { ObserveReflect, isProxy } from "../src";
 
 import { ObserveData } from '../src/ObserveData';
 import { observable } from '../src/Observable';
@@ -44,5 +45,42 @@ describe('Observable', () => {
     model.value = 2;
   });
 
+  it("可观察 setter", (done) => {
+    let proxy: boolean;
+    const Demo = observable(class OriginDemo {
+      a = 1;
+      b = 2;
+      set c(value: number) {
+        this.a = value;
+        this.b = value;
+        proxy = isProxy(this);
+      }
+    });
+    const demo = new Demo();
+    demo.c = 3;
+    strictEqual(demo.a, 3);
+    strictEqual(demo.b, 3);
+    strictEqual(proxy, ObserveReflect.isProxyMode());
+    done();
+  });
+
+  it("可观察 method", (done) => {
+    let proxy: boolean;
+    const Demo = observable(class OriginDemo {
+      a = 1;
+      b = 2;
+      setC(value: number) {
+        this.a = value;
+        this.b = value;
+        proxy = isProxy(this);
+      }
+    });
+    const demo = new Demo();
+    demo.setC(3);
+    strictEqual(demo.a, 3);
+    strictEqual(demo.b, 3);
+    strictEqual(proxy, ObserveReflect.isProxyMode());
+    done();
+  });
 
 });

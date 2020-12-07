@@ -116,7 +116,7 @@ export function isSetLength(target: any, member: string | number | symbol) {
 export const hasOwn = Object.prototype.hasOwnProperty;
 
 export function isProxy(target: any) {
-  return target && target[Symbols.IsProxy];
+  return !!(target && target[Symbols.IsProxy]);
 }
 
 export function is(x: any, y: any) {
