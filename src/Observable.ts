@@ -4,40 +4,31 @@
  * @author Houfeng <admin@xhou.net>
  */
 
-import { NativeProxy, createProxy } from "./ObserveProxy";
-import { ObserveConfig, ObserveMode } from "./ObserveConfig";
-import { isFunction, isObject } from "./Util";
+import { define, getOwnValue, isFunction, isObject } from "./Util";
 
 import { Symbols } from "./Symbols";
+import { createProxy } from "./ObserveProxy";
 
 type Class = new (...args: any[]) => any;
 
 export function observable<T = any>(target: T): T {
   if (isFunction<Class>(target)) {
-    if (
-      ObserveConfig.mode === ObserveMode.property ||
-      (ObserveConfig.mode === ObserveMode.auto && !NativeProxy)
-    ) {
-      const factory: any = function Class(...args: any[]) {
-        return createProxy(new target(...args));
-      };
-      Object.setPrototypeOf(factory, target);
-      factory.prototype = target.prototype;
-      factory[Symbols.IsProxy] = true;
-      return factory as T;
-    }
-    return new Proxy(target, {
-      get(target: any, member: string | number | symbol) {
-        if (member === Symbols.IsProxy) return true;
-        return target[member];
-      },
-      construct(target: any, args: any[]) {
-        return createProxy(new target(...args));
-      }
-    });
+    const factory: any = function Class(...args: any[]) {
+      // Subclasses do not automatically proxy
+      return getOwnValue(this.constructor, Symbols.Factory) === factory
+        ? createProxy(new target(...args))
+        : new target(...args);
+    };
+    Object.setPrototypeOf(factory, target);
+    factory.prototype = target.prototype;
+    define(factory, Symbols.Proxy, true);
+    define(target, Symbols.Factory, factory);
+    return factory as T;
   } else if (isObject(target)) {
+    // proxy object
     return createProxy(target);
   } else {
+    // others
     return target;
   }
 }

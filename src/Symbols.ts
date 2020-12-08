@@ -12,6 +12,7 @@ export function createSymbol(description: string): symbol {
 
 export const Symbols = {
   Observable: createSymbol("Observable"),
-  IsProxy: createSymbol("IsProxy"),
+  Proxy: createSymbol("Proxy"),
+  Factory: createSymbol("Factory"),
   Nothing: createSymbol("Nothing")
 };

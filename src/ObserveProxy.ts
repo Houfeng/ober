@@ -12,6 +12,7 @@ import {
   isObject,
   isProxy,
   isSetLength,
+  isSymbol,
   isValidKey,
   isValidValue
 } from "./Util";
@@ -40,8 +41,9 @@ function getProxyClass() {
 function isUninitializedMember(target: any, member: string | symbol | number) {
   return (
     ObserveConfig.mode !== ObserveMode.proxy &&
+    !isSymbol(member) &&
     !(member in target) &&
-    !isNaN(member as number) &&
+    !isNaN(member) &&
     !isArray(target)
   );
 }
@@ -56,8 +58,13 @@ export function createProxy<T extends object>(target: T): T {
     throw ObserveError(`Current environment does not support '${mode}'`);
   }
   info.proxy = new ObserveProxy(target, {
+    getOwnPropertyDescriptor(target: any, member: string | number | symbol) {
+      if (member === Symbols.Proxy) {
+        return { configurable: true, enumerable: false, value: true };
+      }
+      return Object.getOwnPropertyDescriptor(target, member);
+    },
     get(target: any, member: string | number | symbol, receiver: any) {
-      if (member === Symbols.IsProxy) return true;
       const value = ObserveReflect.get(target, member, receiver);
       if (!isValidKey(member) || !isValidValue(value)) return value;
       const wrappedValue = isObject(value) ? createProxy(value) : value;

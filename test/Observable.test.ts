@@ -1,9 +1,9 @@
 import "./mode";
 
 import { ObserveEvent, subscribe, unsubscribe } from '../src/ObserveBus';
-import { ObserveReflect, isProxy } from "../src";
 
 import { ObserveData } from '../src/ObserveData';
+import { isProxy } from "../src";
 import { observable } from '../src/Observable';
 import { strictEqual } from "assert";
 
@@ -60,7 +60,7 @@ describe('Observable', () => {
     demo.c = 3;
     strictEqual(demo.a, 3);
     strictEqual(demo.b, 3);
-    strictEqual(proxy, ObserveReflect.isProxyMode());
+    strictEqual(proxy, true);
     done();
   });
 
@@ -79,7 +79,23 @@ describe('Observable', () => {
     demo.setC(3);
     strictEqual(demo.a, 3);
     strictEqual(demo.b, 3);
-    strictEqual(proxy, ObserveReflect.isProxyMode());
+    strictEqual(proxy, true);
+    done();
+  });
+
+  it('可观察类型继承', (done) => {
+    const A = observable(class {
+      name = "A";
+    })
+    class B extends A {
+      age = 1;
+    }
+    const a = new A();
+    const b = new B();
+    strictEqual(isProxy(A), true, "A 是可观察的");
+    strictEqual(isProxy(a), true, "a 是可观察的");
+    strictEqual(isProxy(B), false, "B 是不可观察的");
+    strictEqual(isProxy(b), false, "b 是不可观察的");
     done();
   });
 

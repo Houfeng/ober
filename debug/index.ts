@@ -1,4 +1,4 @@
-import { ObserveConfig, ObserveEvent, ObserveMode, ObserveState, observable, subscribe, watch } from "../src";
+import { ObserveConfig, ObserveEvent, ObserveMode, ObserveState, isProxy, observable, subscribe } from "../src";
 //import { ObserveConfig } from '../src/ObserveConfig';
 //import { action } from "../src/ObserveAction";
 
@@ -12,9 +12,10 @@ import { ObserveConfig, ObserveEvent, ObserveMode, ObserveState, observable, sub
 //ObserveConfig.strict = true;
 
 ObserveState.get = true;
-ObserveConfig.mode = ObserveMode.auto;
+ObserveConfig.mode = ObserveMode.proxy;
 
 subscribe(ObserveEvent.get, info => console.log("GET", info));
+subscribe(ObserveEvent.set, info => console.log("SET", info));
 
 // const model = observable({ items: [{ v: 1 }, { v: 2 }, { v: 3 }] });
 // console.log("#0:", JSON.stringify(model.items));
@@ -29,20 +30,48 @@ subscribe(ObserveEvent.get, info => console.log("GET", info));
 // //@ts-ignore
 // model.xxx = 1;
 
-const originModel = {
-  _name: "test",
-  get name() {
-    console.log("getter");
-    return this._name;
-  },
-  set name(value: string) {
-    console.log("setter");
-    this._name = value;
-  }
-};
+// const originModel = {
+//   _name: "test",
+//   get name() {
+//     console.log("getter");
+//     return this._name;
+//   },
+//   set name(value: string) {
+//     console.log("setter");
+//     this._name = value;
+//   }
+// };
 // originModel.name = '1';
 
-const model = observable(originModel);
-console.log("name", model.name);
-model.name = '2';
+// const model = observable(originModel);
 // console.log("name", model.name);
+// model.name = '2';
+// console.log("name", model.name);
+
+const A = observable(class {
+  name = "A";
+})
+
+// class B extends A {
+//   age = 1;
+// }
+
+const B = observable(class extends A {
+  age = 1;
+})
+
+const a = new A();
+const b = new B();
+
+console.log("A", isProxy(A))
+console.log("a", isProxy(a))
+
+console.log("B", isProxy(B))
+console.log("b", isProxy(b))
+
+console.log(b.age);
+// // console.log(a);
+// console.log(b);
+
+// a.name = "ClassA";
+// b.name = "ClassB";

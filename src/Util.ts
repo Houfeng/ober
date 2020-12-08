@@ -113,10 +113,17 @@ export function isSetLength(target: any, member: string | number | symbol) {
   return isArray(target) && member === "length";
 }
 
-export const hasOwn = Object.prototype.hasOwnProperty;
+export const hasOwn = (target: any, member: string | number | symbol) => {
+  return Object.prototype.hasOwnProperty.call(target, member);
+};
+
+export const getOwnValue = (target: any, member: string | number | symbol) => {
+  if (!hasOwn(target, member)) return;
+  return target[member];
+};
 
 export function isProxy(target: any) {
-  return !!(target && target[Symbols.IsProxy]);
+  return !!(target && hasOwn(target, Symbols.Proxy));
 }
 
 export function is(x: any, y: any) {
@@ -142,7 +149,7 @@ export function shallowEqual(objA: any, objB: any) {
   if (keysA.length !== keysB.length) return false;
   // tslint:disable-next-line
   for (let i = 0; i < keysA.length; i++) {
-    if (!hasOwn.call(objB, keysA[i]) || !is(objA[keysA[i]], objB[keysA[i]])) {
+    if (!hasOwn(objB, keysA[i]) || !is(objA[keysA[i]], objB[keysA[i]])) {
       return false;
     }
   }
