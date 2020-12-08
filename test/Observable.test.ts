@@ -66,20 +66,27 @@ describe('Observable', () => {
 
   it("可观察 method", (done) => {
     let proxy: boolean;
-    const Demo = observable(class OriginDemo {
+    let instance: any;
+    const A = observable(class InnerA {
       a = 1;
       b = 2;
       setC(value: number) {
         this.a = value;
         this.b = value;
         proxy = isProxy(this);
+        instance = this;
       }
     });
-    const demo = new Demo();
-    demo.setC(3);
-    strictEqual(demo.a, 3);
-    strictEqual(demo.b, 3);
+    const B = observable(class InnerB extends A {
+    });
+    const C = observable(class InnerC extends B {
+    });
+    const x = new C();
+    x.setC(3);
+    strictEqual(x.a, 3);
+    strictEqual(x.b, 3);
     strictEqual(proxy, true);
+    strictEqual(x === instance, true);
     done();
   });
 
