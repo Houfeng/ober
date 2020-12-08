@@ -29,11 +29,11 @@ describe('Observable', () => {
     }
     const Model = observable(OriginModel);
     const model = new Model();
-    strictEqual(Model.id, "M");
+    strictEqual(Model.id, "M", "检查 ID");
     strictEqual(model instanceof Model, true);
     strictEqual(model instanceof OriginModel, true);
     const originModel = new OriginModel();
-    strictEqual(originModel instanceof Model, true);
+    strictEqual(originModel instanceof OriginModel, true);
     strictEqual(model.value, 1);
     const onSet = ({ member, value }: ObserveData) => {
       strictEqual(member, "value");
@@ -84,18 +84,32 @@ describe('Observable', () => {
   });
 
   it('可观察类型继承', (done) => {
-    const A = observable(class {
+    const A = observable(class InnerA {
       name = "A";
+      getA() {
+        return "A";
+      }
     })
     class B extends A {
       age = 1;
+      getB() {
+        return "B";
+      }
     }
+    const C = observable(class InnerC extends B {
+      age = 1;
+    })
     const a = new A();
     const b = new B();
+    const c = new C();
     strictEqual(isProxy(A), true, "A 是可观察的");
     strictEqual(isProxy(a), true, "a 是可观察的");
     strictEqual(isProxy(B), false, "B 是不可观察的");
     strictEqual(isProxy(b), false, "b 是不可观察的");
+    strictEqual(isProxy(C), true, "C 是可观察的");
+    strictEqual(isProxy(c), true, "c 是可观察的");
+    strictEqual(c.getA(), "A");
+    strictEqual(c.getB(), "B");
     done();
   });
 

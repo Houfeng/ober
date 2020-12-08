@@ -1,6 +1,6 @@
 {
   "name": "ober",
-  "version": "6.2.6",
+  "version": "6.3.0",
   "description": "",
   "main": "./dist/cjs/index.js",
   "module": "./dist/es/index.js",

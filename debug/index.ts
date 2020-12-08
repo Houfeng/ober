@@ -48,20 +48,31 @@ subscribe(ObserveEvent.set, info => console.log("SET", info));
 // model.name = '2';
 // console.log("name", model.name);
 
-const A = observable(class {
-  name = "A";
+const A = observable(class AInner {
+  name = "<name>";
+  // say() {
+  //   console.log('a')
+  // }
 })
 
 // class B extends A {
 //   age = 1;
 // }
 
-const B = observable(class extends A {
+const B = observable(class BInner extends A {
   age = 1;
+  say() {
+    console.log('b')
+  }
+})
+
+const C = observable(class CInner extends B {
+  age = 2;
 })
 
 const a = new A();
 const b = new B();
+const c = new C();
 
 console.log("A", isProxy(A))
 console.log("a", isProxy(a))
@@ -69,9 +80,21 @@ console.log("a", isProxy(a))
 console.log("B", isProxy(B))
 console.log("b", isProxy(b))
 
-console.log(b.age);
-// // console.log(a);
-// console.log(b);
+console.log("C", isProxy(C))
+console.log("c", isProxy(c))
 
-// a.name = "ClassA";
-// b.name = "ClassB";
+console.log("A.prototype", A.prototype);
+console.log("B.prototype", B.prototype);
+console.log("C.prototype", C.prototype);
+console.log("=====================");
+// console.log(Object.getPrototypeOf(b) === B.prototype);
+console.log('b constructor', b.constructor, B);
+console.log(b.constructor === B);
+console.log(b instanceof B);
+console.log(b instanceof A);
+console.log(c instanceof C);
+console.log(c instanceof B);
+console.log(c instanceof A);
+
+console.log("=====================");
+console.log(c, c.name);
