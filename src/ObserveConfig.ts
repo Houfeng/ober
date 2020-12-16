@@ -4,6 +4,13 @@
  * @author Houfeng <admin@xhou.net>
  */
 
+import { isObject } from "./Util";
+/**
+ * Copyright (c) 2014-present Houfeng
+ * @homepage https://github.com/Houfeng/ober
+ * @author Houfeng <admin@xhou.net>
+ */
+
 export enum ObserveMode {
   proxy = "proxy",
   property = "property",
@@ -22,10 +29,11 @@ export const DEFAULT_LOG_PREFIX = "OBER";
 
 export const ObserveEnvConfig: Partial<ObserveConfigDefinition> = (() => {
   if (typeof process === "undefined") return {};
-  const configText: string = process.env && process.env.OBER_CONFIG;
-  if (!configText) return {};
+  const OBER_CONFIG: any = process.env && process.env.OBER_CONFIG;
+  if (!OBER_CONFIG) return {};
+  if (isObject(OBER_CONFIG)) return OBER_CONFIG;
   try {
-    return JSON.parse(configText) || {};
+    return JSON.parse(OBER_CONFIG) || {};
   } catch {
     const prefix = DEFAULT_LOG_PREFIX;
     throw new Error(`${prefix}: "${prefix}_CONFIG" is incorrect`);
