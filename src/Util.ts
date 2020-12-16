@@ -95,6 +95,22 @@ export function isURL(value: any) {
   return typeof URL !== "undefined" && value instanceof URL;
 }
 
+export function isMap(value: any) {
+  return typeof Map !== "undefined" && value instanceof Map;
+}
+
+export function isSet(value: any) {
+  return typeof Set !== "undefined" && value instanceof Set;
+}
+
+export function isWeakMap(value: any) {
+  return typeof WeakMap !== "undefined" && value instanceof WeakMap;
+}
+
+export function isWeakSet(value: any) {
+  return typeof WeakSet !== "undefined" && value instanceof WeakSet;
+}
+
 export function isValidValue(value: any): value is any {
   return (
     !isFunction(value) &&
@@ -105,6 +121,10 @@ export function isValidValue(value: any): value is any {
     !isEvent(value) &&
     !isEventTarget(value) &&
     !isURL(value) &&
+    !isMap(value) &&
+    !isWeakMap(value) &&
+    !isSet(value) &&
+    !isWeakSet(value) &&
     !isDOMError(value)
   );
 }
