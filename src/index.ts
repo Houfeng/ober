@@ -28,17 +28,4 @@ export {
 } from "./ObserveTrack";
 export { nextTick } from "./Tick";
 export { watch } from "./Watch";
-export {
-  define,
-  isArray,
-  isObject,
-  isFunction,
-  isNull,
-  isNullOrUndefined,
-  isNumber,
-  isDate,
-  isError,
-  isProxy,
-  isPromise,
-  isString
-} from "./Util";
+export * from "./Util";
