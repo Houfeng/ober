@@ -18,14 +18,7 @@ export { ObserveReflect } from "./ObserveReflect";
 export { ObserveKey } from "./ObserveKey";
 export { ObserveId } from "./ObserveId";
 export { createSymbol } from "./Symbols";
-export {
-  track,
-  trackable,
-  untrack,
-  untrackable,
-  AnyFunction,
-  Trackable
-} from "./ObserveTrack";
+export * from "./ObserveTrack";
 export { nextTick } from "./Tick";
 export { watch } from "./Watch";
 export * from "./Util";

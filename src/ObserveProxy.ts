@@ -26,7 +26,7 @@ import { verifyStrictMode } from "./ObserveAction";
 
 export const NativeProxy = typeof Proxy !== "undefined" ? Proxy : null;
 
-function getProxyClass() {
+export function getProxyClass() {
   switch (ObserveConfig.mode) {
     case ObserveMode.property:
       return LowProxy;
@@ -48,7 +48,15 @@ function isUninitializedMember(target: any, member: string | symbol | number) {
   );
 }
 
-export function createProxy<T extends object>(target: T): T {
+export interface ProxyHooks {
+  get?: (member: string | number | symbol) => any;
+  set?: (member: string | number | symbol, value?: any) => any;
+}
+
+export function createProxy<T extends object>(
+  target: T,
+  hooks?: ProxyHooks
+): T {
   if (isProxy(target)) return target;
   const info = observeInfo(target);
   if (info.proxy) return info.proxy;
@@ -64,14 +72,17 @@ export function createProxy<T extends object>(target: T): T {
       }
       return Object.getOwnPropertyDescriptor(target, member);
     },
+
     get(target: any, member: string | number | symbol, receiver: any) {
       const value = ObserveReflect.get(target, member, receiver);
       if (!isValidKey(member) || !isValidValue(value)) return value;
       const wrappedValue = isObject(value) ? createProxy(value) : value;
       if (!ObserveState.get) return wrappedValue;
       publish(ObserveEvent.get, { id: info.id, member, value });
+      if (hooks && hooks.get) hooks.get(member);
       return wrappedValue;
     },
+
     set(
       target: any,
       member: string | number | symbol,
@@ -91,6 +102,7 @@ export function createProxy<T extends object>(target: T): T {
       if (!ObserveState.set) return true;
       if (!isValidKey(member) || !isValidValue(value)) return true;
       publish(ObserveEvent.set, { id: info.id, member, value });
+      if (hooks && hooks.set) hooks.set(member, value);
       return true;
     }
   }) as any;

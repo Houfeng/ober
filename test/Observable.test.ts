@@ -12,12 +12,18 @@ describe('Observable', () => {
   it('设置可观察对象', (done) => {
     const model = observable({ value: 1 });
     strictEqual(model.value, 1);
+    let timer: any;
     const onSet = ({ member, value }: ObserveData) => {
       strictEqual(member, "value");
       strictEqual(value, 2);
       unsubscribe(ObserveEvent.set, onSet);
       done();
+      if (timer) clearTimeout(timer);
     };
+    timer = setTimeout(() => {
+      unsubscribe(ObserveEvent.set, onSet);
+      throw new Error('Timeout');
+    }, 2000);
     subscribe(ObserveEvent.set, onSet);
     model.value = 2;
   });
@@ -35,12 +41,18 @@ describe('Observable', () => {
     const originModel = new OriginModel();
     strictEqual(originModel instanceof OriginModel, true);
     strictEqual(model.value, 1);
+    let timer: any;
     const onSet = ({ member, value }: ObserveData) => {
       strictEqual(member, "value");
       strictEqual(value, 2);
       unsubscribe(ObserveEvent.set, onSet);
       done();
+      if (timer) clearTimeout(timer);
     };
+    timer = setTimeout(() => {
+      unsubscribe(ObserveEvent.set, onSet);
+      throw new Error('Timeout');
+    }, 2000);
     subscribe(ObserveEvent.set, onSet);
     model.value = 2;
   });
@@ -119,5 +131,43 @@ describe('Observable', () => {
     strictEqual(c.getB(), "B");
     done();
   });
+
+  it("正确序列化", (done) => {
+    const A = observable(class InnerA {
+      age: number;
+      name = "A";
+      getA() {
+        return "A";
+      }
+    });
+    const a = new A();
+    a.age = 1;
+    strictEqual(`{"name":"A","age":1}`, JSON.stringify(a));
+    done();
+  })
+
+  it("箭头函数类成员", (done) => {
+    const A = observable(class InnerA {
+      name = "A";
+      setA = (value: string) => {
+        this.name = value;
+      }
+    });
+    let timer: any
+    const model = new A();
+    const onSet = ({ member, value }: ObserveData) => {
+      strictEqual(member, "name");
+      strictEqual(value, "AA");
+      unsubscribe(ObserveEvent.set, onSet);
+      done();
+      if (timer) clearTimeout(timer);
+    };
+    timer = setTimeout(() => {
+      unsubscribe(ObserveEvent.set, onSet);
+      throw new Error('Timeout');
+    }, 2000);
+    subscribe(ObserveEvent.set, onSet);
+    model.setA("AA");
+  })
 
 });
