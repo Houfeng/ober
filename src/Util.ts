@@ -50,6 +50,7 @@ export function isPrivateKey(value: any): value is string {
 }
 
 export function define(target: any, member: string | symbol, value: any) {
+  if (Object.isExtensible && !Object.isExtensible(target)) return;
   Object.defineProperty(target, member, {
     configurable: true,
     enumerable: false,

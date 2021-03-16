@@ -36,7 +36,7 @@ export const ObserveEnvConfig: Partial<ObserveConfigDefinition> = (() => {
 })();
 
 export const ObserveConfig: ObserveConfigDefinition = {
-  mode: ObserveMode.auto,
+  mode: ObserveMode.property,
   strict: false,
   maxDependencies: 1000,
   maxHandlers: 100,
