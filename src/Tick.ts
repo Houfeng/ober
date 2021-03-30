@@ -6,13 +6,19 @@
 
 import { Defer } from "./Defer";
 
-export interface ITickHandler {
+export interface TickHandler {
   (): void;
   promise: Promise<any>;
   callback: Function;
 }
 
-const tickOwner: { handlers: ITickHandler[]; pending: boolean } = {
+export interface TickOwner {
+  handlers: TickHandler[];
+  pending: boolean;
+  transaction?: (fn: () => any) => void;
+}
+
+export const tickOwner: TickOwner = {
   handlers: [],
   pending: false
 };
@@ -21,7 +27,13 @@ function execTickHandlers() {
   tickOwner.pending = false;
   const copies = tickOwner.handlers.slice(0);
   tickOwner.handlers.length = 0;
-  copies.forEach(handler => handler());
+  if (tickOwner.transaction) {
+    tickOwner.transaction(() => {
+      copies.forEach(handler => handler());
+    });
+  } else {
+    copies.forEach(handler => handler());
+  }
 }
 
 function createTickTimer() {
@@ -65,7 +77,7 @@ export function nextTick(callback: Function, ctx?: any, unique?: boolean) {
     if (exists) return exists.promise;
   }
   const defer = Defer();
-  const handler: ITickHandler = () => {
+  const handler: TickHandler = () => {
     try {
       const result = callback ? callback.call(ctx) : null;
       if (defer.resolve) defer.resolve(result);
@@ -82,3 +94,5 @@ export function nextTick(callback: Function, ctx?: any, unique?: boolean) {
   }
   return defer.promise;
 }
+
+nextTick.owner = tickOwner;
