@@ -19,6 +19,7 @@ export { ObserveKey } from "./ObserveKey";
 export { ObserveId } from "./ObserveId";
 export { createSymbol } from "./Symbols";
 export * from "./ObserveTrack";
-export { nextTick } from "./Tick";
+export { nextTick } from "./NextTick";
+export { domUpdated } from "./DomUpdated";
 export { watch } from "./Watch";
 export * from "./Util";

@@ -50,7 +50,7 @@ export function isPrivateKey(value: any): value is string {
 }
 
 export function define(target: any, member: string | symbol, value: any) {
-  if (Object.isExtensible && !Object.isExtensible(target)) return;
+  if (!isExtensible(target)) return;
   Object.defineProperty(target, member, {
     configurable: true,
     enumerable: false,
@@ -112,21 +112,27 @@ export function isWeakSet(value: any) {
   return typeof WeakSet !== "undefined" && value instanceof WeakSet;
 }
 
+export function isExtensible(value: any) {
+  return !Object.isExtensible || Object.isExtensible(value);
+}
+
 export function isValidValue(value: any): value is any {
   return (
-    !isFunction(value) &&
-    !isSymbol(value) &&
-    !isDomNode(value) &&
-    !isError(value) &&
-    !isPromise(value) &&
-    !isEvent(value) &&
-    !isEventTarget(value) &&
-    !isURL(value) &&
-    !isMap(value) &&
-    !isWeakMap(value) &&
-    !isSet(value) &&
-    !isWeakSet(value) &&
-    !isDOMError(value)
+    !isObject(value) ||
+    (isExtensible(value) &&
+      !isFunction(value) &&
+      !isSymbol(value) &&
+      !isDomNode(value) &&
+      !isError(value) &&
+      !isPromise(value) &&
+      !isEvent(value) &&
+      !isEventTarget(value) &&
+      !isURL(value) &&
+      !isMap(value) &&
+      !isWeakMap(value) &&
+      !isSet(value) &&
+      !isWeakSet(value) &&
+      !isDOMError(value))
   );
 }
 

@@ -59,6 +59,7 @@ export function createProxy<T extends object>(
 ): T {
   if (isProxy(target)) return target;
   const info = observeInfo(target);
+  if (!info) return target;
   if (info.proxy) return info.proxy;
   const ObserveProxy = getProxyClass();
   if (!ObserveProxy) {
