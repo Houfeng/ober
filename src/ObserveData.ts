@@ -5,7 +5,7 @@
  */
 
 export interface ObserveData {
-  id: number;
+  id: string;
   member: string | number | symbol;
   value?: any;
 }

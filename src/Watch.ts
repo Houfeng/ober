@@ -9,14 +9,17 @@ import { isObject, shallowEqual } from "./Util";
 import { Symbols } from "./Symbols";
 import { autorun } from "./AutoRun";
 
-export function watch(calc: Function, handler: Function, immed = false) {
-  let prev: any = Symbols.Nothing;
+export function watch(selector: () => any, handler: () => void, immed = false) {
+  let prevResult: any = Symbols.Nothing;
   return autorun(() => {
-    const result = calc();
-    const next = isObject(result) ? { ...result } : result;
-    if (!shallowEqual(next, prev) && (prev !== Symbols.Nothing || immed)) {
+    const result = selector();
+    const latestResult = isObject(result) ? { ...result } : result;
+    if (
+      !shallowEqual(latestResult, prevResult) &&
+      (prevResult !== Symbols.Nothing || immed)
+    ) {
       handler();
     }
-    prev = next;
+    prevResult = latestResult;
   });
 }

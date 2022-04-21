@@ -6,6 +6,8 @@
 
 import { Symbols } from "./Symbols";
 
+export type AnyFunction = (...args: any[]) => any;
+
 export function isString(value: any): value is string {
   return typeof value === "string";
 }
@@ -77,6 +79,7 @@ export function isError(value: any) {
 }
 
 export function isDOMError(value: any) {
+  // @ts-ignore
   return typeof DOMError !== "undefined" && value instanceof DOMError;
 }
 

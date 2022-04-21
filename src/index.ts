@@ -16,10 +16,15 @@ export { ObservePerf } from "./ObservePerf";
 export { ObserveError } from "./ObserveError";
 export { ObserveReflect } from "./ObserveReflect";
 export { ObserveKey } from "./ObserveKey";
-export { ObserveId } from "./ObserveId";
-export { createSymbol } from "./Symbols";
-export * from "./ObserveTrack";
+export { isProxy } from "./Util";
+export {
+  track,
+  untrack,
+  trackable,
+  untrackable,
+  collect,
+  reactivable as collectable
+} from "./ObserveReactive";
 export { nextTick } from "./NextTick";
 export { domUpdated } from "./DomUpdated";
 export { watch } from "./Watch";
-export * from "./Util";

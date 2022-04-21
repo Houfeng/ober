@@ -1,14 +1,16 @@
 import "./mode";
-import { strictEqual } from "assert";
-import { track, trackable, untrack, untrackable } from '../src/ObserveTrack';
+
+import { collect, reactivable, untrack, untrackable } from '../src/ObserveReactive';
+
 import { observable } from "../src/Observable";
 import { observeInfo } from "../src/ObserveInfo";
+import { strictEqual } from "assert";
 
-describe('Track', () => {
+describe('collect', () => {
 
-  it('track', (done) => {
+  it('collect', (done) => {
     const model = observable({ a: 1, b: 2 });
-    const { result, dependencies } = track(() => model.a);
+    const { result, dependencies } = collect(() => model.a);
     strictEqual(result, 1);
     const { id } = observeInfo(model);
     strictEqual(dependencies.has(`${id}.a`), true);
@@ -16,16 +18,16 @@ describe('Track', () => {
     done();
   });
 
-  it('创建 trackable 函数', (done) => {
+  it('创建 reactivable 函数', (done) => {
     const model = observable({ a: 1, b: 2 });
-    const func = trackable((num: number) => model.a + num);
+    const func = reactivable((num: number) => model.a + num);
     strictEqual(func(1), 2);
     done();
   });
 
-  it('触发 trackable 重新执行', (done) => {
+  it('触发 reactivable 重新执行', (done) => {
     const model = observable({ a: 2, b: 0 });
-    const func = trackable(() => {
+    const func = reactivable(() => {
       model.b = model.a * 2;
       return model.b;
     });
@@ -37,7 +39,7 @@ describe('Track', () => {
 
   it('untrack', (done) => {
     const model = observable({ a: 2, b: 0 });
-    const func = trackable(() => {
+    const func = reactivable(() => {
       model.b = model.a * 2;
       return model.b;
     });
@@ -49,7 +51,7 @@ describe('Track', () => {
 
   it('untrackable', (done) => {
     const model = observable({ a: 2, b: 0 });
-    const func = trackable(() => {
+    const func = reactivable(() => {
       model.b = model.a * 2;
       return model.b;
     });

@@ -11,7 +11,7 @@ import { ObserveId } from "./ObserveId";
 import { Symbols } from "./Symbols";
 
 export interface ObserveInfo<T extends object> {
-  id: number;
+  id: string;
   proxy: T;
   target: T;
   shadow: any;
@@ -24,7 +24,9 @@ export function observeInfo<T extends object>(target: T): ObserveInfo<T> {
     throw ObserveError("Invalid observe target");
   }
   if (!hasOwn(target, Symbols.Observable)) {
-    const id = ObserveId();
+    const ctor: any = target?.constructor || {};
+    const alias = ctor.displayName || ctor.name || "Object";
+    const id = `${alias}_${ObserveId()}`;
     /// @ts-ignore
     const shadow = isArray(target) ? target.slice(0) : {};
     define(target, Symbols.Observable, { id, shadow, target });

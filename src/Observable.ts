@@ -9,7 +9,9 @@ import { define, hasOwn, isFunction, isObject, isProxy } from "./Util";
 
 import { Symbols } from "./Symbols";
 
-export type AnyClass = new (...args: any[]) => any;
+export type AnyClass = (new (...args: any[]) => any) & {
+  displayName?: string;
+};
 
 export function isNativeProxy() {
   return NativeProxy === getProxyClass();
@@ -57,6 +59,9 @@ export function observable<T = any>(target: T): T {
       }
     };
     define(ObservableClass, "name", target.name);
+    if (target.displayName) {
+      define(ObservableClass, "displayName", target.displayName);
+    }
     define(ObservableClass, Symbols.Proxy, true);
     return ObservableClass;
   } else if (isObject(target)) {

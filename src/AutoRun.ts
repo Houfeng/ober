@@ -4,10 +4,12 @@
  * @author Houfeng <admin@xhou.net>
  */
 
-import { Trackable, trackable } from "./ObserveTrack";
+import { ReactiveDestroy, reactivable } from "./ObserveReactive";
 
-export function autorun<T extends Trackable>(func: T, immed = true) {
-  const wrapper = trackable(func);
-  if (immed !== false) wrapper();
-  return wrapper;
+import { AnyFunction } from "./Util";
+
+export function autorun<T extends AnyFunction>(fn: T): ReactiveDestroy {
+  const wrapper = reactivable(fn);
+  wrapper();
+  return wrapper.destroy;
 }
