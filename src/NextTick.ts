@@ -69,7 +69,7 @@ function createTickTimer() {
 
 const tickTimer = createTickTimer();
 
-export function nextTick(callback: Function, ctx?: any, unique?: boolean) {
+export function nextTick(callback: () => void, unique?: boolean) {
   if (unique === true) {
     const exists = tickOwner.handlers.find(
       handler => handler.callback === callback
@@ -79,7 +79,7 @@ export function nextTick(callback: Function, ctx?: any, unique?: boolean) {
   const defer = Defer();
   const handler: TickHandler = () => {
     try {
-      const result = callback ? callback.call(ctx) : null;
+      const result = callback ? callback() : null;
       if (defer.resolve) defer.resolve(result);
     } catch (err) {
       if (defer.reject) defer.reject(err);

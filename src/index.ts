@@ -16,7 +16,8 @@ export { ObservePerf } from "./ObservePerf";
 export { ObserveError } from "./ObserveError";
 export { ObserveReflect } from "./ObserveReflect";
 export { ObserveKey } from "./ObserveKey";
-export { isProxy } from "./Util";
+export { observeInfo } from "./ObserveInfo";
+export { isProxy, isDevelopment, shallowEqual } from "./Util";
 export { createSymbol, Symbols } from "./Symbols";
 export {
   track,

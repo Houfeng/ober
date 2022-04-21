@@ -185,3 +185,7 @@ export function shallowEqual(objA: any, objB: any) {
   }
   return true;
 }
+
+export function isDevelopment() {
+  return process?.env?.NODE_ENV === "development";
+}
