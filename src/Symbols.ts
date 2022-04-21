@@ -13,5 +13,6 @@ export function createSymbol(description: string): symbol {
 export const Symbols = {
   Observable: createSymbol("Observable"),
   Proxy: createSymbol("Proxy"),
-  Nothing: createSymbol("Nothing")
+  Nothing: createSymbol("Nothing"),
+  displayName: createSymbol("DisplayName")
 };

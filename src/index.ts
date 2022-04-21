@@ -17,7 +17,7 @@ export { ObserveError } from "./ObserveError";
 export { ObserveReflect } from "./ObserveReflect";
 export { ObserveKey } from "./ObserveKey";
 export { isProxy } from "./Util";
-export { createSymbol } from "./Symbols";
+export { createSymbol, Symbols } from "./Symbols";
 export {
   track,
   untrack,
