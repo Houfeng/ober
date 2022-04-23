@@ -1,15 +1,15 @@
 /**
  * Copyright (c) 2014-present Houfeng
  * @homepage https://github.com/Houfeng/ober
- * @author Houfeng <admin@xhou.net>
+ * @author Houfeng <houzhanfeng@gmail.com>
  */
 
-import { isObject } from "./Util";
+import { isObject, undef } from "./Util";
 
 export enum ObserveMode {
   proxy = "proxy",
   property = "property",
-  auto = "auto"
+  auto = "auto",
 }
 
 export interface ObserveConfigDefinition {
@@ -23,7 +23,7 @@ export interface ObserveConfigDefinition {
 export const DEFAULT_LOG_PREFIX = "OBER";
 
 export const ObserveEnvConfig: Partial<ObserveConfigDefinition> = (() => {
-  if (typeof process === "undefined") return {};
+  if (typeof process === undef) return {};
   const OBER_CONFIG: any = process.env && process.env.OBER_CONFIG;
   if (!OBER_CONFIG) return {};
   if (isObject(OBER_CONFIG)) return OBER_CONFIG;
@@ -41,5 +41,5 @@ export const ObserveConfig: ObserveConfigDefinition = {
   maxDependencies: 1000,
   maxHandlers: 100,
   logPrefix: DEFAULT_LOG_PREFIX,
-  ...ObserveEnvConfig
+  ...ObserveEnvConfig,
 };

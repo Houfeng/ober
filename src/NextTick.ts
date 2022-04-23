@@ -1,15 +1,16 @@
 /**
  * Copyright (c) 2014-present Houfeng
  * @homepage https://github.com/Houfeng/ober
- * @author Houfeng <admin@xhou.net>
+ * @author Houfeng <houzhanfeng@gmail.com>
  */
 
 import { Defer } from "./Defer";
+import { undef } from "./Util";
 
 export interface TickHandler {
   (): void;
   promise: Promise<any>;
-  callback: Function;
+  callback: () => void;
 }
 
 export interface TickOwner {
@@ -20,7 +21,7 @@ export interface TickOwner {
 
 export const tickOwner: TickOwner = {
   handlers: [],
-  pending: false
+  pending: false,
 };
 
 function execTickHandlers() {
@@ -29,21 +30,21 @@ function execTickHandlers() {
   tickOwner.handlers.length = 0;
   if (tickOwner.transaction) {
     tickOwner.transaction(() => {
-      copies.forEach(handler => handler());
+      copies.forEach((handler) => handler());
     });
   } else {
-    copies.forEach(handler => handler());
+    copies.forEach((handler) => handler());
   }
 }
 
 function createTickTimer() {
-  if (typeof Promise !== "undefined") {
+  if (typeof Promise !== undef) {
     const promise = Promise.resolve();
     return () => {
-      promise.then(execTickHandlers).catch(err => console.error(err));
+      promise.then(execTickHandlers).catch((err) => console.error(err));
     };
   } else if (
-    typeof MutationObserver !== "undefined" ||
+    typeof MutationObserver !== undef ||
     // PhantomJS and iOS 7.x
     window.MutationObserver.toString() ===
       "[object MutationObserverConstructor]"
@@ -72,7 +73,7 @@ const tickTimer = createTickTimer();
 export function nextTick(callback: () => void, unique?: boolean) {
   if (unique === true) {
     const exists = tickOwner.handlers.find(
-      handler => handler.callback === callback
+      (handler) => handler.callback === callback
     );
     if (exists) return exists.promise;
   }

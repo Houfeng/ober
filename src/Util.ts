@@ -1,12 +1,15 @@
 /**
  * Copyright (c) 2014-present Houfeng
  * @homepage https://github.com/Houfeng/ober
- * @author Houfeng <admin@xhou.net>
+ * @author Houfeng <houzhanfeng@gmail.com>
  */
 
 import { Symbols } from "./Symbols";
 
 export type AnyFunction = (...args: any[]) => any;
+
+export const undef = "undefined";
+export const obj = "object";
 
 export function isString(value: any): value is string {
   return typeof value === "string";
@@ -17,14 +20,14 @@ export function isNumber(value: any): value is number {
 }
 
 export function isObject(value: any): value is object {
-  return !isNullOrUndefined(value) && typeof value === "object";
+  return !isNullOrUndefined(value) && typeof value === obj;
 }
 
-export function isArray(value: any) {
+export function isArray(value: any): value is Array<any> {
   return Array.isArray ? Array.isArray(value) : value instanceof Array;
 }
 
-export function isFunction<T = Function>(value: any): value is T {
+export function isFunction<T = AnyFunction>(value: any): value is T {
   return typeof value === "function";
 }
 
@@ -40,7 +43,7 @@ export function isNullOrUndefined(value: any): value is undefined | null {
   return isNull(value) || isUndefined(value);
 }
 
-export function isSymbol(value: any): value is Symbol | string {
+export function isSymbol(value: any): value is symbol | string {
   return (
     typeof value === "symbol" ||
     (isString(value) && /^Symbol\([\s\S]+\)$/.test(value))
@@ -56,7 +59,7 @@ export function define(target: any, member: string | symbol, value: any) {
   Object.defineProperty(target, member, {
     configurable: true,
     enumerable: false,
-    value
+    value,
   });
 }
 
@@ -67,52 +70,53 @@ export function isValidKey(key: any): key is string {
 }
 
 export function isDomNode(value: any) {
-  return typeof Node !== "undefined" && value instanceof Node;
+  return typeof Node !== undef && value instanceof Node;
 }
 
 export function isEventTarget(value: any) {
-  return typeof EventTarget !== "undefined" && value instanceof EventTarget;
+  return typeof EventTarget !== undef && value instanceof EventTarget;
 }
 
 export function isError(value: any) {
-  return typeof Error !== "undefined" && value instanceof Error;
+  return typeof Error !== undef && value instanceof Error;
 }
 
 export function isDOMError(value: any) {
-  // @ts-ignore
-  return typeof DOMError !== "undefined" && value instanceof DOMError;
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  //@ts-ignore
+  return typeof DOMError !== undef && value instanceof DOMError;
 }
 
 export function isEvent(value: any) {
-  return typeof Event !== "undefined" && value instanceof Event;
+  return typeof Event !== undef && value instanceof Event;
 }
 
 export function isPromise(value: any) {
-  return typeof Promise !== "undefined" && value instanceof Promise;
+  return typeof Promise !== undef && value instanceof Promise;
 }
 
 export function isDate(value: any) {
-  return typeof Date !== "undefined" && value instanceof Date;
+  return typeof Date !== undef && value instanceof Date;
 }
 
 export function isURL(value: any) {
-  return typeof URL !== "undefined" && value instanceof URL;
+  return typeof URL !== undef && value instanceof URL;
 }
 
 export function isMap(value: any) {
-  return typeof Map !== "undefined" && value instanceof Map;
+  return typeof Map !== undef && value instanceof Map;
 }
 
 export function isSet(value: any) {
-  return typeof Set !== "undefined" && value instanceof Set;
+  return typeof Set !== undef && value instanceof Set;
 }
 
 export function isWeakMap(value: any) {
-  return typeof WeakMap !== "undefined" && value instanceof WeakMap;
+  return typeof WeakMap !== undef && value instanceof WeakMap;
 }
 
 export function isWeakSet(value: any) {
-  return typeof WeakSet !== "undefined" && value instanceof WeakSet;
+  return typeof WeakSet !== undef && value instanceof WeakSet;
 }
 
 export function isExtensible(value: any) {
@@ -167,9 +171,9 @@ export function is(x: any, y: any) {
 export function shallowEqual(objA: any, objB: any) {
   if (is(objA, objB)) return true;
   if (
-    typeof objA !== "object" ||
+    typeof objA !== obj ||
     objA === null ||
-    typeof objB !== "object" ||
+    typeof objB !== obj ||
     objB === null
   ) {
     return false;
@@ -177,7 +181,6 @@ export function shallowEqual(objA: any, objB: any) {
   const keysA = Object.keys(objA);
   const keysB = Object.keys(objB);
   if (keysA.length !== keysB.length) return false;
-  // tslint:disable-next-line
   for (let i = 0; i < keysA.length; i++) {
     if (!hasOwn(objB, keysA[i]) || !is(objA[keysA[i]], objB[keysA[i]])) {
       return false;

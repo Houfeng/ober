@@ -1,7 +1,7 @@
 /**
  * Copyright (c) 2014-present Houfeng
  * @homepage https://github.com/Houfeng/ober
- * @author Houfeng <admin@xhou.net>
+ * @author Houfeng <houzhanfeng@gmail.com>
  */
 
 export { autorun } from "./AutoRun";
@@ -25,8 +25,7 @@ export {
   trackable,
   untrackable,
   collect,
-  reactivable as collectable
+  reactivable as collectable,
 } from "./ObserveReactive";
 export { nextTick } from "./NextTick";
-export { domUpdated } from "./DomUpdated";
 export { watch } from "./Watch";

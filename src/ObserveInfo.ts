@@ -1,7 +1,7 @@
 /**
  * Copyright (c) 2014-present Houfeng
  * @homepage https://github.com/Houfeng/ober
- * @author Houfeng <admin@xhou.net>
+ * @author Houfeng <houzhanfeng@gmail.com>
  */
 
 import { define, hasOwn, isArray, isObject } from "./Util";
@@ -19,19 +19,20 @@ export interface ObserveInfo<T extends object> {
   isWrappedArray: boolean;
 }
 
-export function observeInfo<T extends object>(target: T): ObserveInfo<T> {
-  if (!target || !isObject(target)) {
+export function observeInfo<T extends object = any>(
+  _target: T
+): ObserveInfo<T> {
+  if (!_target || !isObject(_target)) {
     throw ObserveError("Invalid observe target");
   }
+  const target: any = _target;
   if (!hasOwn(target, Symbols.Observable)) {
-    // @ts-ignore
     const specified = target?.[Symbols.displayName] || target?.__displayName;
     const ctor: any = target?.constructor || {};
     const alias = specified || ctor.displayName || ctor.name || "Object";
     const id = `${alias}_${ObserveId()}`;
-    /// @ts-ignore
     const shadow = isArray(target) ? target.slice(0) : {};
     define(target, Symbols.Observable, { id, shadow, target });
   }
-  return (target as any)[Symbols.Observable] as ObserveInfo<T>;
+  return target[Symbols.Observable] as ObserveInfo<T>;
 }

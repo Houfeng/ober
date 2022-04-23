@@ -1,11 +1,18 @@
 /**
  * Copyright (c) 2014-present Houfeng
  * @homepage https://github.com/Houfeng/ober
- * @author Houfeng <admin@xhou.net>
+ * @author Houfeng <houzhanfeng@gmail.com>
  */
 
+import {
+  AnyFunction,
+  define,
+  isArray,
+  isObject,
+  isValidKey,
+  isValidValue,
+} from "./Util";
 import { ObserveEvent, publish } from "./ObserveBus";
-import { define, isArray, isObject, isValidKey, isValidValue } from "./Util";
 
 import { ObserveError } from "./ObserveError";
 import { Symbols } from "./Symbols";
@@ -27,14 +34,16 @@ function createObservableMember<T extends object>(
       const value = handler.get
         ? handler.get(shadow, member, shadow)
         : shadow[member];
-      return isArray(value) ? createObservableArray(value, handler) : value;
+      return isArray(value)
+        ? createObservableArray(value, handler as ProxyHandler<Array<any>>)
+        : value;
     },
     set(value) {
       const success = handler.set && handler.set(shadow, member, value, shadow);
       if (!success) shadow[member] = value;
     },
     configurable: true,
-    enumerable: true
+    enumerable: true,
   });
 }
 
@@ -52,7 +61,7 @@ function createObservableObject<T extends object>(
   return target;
 }
 
-function createObservableArray<T extends object>(
+function createObservableArray<T extends Array<any>>(
   target: T,
   handler: ProxyHandler<T>
 ) {
@@ -65,13 +74,10 @@ function createObservableArray<T extends object>(
   methods.forEach((method: string) => {
     define(target, method, (...args: any[]) => {
       verifyStrictMode();
-      // @ts-ignore
-      const func: Function = Array.prototype[method];
+      const func = (Array.prototype as any)[method] as AnyFunction;
       const result = func.apply(shadow, args);
-      // @ts-ignore
       target.length = 0;
       for (let i = 0; i < shadow.length; i++) {
-        // @ts-ignore
         target[i] = shadow[i];
         createObservableMember(target, i, handler);
       }

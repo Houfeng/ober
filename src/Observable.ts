@@ -1,7 +1,7 @@
 /**
  * Copyright (c) 2014-present Houfeng
  * @homepage https://github.com/Houfeng/ober
- * @author Houfeng <admin@xhou.net>
+ * @author Houfeng <houzhanfeng@gmail.com>
  */
 
 import { NativeProxy, createProxy, getProxyClass } from "./ObserveProxy";
@@ -36,15 +36,15 @@ export function observable<T = any>(target: T): T {
             Object.defineProperty(this, key, {
               enumerable: true,
               get: () => proxyProto[key],
-              set: (value: any) => (proxyProto[key] = value)
+              set: (value: any) => (proxyProto[key] = value),
             });
           };
           const proxyProto = createProxy(newProto, {
-            set: member => {
+            set: (member) => {
               attachProperty(proxyProto, member);
-            }
+            },
           });
-          Object.getOwnPropertyNames(this).forEach(key => {
+          Object.getOwnPropertyNames(this).forEach((key) => {
             const descriptor = Object.getOwnPropertyDescriptor(this, key);
             Object.defineProperty(newProto, key, descriptor);
             delete this[key];

@@ -1,11 +1,11 @@
 /**
  * Copyright (c) 2014-present Houfeng
  * @homepage https://github.com/Houfeng/ober
- * @author Houfeng <admin@xhou.net>
+ * @author Houfeng <houzhanfeng@gmail.com>
  */
 
 export const ObserveState = {
   get: false,
   set: true,
-  action: false
+  action: false,
 };

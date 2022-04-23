@@ -1,7 +1,7 @@
 /**
  * Copyright (c) 2014-present Houfeng
  * @homepage https://github.com/Houfeng/ober
- * @author Houfeng <admin@xhou.net>
+ * @author Houfeng <houzhanfeng@gmail.com>
  */
 
 import { AnyFunction, isPrivateKey, isSymbol } from "./Util";
@@ -75,7 +75,7 @@ export function reactivable<T extends ReactiveFunction>(
   fn: T,
   onUpdate?: (data?: ObserveData) => any
 ) {
-  let onSet: ObserveHandler;
+  let onSet: ObserveHandler; // eslint-disable-line prefer-const
   const wrapper: ReactiveFunction = (...args: any[]) => {
     unsubscribe(ObserveEvent.set, onSet);
     const { result, dependencies } = collect(fn, ...args);

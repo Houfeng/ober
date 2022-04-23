@@ -1,7 +1,7 @@
 /**
  * Copyright (c) 2014-present Houfeng
  * @homepage https://github.com/Houfeng/ober
- * @author Houfeng <admin@xhou.net>
+ * @author Houfeng <houzhanfeng@gmail.com>
  */
 
 import { ObserveConfig, ObserveMode } from "./ObserveConfig";
@@ -14,7 +14,8 @@ import {
   isSetLength,
   isSymbol,
   isValidKey,
-  isValidValue
+  isValidValue,
+  undef,
 } from "./Util";
 
 import { LowProxy } from "./LowProxy";
@@ -24,7 +25,7 @@ import { Symbols } from "./Symbols";
 import { observeInfo } from "./ObserveInfo";
 import { verifyStrictMode } from "./ObserveAction";
 
-export const NativeProxy = typeof Proxy !== "undefined" ? Proxy : null;
+export const NativeProxy = typeof Proxy !== undef ? Proxy : null;
 
 export function getProxyClass() {
   switch (ObserveConfig.mode) {
@@ -105,7 +106,7 @@ export function createProxy<T extends object>(
       publish(ObserveEvent.set, { id: info.id, member, value });
       if (hooks && hooks.set) hooks.set(member, value);
       return true;
-    }
+    },
   }) as any;
   return info.proxy;
 }

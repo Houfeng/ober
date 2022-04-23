@@ -1,7 +1,7 @@
 /**
  * Copyright (c) 2014-present Houfeng
  * @homepage https://github.com/Houfeng/ober
- * @author Houfeng <admin@xhou.net>
+ * @author Houfeng <houzhanfeng@gmail.com>
  */
 
 import { ObserveError, ObserveText } from "./ObserveError";
@@ -18,7 +18,7 @@ export const ObserveHandlers: ObserveHandlerStore = {};
 
 export enum ObserveEvent {
   get = "get",
-  set = "set"
+  set = "set",
 }
 
 export function subscribe(type: ObserveEvent, handler: ObserveHandler) {
@@ -26,7 +26,7 @@ export function subscribe(type: ObserveEvent, handler: ObserveHandler) {
   if (!type) throw ObserveError("Invalid ObserveEvent");
   if (!ObserveHandlers[type]) ObserveHandlers[type] = {};
   if (handler.dependencies) {
-    handler.dependencies.forEach(key => {
+    handler.dependencies.forEach((key) => {
       if (!ObserveHandlers[type][key]) ObserveHandlers[type][key] = new Set();
       ObserveHandlers[type][key].add(handler);
     });
@@ -40,7 +40,7 @@ export function subscribe(type: ObserveEvent, handler: ObserveHandler) {
 export function unsubscribe(type: ObserveEvent, handler: ObserveHandler) {
   if (!ObserveHandlers[type] || !handler) return;
   if (handler.dependencies) {
-    handler.dependencies.forEach(key => {
+    handler.dependencies.forEach((key) => {
       if (!ObserveHandlers[type][key]) return;
       ObserveHandlers[type][key].delete(handler);
     });
@@ -66,11 +66,11 @@ export function publish(
     console.warn(ObserveText(`Trigger ${matchedCount} handlers`));
   }
   if (matchedHandlers && matchedCount > 0) {
-    matchedHandlers.forEach(handler => handler(data));
+    matchedHandlers.forEach((handler) => handler(data));
   }
   const commonHandlers = new Set(ObserveHandlers[type]["*"]);
   if (!matchOnly && commonHandlers && commonHandlers.size > 0) {
-    commonHandlers.forEach(handler => handler(data));
+    commonHandlers.forEach((handler) => handler(data));
   }
   if (perf.onPublish) {
     perf.onPublish({ type, data, matchedHandlers, commonHandlers, matchOnly });

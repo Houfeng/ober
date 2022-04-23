@@ -8,7 +8,7 @@ build:
     text: 
       - 'Copyright (c) 2014-present Houfeng'
       - '@homepage https://github.com/Houfeng/ober'
-      - '@author Houfeng <admin@xhou.net>'
+      - '@author Houfeng <houzhanfeng@gmail.com>'
   - name: shell
     script:
       - tsc --locale zh-CN 
@@ -19,8 +19,7 @@ dev:
     script:
       - ts-node --skip-project ./debug/index.ts
 
-exec_test:
-  - name: tslint
+unit:
   - name: unit
     env: typescript
     files: ./test/**/*.test.ts
@@ -28,9 +27,10 @@ exec_test:
 test: 
   - name: shell
     script:
-      - dn run exec_test -e proxy
-      - dn run exec_test -e property
-      - dn run exec_test -e auto
+      - eslint --fix ./src/**/*.ts
+      - dn run unit -e proxy
+      - dn run unit -e property
+      - dn run unit -e auto
 
 publish:
   - name: version
