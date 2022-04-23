@@ -1,1 +1,1 @@
-# Ober 轻量 Observer 库
+一个极轻量的 Observable 库
