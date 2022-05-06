@@ -11,13 +11,13 @@ import {
   isObject,
   isValidKey,
   isValidValue,
-} from "./Util";
+} from "./ObserveUtil";
 import { ObserveEvent, publish } from "./ObserveBus";
 
 import { ObserveError } from "./ObserveError";
-import { Symbols } from "./Symbols";
+import { ObserveSymbols } from "./ObserveSymbols";
+import { checkStrictMode } from "./ObserveConfig";
 import { observeInfo } from "./ObserveInfo";
-import { verifyStrictMode } from "./ObserveAction";
 
 function createObservableMember<T extends object>(
   target: T,
@@ -73,7 +73,7 @@ function createObservableArray<T extends Array<any>>(
   const methods = ["push", "pop", "shift", "unshift", "splice", "reverse"];
   methods.forEach((method: string) => {
     define(target, method, (...args: any[]) => {
-      verifyStrictMode();
+      checkStrictMode();
       const func = (Array.prototype as any)[method] as AnyFunction;
       const result = func.apply(shadow, args);
       target.length = 0;
@@ -91,7 +91,7 @@ function createObservableArray<T extends Array<any>>(
 export class LowProxy<T extends object> {
   constructor(target: T, handler: ProxyHandler<T>) {
     if (isObject(target)) {
-      define(target, Symbols.Proxy, true);
+      define(target, ObserveSymbols.Proxy, true);
       return createObservableObject(target, handler);
     } else {
       throw ObserveError("Invalid LowProxy target");

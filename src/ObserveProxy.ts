@@ -4,7 +4,7 @@
  * @author Houfeng <houzhanfeng@gmail.com>
  */
 
-import { ObserveConfig, ObserveMode } from "./ObserveConfig";
+import { ObserveConfig, ObserveMode, checkStrictMode } from "./ObserveConfig";
 import { ObserveError, ObserveText } from "./ObserveError";
 import { ObserveEvent, publish } from "./ObserveBus";
 import {
@@ -16,14 +16,13 @@ import {
   isValidKey,
   isValidValue,
   undef,
-} from "./Util";
+} from "./ObserveUtil";
 
-import { LowProxy } from "./LowProxy";
+import { LowProxy } from "./ObserveShim";
 import { ObserveReflect } from "./ObserveReflect";
 import { ObserveState } from "./ObserveState";
-import { Symbols } from "./Symbols";
+import { ObserveSymbols } from "./ObserveSymbols";
 import { observeInfo } from "./ObserveInfo";
-import { verifyStrictMode } from "./ObserveAction";
 
 export const NativeProxy = typeof Proxy !== undef ? Proxy : null;
 
@@ -49,14 +48,14 @@ function isUninitializedMember(target: any, member: string | symbol | number) {
   );
 }
 
-export interface ProxyHooks {
+export interface ProxyTraps {
   get?: (member: string | number | symbol) => any;
   set?: (member: string | number | symbol, value?: any) => any;
 }
 
 export function createProxy<T extends object>(
   target: T,
-  hooks?: ProxyHooks
+  traps?: ProxyTraps
 ): T {
   if (isProxy(target)) return target;
   const info = observeInfo(target);
@@ -69,7 +68,7 @@ export function createProxy<T extends object>(
   }
   info.proxy = new ObserveProxy(target, {
     getOwnPropertyDescriptor(target: any, member: string | number | symbol) {
-      if (member === Symbols.Proxy) {
+      if (member === ObserveSymbols.Proxy) {
         return { configurable: true, enumerable: false, value: true };
       }
       return Object.getOwnPropertyDescriptor(target, member);
@@ -81,7 +80,7 @@ export function createProxy<T extends object>(
       const wrappedValue = isObject(value) ? createProxy(value) : value;
       if (!ObserveState.get) return wrappedValue;
       publish(ObserveEvent.get, { id: info.id, member, value });
-      if (hooks && hooks.get) hooks.get(member);
+      if (traps && traps.get) traps.get(member);
       return wrappedValue;
     },
 
@@ -91,7 +90,7 @@ export function createProxy<T extends object>(
       value: any,
       receiver: any
     ) {
-      verifyStrictMode();
+      checkStrictMode();
       if (info.shadow[member] === value && !isSetLength(target, member)) {
         return true;
       }
@@ -104,7 +103,7 @@ export function createProxy<T extends object>(
       if (!ObserveState.set) return true;
       if (!isValidKey(member) || !isValidValue(value)) return true;
       publish(ObserveEvent.set, { id: info.id, member, value });
-      if (hooks && hooks.set) hooks.set(member, value);
+      if (traps && traps.set) traps.set(member, value);
       return true;
     },
   }) as any;

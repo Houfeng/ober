@@ -4,11 +4,11 @@
  * @author Houfeng <houzhanfeng@gmail.com>
  */
 
-import { define, hasOwn, isArray, isObject } from "./Util";
+import { define, hasOwn, isArray, isObject } from "./ObserveUtil";
 
 import { ObserveError } from "./ObserveError";
 import { ObserveId } from "./ObserveId";
-import { Symbols } from "./Symbols";
+import { ObserveSymbols } from "./ObserveSymbols";
 
 export interface ObserveInfo<T extends object> {
   id: string;
@@ -26,13 +26,14 @@ export function observeInfo<T extends object = any>(
     throw ObserveError("Invalid observe target");
   }
   const target: any = _target;
-  if (!hasOwn(target, Symbols.Observable)) {
-    const specified = target?.[Symbols.displayName] || target?.__displayName;
+  if (!hasOwn(target, ObserveSymbols.Observable)) {
+    const specified =
+      target?.[ObserveSymbols.DisplayName] || target?.__displayName;
     const ctor: any = target?.constructor || {};
     const alias = specified || ctor.displayName || ctor.name || "Object";
     const id = `${alias}_${ObserveId()}`;
     const shadow = isArray(target) ? target.slice(0) : {};
-    define(target, Symbols.Observable, { id, shadow, target });
+    define(target, ObserveSymbols.Observable, { id, shadow, target });
   }
-  return target[Symbols.Observable] as ObserveInfo<T>;
+  return target[ObserveSymbols.Observable] as ObserveInfo<T>;
 }

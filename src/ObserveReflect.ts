@@ -4,7 +4,7 @@
  * @author Houfeng <houzhanfeng@gmail.com>
  */
 
-import { isProxy } from "./Util";
+import { isProxy } from "./ObserveUtil";
 
 export const ObserveReflect = {
   getPropertyDescriptor(target: any, key: string | number | symbol) {

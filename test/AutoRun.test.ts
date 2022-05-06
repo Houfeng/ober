@@ -1,7 +1,8 @@
 import "./mode";
+
+import { autorun } from '../src/ObserveReactive';
+import { observable } from '../src/ObserveHof';
 import { strictEqual } from "assert";
-import { autorun } from '../src/AutoRun';
-import { observable } from '../src/Observable';
 
 describe('AutoRun', () => {
 

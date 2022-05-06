@@ -6,7 +6,7 @@
 
 import { ObserveError, ObserveText } from "./ObserveError";
 import { ObserveHandler, ObserveHandlerStore } from "./ObserveHandler";
-import { isPrivateKey, isSymbol } from "./Util";
+import { isPrivateKey, isSymbol } from "./ObserveUtil";
 
 import { ObserveConfig } from "./ObserveConfig";
 import { ObserveData } from "./ObserveData";

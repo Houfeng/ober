@@ -1,6 +1,6 @@
 import "./mode";
 
-import { nextTick } from "../src/NextTick";
+import { nextTick } from "../src/ObserveTick";
 import { strictEqual } from "assert";
 
 describe('Tick', () => {

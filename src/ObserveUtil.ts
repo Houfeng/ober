@@ -4,9 +4,13 @@
  * @author Houfeng <houzhanfeng@gmail.com>
  */
 
-import { Symbols } from "./Symbols";
+import { ObserveSymbols } from "./ObserveSymbols";
 
 export type AnyFunction = (...args: any[]) => any;
+
+export type AnyClass = (new (...args: any[]) => any) & {
+  displayName?: string;
+};
 
 export const undef = "undefined";
 export const obj = "object";
@@ -29,6 +33,10 @@ export function isArray(value: any): value is Array<any> {
 
 export function isFunction<T = AnyFunction>(value: any): value is T {
   return typeof value === "function";
+}
+
+export function isArrowFunction<T = AnyFunction>(value: any): value is T {
+  return isFunction(value) && value.prototype === undefined;
 }
 
 export function isUndefined(value: any): value is undefined {
@@ -157,7 +165,7 @@ export const getOwnValue = (target: any, member: string | number | symbol) => {
 };
 
 export function isProxy(target: any) {
-  return !!(target && hasOwn(target, Symbols.Proxy));
+  return !!(target && hasOwn(target, ObserveSymbols.Proxy));
 }
 
 export function is(x: any, y: any) {
@@ -191,4 +199,20 @@ export function shallowEqual(objA: any, objB: any) {
 
 export function isDevelopment() {
   return process?.env?.NODE_ENV === "development";
+}
+
+export interface Defer<T> {
+  readonly promise: PromiseLike<T>;
+  readonly resolve: (value: T) => void;
+  readonly reject: (error: any) => void;
+}
+
+export function Defer<T = any>(): Defer<T> {
+  let resolve: Defer<T>["resolve"];
+  let reject: Defer<T>["reject"];
+  const promise = new Promise<T>((_resolve, _reject) => {
+    resolve = _resolve;
+    reject = _reject;
+  });
+  return { promise, resolve, reject };
 }

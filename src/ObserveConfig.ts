@@ -4,7 +4,10 @@
  * @author Houfeng <houzhanfeng@gmail.com>
  */
 
-import { isObject, undef } from "./Util";
+import { isObject, undef } from "./ObserveUtil";
+
+import { ObserveError } from "./ObserveError";
+import { ObserveState } from "./ObserveState";
 
 export enum ObserveMode {
   proxy = "proxy",
@@ -43,3 +46,9 @@ export const ObserveConfig: ObserveConfigDefinition = {
   logPrefix: DEFAULT_LOG_PREFIX,
   ...ObserveEnvConfig,
 };
+
+export function checkStrictMode() {
+  if (ObserveConfig.strict && !ObserveState.action) {
+    throw ObserveError("Strict mode change model, must be in action");
+  }
+}

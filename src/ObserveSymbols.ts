@@ -4,7 +4,7 @@
  * @author Houfeng <houzhanfeng@gmail.com>
  */
 
-import { undef } from "./Util";
+import { undef } from "./ObserveUtil";
 
 export function createSymbol(description: string): symbol {
   return (
@@ -12,9 +12,9 @@ export function createSymbol(description: string): symbol {
   ) as symbol;
 }
 
-export const Symbols = {
+export const ObserveSymbols = {
   Observable: createSymbol("Observable"),
   Proxy: createSymbol("Proxy"),
   Nothing: createSymbol("Nothing"),
-  displayName: createSymbol("DisplayName"),
+  DisplayName: createSymbol("DisplayName"),
 };

@@ -4,7 +4,13 @@
  * @author Houfeng <houzhanfeng@gmail.com>
  */
 
-import { AnyFunction, isPrivateKey, isSymbol } from "./Util";
+import {
+  AnyFunction,
+  isObject,
+  isPrivateKey,
+  isSymbol,
+  shallowEqual,
+} from "./ObserveUtil";
 import { ObserveEvent, subscribe, unsubscribe } from "./ObserveBus";
 
 import { ObserveConfig } from "./ObserveConfig";
@@ -12,6 +18,7 @@ import { ObserveData } from "./ObserveData";
 import { ObserveHandler } from "./ObserveHandler";
 import { ObserveKey } from "./ObserveKey";
 import { ObserveState } from "./ObserveState";
+import { ObserveSymbols } from "./ObserveSymbols";
 import { ObserveText } from "./ObserveError";
 
 function trackSwitch<T extends AnyFunction>(
@@ -75,21 +82,42 @@ export function reactivable<T extends ReactiveFunction>(
   fn: T,
   onUpdate?: (data?: ObserveData) => any
 ) {
-  let onSet: ObserveHandler; // eslint-disable-line prefer-const
+  let setHandler: ObserveHandler; // eslint-disable-line prefer-const
   const wrapper: ReactiveFunction = (...args: any[]) => {
-    unsubscribe(ObserveEvent.set, onSet);
+    unsubscribe(ObserveEvent.set, setHandler);
     const { result, dependencies } = collect(fn, ...args);
-    onSet.dependencies = dependencies;
-    subscribe(ObserveEvent.set, onSet);
+    setHandler.dependencies = dependencies;
+    subscribe(ObserveEvent.set, setHandler);
     wrapper.dependencies = dependencies;
     return result;
   };
-  onSet = (data: ObserveData) => {
+  setHandler = (data: ObserveData) => {
     if (isSymbol(data.member) || isPrivateKey(data.member)) return;
     if (!wrapper.dependencies) return;
     if (!wrapper.dependencies.has(ObserveKey(data))) return;
     return onUpdate ? onUpdate(data) : wrapper();
   };
-  wrapper.destroy = () => unsubscribe(ObserveEvent.set, onSet);
+  wrapper.destroy = () => unsubscribe(ObserveEvent.set, setHandler);
   return wrapper as T & ReactiveFunction;
+}
+
+export function autorun<T extends AnyFunction>(fn: T): ReactiveDestroy {
+  const wrapper = reactivable(fn);
+  wrapper();
+  return wrapper.destroy;
+}
+
+export function watch(selector: () => any, handler: () => void, immed = false) {
+  let prevResult: any = ObserveSymbols.Nothing;
+  return autorun(() => {
+    const result = selector();
+    const latestResult = isObject(result) ? { ...result } : result;
+    if (
+      !shallowEqual(latestResult, prevResult) &&
+      (prevResult !== ObserveSymbols.Nothing || immed)
+    ) {
+      handler();
+    }
+    prevResult = latestResult;
+  });
 }

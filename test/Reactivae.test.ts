@@ -2,7 +2,7 @@ import "./mode";
 
 import { collect, reactivable, untrack, untrackable } from '../src/ObserveReactive';
 
-import { observable } from "../src/Observable";
+import { observable } from "../src/ObserveHof";
 import { observeInfo } from "../src/ObserveInfo";
 import { strictEqual } from "assert";
 

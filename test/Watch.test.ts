@@ -1,7 +1,8 @@
 import "./mode";
+
+import { observable } from '../src/ObserveHof';
 import { strictEqual } from "assert";
-import { watch } from '../src/Watch';
-import { observable } from '../src/Observable';
+import { watch } from '../src/ObserveReactive';
 
 describe('Watch', () => {
 
