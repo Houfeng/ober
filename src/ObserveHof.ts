@@ -14,7 +14,7 @@ import {
 } from "./ObserveUtil";
 import { NativeProxy, createProxy, getProxyClass } from "./ObserveProxy";
 
-import { ObserveState } from "./ObserveState";
+import { ObserveFlags } from "./ObserveFlags";
 import { ObserveSymbols } from "./ObserveSymbols";
 
 export function isNativeProxy() {
@@ -49,9 +49,9 @@ export function action<T extends AnyFunction>(target: T): T;
 export function action(target: any, member?: string) {
   if (isFunction(target) && !member) {
     return function (...args: any[]) {
-      ObserveState.action = true;
+      ObserveFlags.action = true;
       const result = target.call(this, ...args);
-      ObserveState.action = false;
+      ObserveFlags.action = false;
       return result;
     };
   } else {

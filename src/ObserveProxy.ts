@@ -19,8 +19,8 @@ import {
 } from "./ObserveUtil";
 
 import { LowProxy } from "./ObserveShim";
+import { ObserveFlags } from "./ObserveFlags";
 import { ObserveReflect } from "./ObserveReflect";
-import { ObserveState } from "./ObserveState";
 import { ObserveSymbols } from "./ObserveSymbols";
 import { observeInfo } from "./ObserveInfo";
 
@@ -78,7 +78,7 @@ export function createProxy<T extends object>(
       const value = ObserveReflect.get(target, member, receiver);
       if (!isValidKey(member) || !isValidValue(value)) return value;
       const wrappedValue = isObject(value) ? createProxy(value) : value;
-      if (!ObserveState.get) return wrappedValue;
+      if (!ObserveFlags.get) return wrappedValue;
       publish(ObserveEvent.get, { id: info.id, member, value });
       if (traps && traps.get) traps.get(member);
       return wrappedValue;
@@ -100,7 +100,7 @@ export function createProxy<T extends object>(
       }
       ObserveReflect.set(target, member, value, receiver);
       info.shadow[member] = value;
-      if (!ObserveState.set) return true;
+      if (!ObserveFlags.set) return true;
       if (!isValidKey(member) || !isValidValue(value)) return true;
       publish(ObserveEvent.set, { id: info.id, member, value });
       if (traps && traps.set) traps.set(member, value);

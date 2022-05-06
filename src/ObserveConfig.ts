@@ -7,7 +7,7 @@
 import { isObject, undef } from "./ObserveUtil";
 
 import { ObserveError } from "./ObserveError";
-import { ObserveState } from "./ObserveState";
+import { ObserveFlags } from "./ObserveFlags";
 
 export enum ObserveMode {
   proxy = "proxy",
@@ -48,7 +48,7 @@ export const ObserveConfig: ObserveConfigDefinition = {
 };
 
 export function checkStrictMode() {
-  if (ObserveConfig.strict && !ObserveState.action) {
+  if (ObserveConfig.strict && !ObserveFlags.action) {
     throw ObserveError("Strict mode change model, must be in action");
   }
 }

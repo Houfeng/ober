@@ -7,7 +7,7 @@
 import { ObserveData } from "./ObserveData";
 import { ObserveHandler } from "./ObserveHandler";
 
-export const ObservePerf: {
+export const ObserveInspector: {
   onPublish?: (info: {
     type?: string;
     data?: ObserveData;

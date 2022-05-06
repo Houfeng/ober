@@ -4,7 +4,7 @@
  * @author Houfeng <houzhanfeng@gmail.com>
  */
 
-export const ObserveState = {
+export const ObserveFlags = {
   get: false,
   set: true,
   action: false,

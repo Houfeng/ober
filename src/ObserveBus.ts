@@ -10,9 +10,9 @@ import { isPrivateKey, isSymbol } from "./ObserveUtil";
 
 import { ObserveConfig } from "./ObserveConfig";
 import { ObserveData } from "./ObserveData";
+import { ObserveFlags } from "./ObserveFlags";
 import { ObserveKey } from "./ObserveKey";
-import { ObserveState } from "./ObserveState";
-import { ObservePerf as perf } from "./ObservePerf";
+import { ObserveInspector as inspector } from "./ObserveInspector";
 
 export const ObserveHandlers: ObserveHandlerStore = {};
 
@@ -34,7 +34,7 @@ export function subscribe(type: ObserveEvent, handler: ObserveHandler) {
     if (!ObserveHandlers[type]["*"]) ObserveHandlers[type]["*"] = new Set();
     ObserveHandlers[type]["*"].add(handler);
   }
-  if (perf.onSubscribe) perf.onSubscribe({ type, handler });
+  if (inspector.onSubscribe) inspector.onSubscribe({ type, handler });
 }
 
 export function unsubscribe(type: ObserveEvent, handler: ObserveHandler) {
@@ -47,7 +47,7 @@ export function unsubscribe(type: ObserveEvent, handler: ObserveHandler) {
   } else if (ObserveHandlers[type]["*"]) {
     ObserveHandlers[type]["*"].delete(handler);
   }
-  if (perf.onUnsubscribe) perf.onUnsubscribe({ type, handler });
+  if (inspector.onUnsubscribe) inspector.onUnsubscribe({ type, handler });
 }
 
 export function publish(
@@ -56,8 +56,8 @@ export function publish(
   matchOnly = false
 ) {
   if (!ObserveHandlers[type]) return;
-  if (!ObserveState.get && type === ObserveEvent.get) return;
-  if (!ObserveState.set && type === ObserveEvent.set) return;
+  if (!ObserveFlags.get && type === ObserveEvent.get) return;
+  if (!ObserveFlags.set && type === ObserveEvent.set) return;
   if (isSymbol(data.member) || isPrivateKey(data.member)) return;
   const observeKey = ObserveKey(data);
   const matchedHandlers = new Set(ObserveHandlers[type][observeKey]);
@@ -72,7 +72,13 @@ export function publish(
   if (!matchOnly && commonHandlers && commonHandlers.size > 0) {
     commonHandlers.forEach((handler) => handler(data));
   }
-  if (perf.onPublish) {
-    perf.onPublish({ type, data, matchedHandlers, commonHandlers, matchOnly });
+  if (inspector.onPublish) {
+    inspector.onPublish({
+      type,
+      data,
+      matchedHandlers,
+      commonHandlers,
+      matchOnly,
+    });
   }
 }

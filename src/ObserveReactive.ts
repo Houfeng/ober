@@ -15,25 +15,25 @@ import { ObserveEvent, subscribe, unsubscribe } from "./ObserveBus";
 
 import { ObserveConfig } from "./ObserveConfig";
 import { ObserveData } from "./ObserveData";
+import { ObserveFlags } from "./ObserveFlags";
 import { ObserveHandler } from "./ObserveHandler";
 import { ObserveKey } from "./ObserveKey";
-import { ObserveState } from "./ObserveState";
 import { ObserveSymbols } from "./ObserveSymbols";
 import { ObserveText } from "./ObserveError";
 
 function trackSwitch<T extends AnyFunction>(
   fn: T,
-  state: boolean,
+  flag: boolean,
   ...args: any[]
 ) {
   if (!fn) return;
-  const originSetState = ObserveState.set;
-  const originGetState = ObserveState.get;
-  ObserveState.set = state;
-  ObserveState.get = state;
+  const originSetFlag = ObserveFlags.set;
+  const originGetFlag = ObserveFlags.get;
+  ObserveFlags.set = flag;
+  ObserveFlags.get = flag;
   const result = fn(...args);
-  ObserveState.set = originSetState;
-  ObserveState.get = originGetState;
+  ObserveFlags.set = originSetFlag;
+  ObserveFlags.get = originGetFlag;
   return result as ReturnType<T>;
 }
 
@@ -59,9 +59,9 @@ export function collect<T extends AnyFunction>(fn: T, ...args: any[]) {
     dependencies.add(ObserveKey(data));
   };
   subscribe(ObserveEvent.get, collectHandler);
-  ObserveState.get = true;
+  ObserveFlags.get = true;
   const result: ReturnType<T> = fn(...args);
-  ObserveState.get = false;
+  ObserveFlags.get = false;
   unsubscribe(ObserveEvent.get, collectHandler);
   const count = dependencies && dependencies.size;
   if (count > ObserveConfig.maxDependencies) {
@@ -93,8 +93,7 @@ export function reactivable<T extends ReactiveFunction>(
   };
   setHandler = (data: ObserveData) => {
     if (isSymbol(data.member) || isPrivateKey(data.member)) return;
-    if (!wrapper.dependencies) return;
-    if (!wrapper.dependencies.has(ObserveKey(data))) return;
+    if (!setHandler.dependencies) return;
     return onUpdate ? onUpdate(data) : wrapper();
   };
   wrapper.destroy = () => unsubscribe(ObserveEvent.set, setHandler);
