@@ -38,5 +38,5 @@ publish:
     script:
       - dn test
       - dn build
-      - npm pu --registry=https://registry.npmjs.org
+      - npm pu --registry=https://registry.npmjs.org --tag alpha
   - name: submitter

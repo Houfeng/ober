@@ -93,7 +93,7 @@ export function reactivable<T extends ReactiveFunction>(
   };
   setHandler = (data: ObserveData) => {
     if (isSymbol(data.member) || isPrivateKey(data.member)) return;
-    if (!setHandler.dependencies) return;
+
     return onUpdate ? onUpdate(data) : wrapper();
   };
   wrapper.destroy = () => unsubscribe(ObserveEvent.set, setHandler);
