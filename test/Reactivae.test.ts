@@ -6,7 +6,7 @@ import { observable } from "../src/ObserveHof";
 import { observeInfo } from "../src/ObserveInfo";
 import { strictEqual } from "assert";
 
-describe('collect', () => {
+describe('Reactivable', () => {
 
   it('collect', (done) => {
     const model = observable({ a: 1, b: 2 });

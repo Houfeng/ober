@@ -26,7 +26,7 @@ import { observeInfo } from "./ObserveInfo";
 
 export const NativeProxy = typeof Proxy !== undef ? Proxy : null;
 
-export function getProxyClass() {
+function getProxyClass() {
   switch (ObserveConfig.mode) {
     case ObserveMode.property:
       return LowProxy;

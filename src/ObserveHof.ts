@@ -12,14 +12,10 @@ import {
   isObject,
   isProxy,
 } from "./ObserveUtil";
-import { NativeProxy, createProxy, getProxyClass } from "./ObserveProxy";
 
 import { ObserveFlags } from "./ObserveFlags";
 import { ObserveSymbols } from "./ObserveSymbols";
-
-export function isNativeProxy() {
-  return NativeProxy === getProxyClass();
-}
+import { createProxy } from "./ObserveProxy";
 
 export function observable<T = any>(target: T): T {
   if (isProxy(target)) {
