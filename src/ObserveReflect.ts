@@ -4,10 +4,10 @@
  * @author Houfeng <houzhanfeng@gmail.com>
  */
 
-import { isProxy } from "./ObserveUtil";
+import { Member, isProxy } from "./ObserveUtil";
 
 export const ObserveReflect = {
-  getPropertyDescriptor(target: any, key: string | number | symbol) {
+  getPropertyDescriptor(target: any, key: Member) {
     if (!target) return;
     return (
       Object.getOwnPropertyDescriptor(target, key) ||
@@ -15,7 +15,7 @@ export const ObserveReflect = {
     );
   },
 
-  get(target: any, key: string | number | symbol, receiver: any) {
+  get(target: any, key: Member, receiver: any) {
     if (!isProxy(receiver) || target === receiver) {
       return target[key];
     }
@@ -27,7 +27,7 @@ export const ObserveReflect = {
     }
   },
 
-  set(target: any, key: string | number | symbol, value: any, receiver: any) {
+  set(target: any, key: Member, value: any, receiver: any) {
     if (!isProxy(receiver) || target === receiver) {
       target[key] = value;
       return;

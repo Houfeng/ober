@@ -17,4 +17,6 @@ export const ObserveSymbols = {
   Proxy: createSymbol("Proxy"),
   Nothing: createSymbol("Nothing"),
   DisplayName: createSymbol("DisplayName"),
+  BindRequired: createSymbol("BindRequired"),
+  BoundMethod: createSymbol("BoundMethod"),
 };

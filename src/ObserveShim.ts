@@ -6,11 +6,11 @@
 
 import {
   AnyFunction,
+  Member,
   define,
   isArray,
   isObject,
   isValidKey,
-  isValidValue,
 } from "./ObserveUtil";
 import { ObserveEvent, publish } from "./ObserveBus";
 
@@ -21,25 +21,25 @@ import { observeInfo } from "./ObserveInfo";
 
 function createObservableMember<T extends object>(
   target: T,
-  member: string | number | symbol,
+  member: Member,
   handler: ProxyHandler<T>
 ) {
   if (!target || !isValidKey(member)) return;
   const desc = Object.getOwnPropertyDescriptor(target, member);
-  if (!desc || !("value" in desc) || !isValidValue(desc.value)) return;
+  if (!desc || !("value" in desc)) return;
   const { shadow } = observeInfo(target);
   if (!(member in shadow)) shadow[member] = desc.value;
   Object.defineProperty(target, member, {
     get() {
       const value = handler.get
-        ? handler.get(shadow, member, shadow)
+        ? handler.get(shadow, member, target)
         : shadow[member];
       return isArray(value)
         ? createObservableArray(value, handler as ProxyHandler<Array<any>>)
         : value;
     },
     set(value) {
-      const success = handler.set && handler.set(shadow, member, value, shadow);
+      const success = handler.set && handler.set(shadow, member, value, target);
       if (!success) shadow[member] = value;
     },
     configurable: true,

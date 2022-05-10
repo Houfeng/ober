@@ -4,8 +4,10 @@
  * @author Houfeng <houzhanfeng@gmail.com>
  */
 
+import { Member } from "./ObserveUtil";
+
 export interface ObserveData {
   id: string;
-  member: string | number | symbol;
+  member: Member;
   value?: any;
 }

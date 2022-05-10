@@ -1,10 +1,10 @@
 import "./mode";
 
 import { ObserveEvent, subscribe, unsubscribe } from '../src/ObserveBus';
+import { bind, observable } from '../src/ObserveHof';
 
 import { ObserveData } from '../src/ObserveData';
 import { isProxy } from "../src/ObserveUtil";
-import { observable } from '../src/ObserveHof';
 import { strictEqual } from "assert";
 
 describe('Observable', () => {
@@ -146,18 +146,18 @@ describe('Observable', () => {
     done();
   })
 
-  it.skip("箭头函数类成员", (done) => {
-    const A = observable(class InnerA {
-      name = "A";
-      setA = (value: string) => {
+  it("绑定 this 的方法", (done) => {
+    const X = observable(class InnerX {
+      name = "X";
+      setX = bind(function (value: string) {
         this.name = value;
-      }
+      })
     });
     let timer: any
-    const model = new A();
+    const model = new X();
     const onSet = ({ member, value }: ObserveData) => {
       strictEqual(member, "name");
-      strictEqual(value, "AA");
+      strictEqual(value, "XX");
       unsubscribe(ObserveEvent.set, onSet);
       done();
       if (timer) clearTimeout(timer);
@@ -167,7 +167,9 @@ describe('Observable', () => {
       throw new Error('Timeout');
     }, 2000);
     subscribe(ObserveEvent.set, onSet);
-    model.setA("AA");
+    const { setX } = model;
+    strictEqual(setX, model.setX);
+    setX("XX");
   })
 
 });

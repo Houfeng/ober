@@ -12,6 +12,8 @@ export type AnyClass = (new (...args: any[]) => any) & {
   displayName?: string;
 };
 
+export type Member = string | number | symbol;
+
 export const undef = "undefined";
 export const obj = "object";
 
@@ -36,7 +38,11 @@ export function isFunction<T = AnyFunction>(value: any): value is T {
 }
 
 export function isArrowFunction<T = AnyFunction>(value: any): value is T {
-  return isFunction(value) && value.prototype === undefined;
+  return (
+    isFunction(value) &&
+    value.prototype === undefined &&
+    value.toString().indexOf("[native code]") < 0
+  );
 }
 
 export function isUndefined(value: any): value is undefined {
@@ -131,35 +137,35 @@ export function isExtensible(value: any) {
   return !Object.isExtensible || Object.isExtensible(value);
 }
 
-export function isValidValue(value: any): value is any {
+export function isWholeValue(value: any): value is any {
   return (
     !isObject(value) ||
-    (isExtensible(value) &&
-      !isFunction(value) &&
-      !isSymbol(value) &&
-      !isDomNode(value) &&
-      !isError(value) &&
-      !isPromise(value) &&
-      !isEvent(value) &&
-      !isEventTarget(value) &&
-      !isURL(value) &&
-      !isMap(value) &&
-      !isWeakMap(value) &&
-      !isSet(value) &&
-      !isWeakSet(value) &&
-      !isDOMError(value))
+    !isExtensible(value) ||
+    isFunction(value) ||
+    isSymbol(value) ||
+    isDomNode(value) ||
+    isError(value) ||
+    isPromise(value) ||
+    isEvent(value) ||
+    isEventTarget(value) ||
+    isURL(value) ||
+    isMap(value) ||
+    isWeakMap(value) ||
+    isSet(value) ||
+    isWeakSet(value) ||
+    isDOMError(value)
   );
 }
 
-export function isSetLength(target: any, member: string | number | symbol) {
+export function isSetLength(target: any, member: Member) {
   return isArray(target) && member === "length";
 }
 
-export const hasOwn = (target: any, member: string | number | symbol) => {
+export const hasOwn = (target: any, member: Member) => {
   return Object.prototype.hasOwnProperty.call(target, member);
 };
 
-export const getOwnValue = (target: any, member: string | number | symbol) => {
+export const getOwnValue = (target: any, member: Member) => {
   if (!hasOwn(target, member)) return;
   return target[member];
 };
@@ -199,6 +205,12 @@ export function shallowEqual(objA: any, objB: any) {
 
 export function isDevelopment() {
   return process?.env?.NODE_ENV === "development";
+}
+
+export function isBindRequiredFunction<T extends AnyFunction>(
+  value: T
+): value is T {
+  return value && (value as any)[ObserveSymbols.BindRequired];
 }
 
 export interface Defer<T> {
