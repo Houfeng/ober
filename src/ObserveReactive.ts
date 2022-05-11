@@ -84,19 +84,23 @@ export function reactivable<T extends ReactiveFunction>(
 ) {
   let setHandler: ObserveHandler; // eslint-disable-line prefer-const
   const wrapper: ReactiveFunction = (...args: any[]) => {
-    unsubscribe(ObserveEvent.set, setHandler);
+    if (setHandler) unsubscribe(ObserveEvent.set, setHandler);
     const { result, dependencies } = collect(fn, ...args);
-    setHandler.dependencies = dependencies;
-    subscribe(ObserveEvent.set, setHandler);
+    if (setHandler) {
+      setHandler.dependencies = dependencies;
+      subscribe(ObserveEvent.set, setHandler);
+    }
     wrapper.dependencies = dependencies;
     return result;
   };
   setHandler = (data: ObserveData) => {
     if (isSymbol(data.member) || isPrivateKey(data.member)) return;
-
     return onUpdate ? onUpdate(data) : wrapper();
   };
-  wrapper.destroy = () => unsubscribe(ObserveEvent.set, setHandler);
+  wrapper.destroy = () => {
+    unsubscribe(ObserveEvent.set, setHandler);
+    setHandler = null;
+  };
   return wrapper as T & ReactiveFunction;
 }
 
