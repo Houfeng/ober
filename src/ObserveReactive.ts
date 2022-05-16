@@ -70,47 +70,60 @@ export function collect<T extends AnyFunction>(fn: T, ...args: any[]) {
   return { result, dependencies };
 }
 
-export type ReactiveDestroy = () => void;
+export type ReactiveUnsubscribe = () => void;
+export type ReactiveSubscribe = () => void;
 
 export interface ReactiveFunction {
   dependencies?: Set<string>;
-  destroy?: ReactiveDestroy;
+  subscribe?: ReactiveUnsubscribe;
+  unsubscribe?: ReactiveSubscribe;
   (...args: any[]): any;
 }
 
 export function reactivable<T extends ReactiveFunction>(
   fn: T,
-  onUpdate?: (data?: ObserveData) => any
+  onUpdate?: (data?: ObserveData) => any,
+  lazySubscribe = false
 ) {
+  let subscribed = !lazySubscribe; // eslint-disable-line prefer-const
   let setHandler: ObserveHandler; // eslint-disable-line prefer-const
   const wrapper: ReactiveFunction = (...args: any[]) => {
-    if (setHandler) unsubscribe(ObserveEvent.set, setHandler);
+    unsubscribe(ObserveEvent.set, setHandler);
     const { result, dependencies } = collect(fn, ...args);
-    if (setHandler) {
-      setHandler.dependencies = dependencies;
-      subscribe(ObserveEvent.set, setHandler);
-    }
+    setHandler.dependencies = dependencies;
     wrapper.dependencies = dependencies;
+    if (subscribed) subscribe(ObserveEvent.set, setHandler);
     return result;
   };
   setHandler = (data: ObserveData) => {
     if (isSymbol(data.member) || isPrivateKey(data.member)) return;
     return onUpdate ? onUpdate(data) : wrapper();
   };
-  wrapper.destroy = () => {
+  wrapper.subscribe = () => {
+    if (subscribed) return;
+    subscribe(ObserveEvent.set, setHandler);
+    subscribed = true;
+  };
+  wrapper.unsubscribe = () => {
+    if (!subscribed) return;
     unsubscribe(ObserveEvent.set, setHandler);
-    setHandler = null;
+    subscribed = false;
   };
   return wrapper as T & ReactiveFunction;
 }
 
-export function autorun<T extends AnyFunction>(fn: T): ReactiveDestroy {
-  const wrapper = reactivable(fn);
+export function autorun<T extends AnyFunction>(fn: T, lazySubscribe = false) {
+  const wrapper = reactivable(fn, null, lazySubscribe);
   wrapper();
-  return wrapper.destroy;
+  return wrapper;
 }
 
-export function watch(selector: () => any, handler: () => void, immed = false) {
+export function watch(
+  selector: () => any,
+  handler: () => void,
+  immed = false,
+  lazySubscribe = false
+) {
   let prevResult: any = ObserveSymbols.Nothing;
   return autorun(() => {
     const result = selector();
@@ -122,5 +135,5 @@ export function watch(selector: () => any, handler: () => void, immed = false) {
       handler();
     }
     prevResult = latestResult;
-  });
+  }, lazySubscribe);
 }

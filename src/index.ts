@@ -21,5 +21,8 @@ export {
   reactivable,
   autorun,
   watch,
+  type ReactiveFunction,
+  type ReactiveSubscribe,
+  type ReactiveUnsubscribe,
 } from "./ObserveReactive";
 export { nextTick } from "./ObserveTick";
