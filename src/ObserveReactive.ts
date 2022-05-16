@@ -112,18 +112,13 @@ export function reactivable<T extends ReactiveFunction>(
   return wrapper as T & ReactiveFunction;
 }
 
-export function autorun<T extends AnyFunction>(fn: T, lazySubscribe = false) {
-  const wrapper = reactivable(fn, null, lazySubscribe);
+export function autorun<T extends AnyFunction>(fn: T) {
+  const wrapper = reactivable(fn);
   wrapper();
-  return wrapper;
+  return wrapper.unsubscribe;
 }
 
-export function watch(
-  selector: () => any,
-  handler: () => void,
-  immed = false,
-  lazySubscribe = false
-) {
+export function watch(selector: () => any, fn: () => void, immed = false) {
   let prevResult: any = ObserveSymbols.Nothing;
   return autorun(() => {
     const result = selector();
@@ -132,8 +127,8 @@ export function watch(
       !shallowEqual(latestResult, prevResult) &&
       (prevResult !== ObserveSymbols.Nothing || immed)
     ) {
-      handler();
+      fn();
     }
     prevResult = latestResult;
-  }, lazySubscribe);
+  });
 }
