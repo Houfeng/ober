@@ -1,1 +1,1 @@
-一个极轻量的 Observable 库
+An extremely lightweight observable Library
