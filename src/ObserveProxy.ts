@@ -4,14 +4,13 @@
  * @author Houfeng <houzhanfeng@gmail.com>
  */
 
-import { AnyFunction, define, isFunction } from "./ObserveUtil";
+import { AnyFunction, define, isArray, isFunction } from "./ObserveUtil";
 import {
   Member,
   isArrowFunction,
   isBindRequiredFunction,
   isObject,
   isProxy,
-  isSetLength,
   isValidKey,
   isWholeValue,
   undef,
@@ -57,6 +56,10 @@ function useBoundMethod(
   return boundMethod;
 }
 
+function isSetArrayLength(target: any, member: Member) {
+  return isArray(target) && member === "length";
+}
+
 export function createProxy<T extends object>(target: T): T {
   if (isProxy(target)) return target;
   const info = observeInfo(target);
@@ -94,7 +97,7 @@ export function createProxy<T extends object>(target: T): T {
     },
     set(target: any, member: Member, value: any, receiver: any) {
       checkStrictMode();
-      if (info.shadow[member] === value && !isSetLength(target, member)) {
+      if (info.shadow[member] === value && !isSetArrayLength(target, member)) {
         return true;
       }
       ObserveReflect.set(target, member, value, receiver);

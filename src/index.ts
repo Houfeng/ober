@@ -4,7 +4,7 @@
  * @author Houfeng <houzhanfeng@gmail.com>
  */
 
-export { observable, action, bind } from "./ObserveHof";
+export { observable, action, bind } from "./ObserveHoF";
 export { subscribe, unsubscribe, ObserveEvent } from "./ObserveBus";
 export { ObserveConfig, ObserveMode } from "./ObserveConfig";
 export { type ObserveData } from "./ObserveData";
