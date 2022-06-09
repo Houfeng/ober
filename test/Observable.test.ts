@@ -1,7 +1,7 @@
 import "./mode";
 
-import { ObserveEvent, subscribe, unsubscribe } from '../src/ObserveBus';
 import { bind, observable } from '../src/ObserveHof';
+import { subscribe, unsubscribe } from '../src/ObserveBus';
 
 import { ObserveData } from '../src/ObserveData';
 import { isProxy } from "../src/ObserveUtil";
@@ -16,15 +16,15 @@ describe('Observable', () => {
     const onSet = ({ member, value }: ObserveData) => {
       strictEqual(member, "value");
       strictEqual(value, 2);
-      unsubscribe(ObserveEvent.set, onSet);
+      unsubscribe("set", onSet);
       done();
       if (timer) clearTimeout(timer);
     };
     timer = setTimeout(() => {
-      unsubscribe(ObserveEvent.set, onSet);
+      unsubscribe("set", onSet);
       throw new Error('Timeout');
     }, 2000);
-    subscribe(ObserveEvent.set, onSet);
+    subscribe("set", onSet);
     model.value = 2;
   });
 
@@ -45,15 +45,15 @@ describe('Observable', () => {
     const onSet = ({ member, value }: ObserveData) => {
       strictEqual(member, "value");
       strictEqual(value, 2);
-      unsubscribe(ObserveEvent.set, onSet);
+      unsubscribe("set", onSet);
       done();
       if (timer) clearTimeout(timer);
     };
     timer = setTimeout(() => {
-      unsubscribe(ObserveEvent.set, onSet);
+      unsubscribe("set", onSet);
       throw new Error('Timeout');
     }, 2000);
-    subscribe(ObserveEvent.set, onSet);
+    subscribe("set", onSet);
     model.value = 2;
   });
 
@@ -158,15 +158,15 @@ describe('Observable', () => {
     const onSet = ({ member, value }: ObserveData) => {
       strictEqual(member, "name");
       strictEqual(value, "XX");
-      unsubscribe(ObserveEvent.set, onSet);
+      unsubscribe("set", onSet);
       done();
       if (timer) clearTimeout(timer);
     };
     timer = setTimeout(() => {
-      unsubscribe(ObserveEvent.set, onSet);
+      unsubscribe("set", onSet);
       throw new Error('Timeout');
     }, 2000);
-    subscribe(ObserveEvent.set, onSet);
+    subscribe("set", onSet);
     const { setX } = model;
     strictEqual(setX, model.setX);
     setX("XX");

@@ -230,3 +230,5 @@ export function Defer<T = any>(): Defer<T> {
   });
   return { promise, resolve, reject };
 }
+
+export type Ref<T> = { value: T };

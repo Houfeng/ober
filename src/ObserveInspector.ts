@@ -5,16 +5,22 @@
  */
 
 import { ObserveData } from "./ObserveData";
-import { ObserveHandler } from "./ObserveHandler";
+import { ObserveEventHandler } from "./ObserveEvents";
 
 export const ObserveInspector: {
   onPublish?: (info: {
     type?: string;
     data?: ObserveData;
     matchOnly?: boolean;
-    matchedHandlers?: Set<ObserveHandler>;
-    commonHandlers?: Set<ObserveHandler>;
+    matchedHandlers?: Set<ObserveEventHandler<any>>;
+    commonHandlers?: Set<ObserveEventHandler<any>>;
   }) => void;
-  onSubscribe?: (info: { type?: string; handler?: ObserveHandler }) => void;
-  onUnsubscribe?: (info: { type?: string; handler?: ObserveHandler }) => void;
+  onSubscribe?: (info: {
+    type?: string;
+    handler?: ObserveEventHandler<any>;
+  }) => void;
+  onUnsubscribe?: (info: {
+    type?: string;
+    handler?: ObserveEventHandler<any>;
+  }) => void;
 } = {};

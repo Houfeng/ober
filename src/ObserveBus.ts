@@ -5,62 +5,63 @@
  */
 
 import { ObserveError, ObserveText } from "./ObserveError";
-import { ObserveHandler, ObserveHandlerStore } from "./ObserveHandler";
+import { ObserveEventHandlerStore, ObserveEvents } from "./ObserveEvents";
 import { isPrivateKey, isSymbol } from "./ObserveUtil";
 
 import { ObserveConfig } from "./ObserveConfig";
-import { ObserveData } from "./ObserveData";
 import { ObserveFlags } from "./ObserveFlags";
 import { ObserveKey } from "./ObserveKey";
 import { ObserveInspector as inspector } from "./ObserveInspector";
 
-export const ObserveHandlers: ObserveHandlerStore = {};
+export const ObserveHandlers: ObserveEventHandlerStore = {};
 
-export enum ObserveEvent {
-  get = "get",
-  set = "set",
-}
+const GENERIC_KEY = "*";
+const GENERIC_DEPENDENCIES = new Set([GENERIC_KEY]);
 
-export function subscribe(type: ObserveEvent, handler: ObserveHandler) {
+export function subscribe<T extends keyof ObserveEvents>(
+  type: T,
+  handler: ObserveEvents[T]
+) {
   if (!handler) throw ObserveError("Invalid ObserveHandler");
   if (!type) throw ObserveError("Invalid ObserveEvent");
-  if (!ObserveHandlers[type]) ObserveHandlers[type] = {};
-  if (handler.dependencies) {
-    handler.dependencies.forEach((key) => {
-      if (!ObserveHandlers[type][key]) ObserveHandlers[type][key] = new Set();
-      ObserveHandlers[type][key].add(handler);
-    });
-  } else {
-    if (!ObserveHandlers[type]["*"]) ObserveHandlers[type]["*"] = new Set();
-    ObserveHandlers[type]["*"].add(handler);
-  }
+  if (!ObserveHandlers[type]) ObserveHandlers[type] = new Map();
+  (handler.dependencies || GENERIC_DEPENDENCIES).forEach((key) => {
+    if (!ObserveHandlers[type].has(key)) {
+      ObserveHandlers[type].set(key, new Set([handler]));
+    } else {
+      ObserveHandlers[type].get(key).add(handler);
+    }
+  });
   if (inspector.onSubscribe) inspector.onSubscribe({ type, handler });
 }
 
-export function unsubscribe(type: ObserveEvent, handler: ObserveHandler) {
+export function unsubscribe<T extends keyof ObserveEvents>(
+  type: T,
+  handler: ObserveEvents[T]
+) {
   if (!ObserveHandlers[type] || !handler) return;
-  if (handler.dependencies) {
-    handler.dependencies.forEach((key) => {
-      if (!ObserveHandlers[type][key]) return;
-      ObserveHandlers[type][key].delete(handler);
-    });
-  } else if (ObserveHandlers[type]["*"]) {
-    ObserveHandlers[type]["*"].delete(handler);
-  }
+  (handler.dependencies || GENERIC_DEPENDENCIES).forEach((key) => {
+    if (!ObserveHandlers[type].has(key)) return;
+    const list = ObserveHandlers[type].get(key);
+    if (!list || !list.has(handler)) return;
+    list.delete(handler);
+    const [id, member] = key.split(".");
+    if (list.size < 1) publish("unref", { type, id, member });
+  });
   if (inspector.onUnsubscribe) inspector.onUnsubscribe({ type, handler });
 }
 
-export function publish(
-  type: ObserveEvent,
-  data: ObserveData,
+export function publish<T extends keyof ObserveEvents>(
+  type: T,
+  data: Parameters<ObserveEvents[T]>[0],
   matchOnly = false
 ) {
   if (!ObserveHandlers[type]) return;
-  if (!ObserveFlags.get && type === ObserveEvent.get) return;
-  if (!ObserveFlags.set && type === ObserveEvent.set) return;
+  if (!ObserveFlags.get && type === "get") return;
+  if (!ObserveFlags.set && type === "set") return;
   if (isSymbol(data.member) || isPrivateKey(data.member)) return;
   const observeKey = ObserveKey(data);
-  const matchedHandlers = new Set(ObserveHandlers[type][observeKey]);
+  const matchedHandlers = new Set(ObserveHandlers[type].get(observeKey));
   const matchedCount = (matchedHandlers && matchedHandlers.size) || 0;
   if (matchedCount > ObserveConfig.maxHandlers) {
     console.warn(ObserveText(`Trigger ${matchedCount} handlers`));
@@ -68,17 +69,12 @@ export function publish(
   if (matchedHandlers && matchedCount > 0) {
     matchedHandlers.forEach((handler) => handler(data));
   }
-  const commonHandlers = new Set(ObserveHandlers[type]["*"]);
+  const commonHandlers = new Set(ObserveHandlers[type].get(GENERIC_KEY));
   if (!matchOnly && commonHandlers && commonHandlers.size > 0) {
     commonHandlers.forEach((handler) => handler(data));
   }
   if (inspector.onPublish) {
-    inspector.onPublish({
-      type,
-      data,
-      matchedHandlers,
-      commonHandlers,
-      matchOnly,
-    });
+    const info = { type, data, matchedHandlers, commonHandlers, matchOnly };
+    inspector.onPublish(info);
   }
 }

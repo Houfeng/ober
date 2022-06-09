@@ -12,12 +12,12 @@ import {
   isObject,
   isValidKey,
 } from "./ObserveUtil";
-import { ObserveEvent, publish } from "./ObserveBus";
 
 import { ObserveError } from "./ObserveError";
 import { ObserveSymbols } from "./ObserveSymbols";
 import { checkStrictMode } from "./ObserveConfig";
 import { observeInfo } from "./ObserveInfo";
+import { publish } from "./ObserveBus";
 
 function createObservableMember<T extends object>(
   target: T,
@@ -67,7 +67,7 @@ function createObservableArray<T extends Array<any>>(
 ) {
   const info = observeInfo(target);
   const { id, shadow, isWrappedArray } = info;
-  publish(ObserveEvent.get, { id, member: "length", value: target });
+  publish("get", { id, member: "length", value: target });
   if (!isArray(target) || isWrappedArray) return target;
   info.isWrappedArray = true;
   const methods = ["push", "pop", "shift", "unshift", "splice", "reverse"];
@@ -81,7 +81,7 @@ function createObservableArray<T extends Array<any>>(
         target[i] = shadow[i];
         createObservableMember(target, i, handler);
       }
-      publish(ObserveEvent.set, { id, member: "length", value: target });
+      publish("set", { id, member: "length", value: target });
       return result;
     });
   });

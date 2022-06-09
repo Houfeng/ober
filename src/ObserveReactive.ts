@@ -6,20 +6,23 @@
 
 import {
   AnyFunction,
+  Ref,
   isObject,
   isPrivateKey,
   isSymbol,
   shallowEqual,
 } from "./ObserveUtil";
-import { ObserveEvent, subscribe, unsubscribe } from "./ObserveBus";
+import { subscribe, unsubscribe } from "./ObserveBus";
 
 import { ObserveConfig } from "./ObserveConfig";
 import { ObserveData } from "./ObserveData";
+import { ObserveEventHandler } from "./ObserveEvents";
 import { ObserveFlags } from "./ObserveFlags";
-import { ObserveHandler } from "./ObserveHandler";
 import { ObserveKey } from "./ObserveKey";
 import { ObserveSymbols } from "./ObserveSymbols";
 import { ObserveText } from "./ObserveError";
+import { createProxy } from "./ObserveProxy";
+import { observeInfo } from "./ObserveInfo";
 
 function trackSwitch<T extends AnyFunction>(
   fn: T,
@@ -58,11 +61,11 @@ export function collect<T extends AnyFunction>(fn: T, ...args: any[]) {
   const collectHandler = (data: ObserveData) => {
     dependencies.add(ObserveKey(data));
   };
-  subscribe(ObserveEvent.get, collectHandler);
+  subscribe("get", collectHandler);
   ObserveFlags.get = true;
   const result: ReturnType<T> = fn(...args);
   ObserveFlags.get = false;
-  unsubscribe(ObserveEvent.get, collectHandler);
+  unsubscribe("get", collectHandler);
   const count = dependencies && dependencies.size;
   if (count > ObserveConfig.maxDependencies) {
     console.warn(ObserveText(`A single function has ${count} dependencies`));
@@ -86,13 +89,13 @@ export function reactivable<T extends ReactiveFunction>(
   lazySubscribe = false
 ) {
   let subscribed = !lazySubscribe; // eslint-disable-line prefer-const
-  let setHandler: ObserveHandler; // eslint-disable-line prefer-const
+  let setHandler: ObserveEventHandler<ObserveData>; // eslint-disable-line prefer-const
   const wrapper: ReactiveFunction = (...args: any[]) => {
-    unsubscribe(ObserveEvent.set, setHandler);
+    unsubscribe("set", setHandler);
     const { result, dependencies } = collect(fn, ...args);
     setHandler.dependencies = dependencies;
     wrapper.dependencies = dependencies;
-    if (subscribed) subscribe(ObserveEvent.set, setHandler);
+    if (subscribed) subscribe("set", setHandler);
     return result;
   };
   setHandler = (data: ObserveData) => {
@@ -101,12 +104,12 @@ export function reactivable<T extends ReactiveFunction>(
   };
   wrapper.subscribe = () => {
     if (subscribed) return;
-    subscribe(ObserveEvent.set, setHandler);
+    subscribe("set", setHandler);
     subscribed = true;
   };
   wrapper.unsubscribe = () => {
     if (!subscribed) return;
-    unsubscribe(ObserveEvent.set, setHandler);
+    unsubscribe("set", setHandler);
     subscribed = false;
   };
   return wrapper as T & ReactiveFunction;
@@ -118,17 +121,51 @@ export function autorun<T extends AnyFunction>(fn: T) {
   return wrapper.unsubscribe;
 }
 
-export function watch(selector: () => any, fn: () => void, immed = false) {
-  let prevResult: any = ObserveSymbols.Nothing;
+export function watch<T>(
+  selector: () => T,
+  fn: (newValue?: T, oldValue?: T) => void,
+  immed = false
+) {
+  let oldValue: any = ObserveSymbols.Nothing;
   return autorun(() => {
-    const result = selector();
-    const latestResult = isObject(result) ? { ...result } : result;
+    const value = selector();
+    const newValue = isObject(value) ? { ...value } : value;
     if (
-      !shallowEqual(latestResult, prevResult) &&
-      (prevResult !== ObserveSymbols.Nothing || immed)
+      !shallowEqual(newValue, oldValue) &&
+      (oldValue !== ObserveSymbols.Nothing || immed)
     ) {
-      fn();
+      fn(newValue, oldValue);
     }
-    prevResult = latestResult;
+    oldValue = newValue;
   });
+}
+
+export function computed<T extends ReactiveFunction>(fn: () => T) {
+  let ref: Ref<T>;
+  const wrapper: ReactiveFunction = () => {
+    if (!ref) {
+      const target: Ref<T> = { value: null };
+      const { id } = observeInfo(target);
+      ref = createProxy(target);
+      const reactive = reactivable(() => {
+        ref.value = fn();
+      });
+      reactive();
+      const destroy = () => {
+        reactive.unsubscribe();
+        unsubscribe("unref", destroy);
+        ref = null;
+      };
+      destroy.dependencies = new Set([`${id}.value`]);
+      const bind = () => {
+        reactive.subscribe();
+        subscribe("unref", destroy);
+      };
+      wrapper.subscribe = bind;
+      wrapper.unsubscribe = destroy;
+    }
+    wrapper.subscribe();
+    return ref.value;
+  };
+  return wrapper as T & ReactiveFunction;
 }

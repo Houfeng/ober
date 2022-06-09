@@ -15,8 +15,7 @@ import {
   isWholeValue,
   undef,
 } from "./ObserveUtil";
-import { ObserveConfig, ObserveMode, checkStrictMode } from "./ObserveConfig";
-import { ObserveEvent, publish } from "./ObserveBus";
+import { ObserveConfig, checkStrictMode } from "./ObserveConfig";
 
 import { LowProxy } from "./ObserveShim";
 import { ObserveError } from "./ObserveError";
@@ -24,16 +23,17 @@ import { ObserveFlags } from "./ObserveFlags";
 import { ObserveReflect } from "./ObserveReflect";
 import { ObserveSymbols } from "./ObserveSymbols";
 import { observeInfo } from "./ObserveInfo";
+import { publish } from "./ObserveBus";
 
 export const NativeProxy = typeof Proxy !== undef ? Proxy : null;
 
 function useProxyClass() {
   switch (ObserveConfig.mode) {
-    case ObserveMode.property:
+    case "property":
       return LowProxy;
-    case ObserveMode.auto:
+    case "auto":
       return NativeProxy || LowProxy;
-    case ObserveMode.proxy:
+    case "proxy":
     default:
       return NativeProxy;
   }
@@ -92,7 +92,7 @@ export function createProxy<T extends object>(target: T): T {
       const proxyValue =
         isObject(value) && !isWholeValue(value) ? createProxy(value) : value;
       if (!ObserveFlags.get) return proxyValue;
-      publish(ObserveEvent.get, { id: info.id, member, value });
+      publish("get", { id: info.id, member, value });
       return proxyValue;
     },
     set(target: any, member: Member, value: any, receiver: any) {
@@ -103,7 +103,7 @@ export function createProxy<T extends object>(target: T): T {
       ObserveReflect.set(target, member, value, receiver);
       info.shadow[member] = value;
       if (!ObserveFlags.set || !isValidKey(member)) return true;
-      publish(ObserveEvent.set, { id: info.id, member, value });
+      publish("set", { id: info.id, member, value });
       return true;
     },
   }) as any;

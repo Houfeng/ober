@@ -6,8 +6,8 @@
 
 import { Member } from "./ObserveUtil";
 
-export interface ObserveData {
+export type ObserveData = {
   id: string;
   member: Member;
   value?: any;
-}
+};
