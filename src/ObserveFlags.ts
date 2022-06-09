@@ -8,4 +8,5 @@ export const ObserveFlags = {
   get: false,
   set: true,
   action: false,
+  unref: true,
 };

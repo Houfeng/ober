@@ -24,6 +24,8 @@ import { ObserveText } from "./ObserveError";
 import { createProxy } from "./ObserveProxy";
 import { observeInfo } from "./ObserveInfo";
 
+const { Nothing } = ObserveSymbols;
+
 function trackSwitch<T extends AnyFunction>(
   fn: T,
   flag: boolean,
@@ -76,26 +78,31 @@ export function collect<T extends AnyFunction>(fn: T, ...args: any[]) {
 export type ReactiveUnsubscribe = () => void;
 export type ReactiveSubscribe = () => void;
 
-export interface ReactiveFunction {
+export type ReactiveFunction<T extends AnyFunction = AnyFunction> = T & {
   dependencies?: Set<string>;
   subscribe?: ReactiveUnsubscribe;
   unsubscribe?: ReactiveSubscribe;
-  (...args: any[]): any;
-}
+};
+
+const ReactiveOwner: Ref<ReactiveFunction> = {};
 
 export function reactivable<T extends ReactiveFunction>(
   fn: T,
   onUpdate?: (data?: ObserveData) => any,
-  lazySubscribe = false
+  lazyBind = false
 ) {
-  let subscribed = !lazySubscribe; // eslint-disable-line prefer-const
+  let subscribed = !lazyBind; // eslint-disable-line prefer-const
   let setHandler: ObserveEventHandler<ObserveData>; // eslint-disable-line prefer-const
   const wrapper: ReactiveFunction = (...args: any[]) => {
+    ReactiveOwner.value = wrapper;
+    ObserveFlags.unref = false;
     unsubscribe("set", setHandler);
+    ObserveFlags.unref = true;
     const { result, dependencies } = collect(fn, ...args);
     setHandler.dependencies = dependencies;
     wrapper.dependencies = dependencies;
     if (subscribed) subscribe("set", setHandler);
+    ReactiveOwner.value = null;
     return result;
   };
   setHandler = (data: ObserveData) => {
@@ -112,7 +119,7 @@ export function reactivable<T extends ReactiveFunction>(
     unsubscribe("set", setHandler);
     subscribed = false;
   };
-  return wrapper as T & ReactiveFunction;
+  return wrapper as ReactiveFunction<T>;
 }
 
 export function autorun<T extends AnyFunction>(fn: T) {
@@ -126,46 +133,46 @@ export function watch<T>(
   fn: (newValue?: T, oldValue?: T) => void,
   immed = false
 ) {
-  let oldValue: any = ObserveSymbols.Nothing;
+  let oldValue: any = Nothing;
   return autorun(() => {
     const value = selector();
     const newValue = isObject(value) ? { ...value } : value;
-    if (
-      !shallowEqual(newValue, oldValue) &&
-      (oldValue !== ObserveSymbols.Nothing || immed)
-    ) {
+    if (!shallowEqual(newValue, oldValue) && (oldValue !== Nothing || immed)) {
       fn(newValue, oldValue);
     }
     oldValue = newValue;
   });
 }
 
-export function computed<T extends ReactiveFunction>(fn: () => T) {
+export function computed<T extends ReactiveFunction>(fn: T, lazyBind = false) {
+  let subscribed = !lazyBind; // eslint-disable-line prefer-const
   let ref: Ref<T>;
   const wrapper: ReactiveFunction = () => {
     if (!ref) {
       const target: Ref<T> = { value: null };
       const { id } = observeInfo(target);
+      const refKey = `${id}.value`;
       ref = createProxy(target);
-      const reactive = reactivable(() => {
-        ref.value = fn();
-      });
+      const reactive = reactivable(() => (ref.value = fn()), null, lazyBind);
       reactive();
       const destroy = () => {
+        if (!subscribed || ReactiveOwner.value === reactive) return;
         reactive.unsubscribe();
         unsubscribe("unref", destroy);
-        ref = null;
+        subscribed = false;
       };
-      destroy.dependencies = new Set([`${id}.value`]);
+      destroy.dependencies = new Set([refKey]);
       const bind = () => {
+        if (subscribed) return;
         reactive.subscribe();
         subscribe("unref", destroy);
+        subscribed = true;
       };
       wrapper.subscribe = bind;
       wrapper.unsubscribe = destroy;
     }
-    wrapper.subscribe();
+    if (subscribed) wrapper.subscribe();
     return ref.value;
   };
-  return wrapper as T & ReactiveFunction;
+  return wrapper as ReactiveFunction<T>;
 }
