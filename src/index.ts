@@ -12,6 +12,8 @@ export { type ObserveEventHandler } from "./ObserveEvents";
 export { ObserveInspector } from "./ObserveInspector";
 export { ObserveError } from "./ObserveError";
 export { observeInfo } from "./ObserveInfo";
+export { ObserveFlags } from "./ObserveFlags";
+export { isProxy } from "./ObserveUtil";
 export {
   track,
   untrack,
