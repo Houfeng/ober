@@ -1,4 +1,4 @@
-import "./mode";
+import "./helpers/mode";
 
 import { nextTick } from "../src/ObserveTick";
 import { strictEqual } from "assert";

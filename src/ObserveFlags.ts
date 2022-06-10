@@ -9,4 +9,5 @@ export const ObserveFlags = {
   set: true,
   action: false,
   unref: true,
+  mark: "",
 };

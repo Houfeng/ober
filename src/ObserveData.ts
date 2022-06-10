@@ -10,4 +10,5 @@ export type ObserveData = {
   id: string;
   member: Member;
   value?: any;
+  mark?: string;
 };

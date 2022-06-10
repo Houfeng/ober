@@ -6,7 +6,7 @@
 
 export { observable, action, bind } from "./ObserveHoF";
 export { subscribe, unsubscribe, ObserveHandlers } from "./ObserveBus";
-export { ObserveConfig, ObserveMode } from "./ObserveConfig";
+export { ObserveConfig, type ObserveMode } from "./ObserveConfig";
 export { type ObserveData } from "./ObserveData";
 export { type ObserveEventHandler } from "./ObserveEvents";
 export { ObserveInspector } from "./ObserveInspector";
@@ -25,6 +25,7 @@ export {
   watch,
   computed,
   type ReactiveFunction,
+  type ReactiveOptions,
   type ReactiveSubscribe,
   type ReactiveUnsubscribe,
 } from "./ObserveReactive";

@@ -1,4 +1,4 @@
-import "./mode";
+import "./helpers/mode";
 
 import { bind, observable } from '../src/ObserveHof';
 import { subscribe, unsubscribe } from '../src/ObserveBus';

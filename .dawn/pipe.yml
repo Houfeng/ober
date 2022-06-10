@@ -22,7 +22,7 @@ dev:
 unit:
   - name: unit
     env: typescript
-    files: ./test/**/*.test.ts
+    files: ./test/**/Computed.test.ts
 
 test: 
   - name: shell

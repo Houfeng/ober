@@ -45,8 +45,9 @@ export function unsubscribe<T extends keyof ObserveEvents>(
     const list = ObserveHandlers[type].get(key);
     if (!list || !list.has(handler)) return;
     list.delete(handler);
-    const [id, member] = key.split(".");
     if (ObserveFlags.unref && list.size < 1) {
+      const [id, member] = key.split(".");
+      console.log("publish unref", id, member, list);
       publish("unref", { type, id, member });
     }
   });
@@ -62,6 +63,7 @@ export function publish<T extends keyof ObserveEvents>(
   if (!ObserveFlags.get && type === "get") return;
   if (!ObserveFlags.set && type === "set") return;
   if (isSymbol(data.member) || isPrivateKey(data.member)) return;
+  data.mark = ObserveFlags.mark;
   const observeKey = ObserveKey(data);
   const matchedHandlers = new Set(ObserveHandlers[type].get(observeKey));
   const matchedCount = (matchedHandlers && matchedHandlers.size) || 0;
