@@ -43,25 +43,48 @@ function trackSwitch<T extends AnyFunction>(
   return result as ReturnType<T>;
 }
 
+/**
+ * 执行一个函数，并在函数执行过程中启用依赖追踪
+ * 通常在一个大的 untrack 函数中将启用一小部分处理时使用
+ * @param fn 执行的函数
+ * @param args 传递给执行函数的参数
+ * @returns 执行结果
+ */
 export function track<T extends AnyFunction>(fn: T, ...args: any[]) {
   return trackSwitch(fn, true, ...args);
 }
 
+/**
+ * 执行一个函数，并在函数执行过程中禁用依赖追踪
+ * @param fn 执行的函数
+ * @param args 传递给执行函数的参数
+ * @returns 执行结果
+ */
 export function untrack<T extends AnyFunction>(fn: T, ...args: any[]) {
   return trackSwitch(fn, false, ...args);
 }
 
+/**
+ * 创建一个禁用依赖追踪的函数
+ * @param fn 原始函数
+ * @returns 禁用依赖追踪的函数
+ */
 export function untrackable<T extends AnyFunction>(fn: T) {
   return (...args: any[]) => untrack(fn, ...args) as T;
 }
 
+/**
+ * 创建一个开启依赖追踪的函数
+ * @param fn 原始函数
+ * @returns 开启依赖追踪的函数
+ */
 export function trackable<T extends AnyFunction>(fn: T) {
   return (...args: any[]) => track(fn, ...args) as T;
 }
 
 export type CollectOptions<T extends AnyFunction> = {
   /**
-   * arguments passed to the collection function
+   * 传递给收集函数的参数
    */
   args?: Parameters<T>;
   /**
