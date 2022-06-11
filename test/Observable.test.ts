@@ -72,7 +72,7 @@ describe('Observable', () => {
     demo.c = 3;
     strictEqual(demo.a, 3);
     strictEqual(demo.b, 3);
-    strictEqual(proxy, true);
+    strictEqual(proxy!, true);
     done();
   });
 
@@ -97,7 +97,7 @@ describe('Observable', () => {
     x.setC(3);
     strictEqual(x.a, 3);
     strictEqual(x.b, 3);
-    strictEqual(proxy, true);
+    strictEqual(proxy!, true);
     strictEqual(x === instance, true);
     done();
   });
@@ -134,8 +134,8 @@ describe('Observable', () => {
 
   it("正确序列化", (done) => {
     const A = observable(class InnerA {
-      age: number;
       name = "A";
+      age = 0;
       getA() {
         return "A";
       }
@@ -149,8 +149,8 @@ describe('Observable', () => {
   it("绑定 this 的方法", (done) => {
     const X = observable(class InnerX {
       name = "X";
-      setX = bind(function (value: string) {
-        this.name = value;
+      setX = bind(function (this: InnerX | void, value: string) {
+        this!.name = value;
       })
     });
     let timer: any

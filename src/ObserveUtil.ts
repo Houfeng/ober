@@ -210,7 +210,7 @@ export function isDevelopment() {
 }
 
 export function isBindRequiredFunction<T extends AnyFunction>(
-  value: T
+  value: T | undefined
 ): value is T {
   return value && (value as any)[ObserveSymbols.BindRequired];
 }
@@ -222,8 +222,8 @@ export interface Defer<T> {
 }
 
 export function Defer<T = any>(): Defer<T> {
-  let resolve: Defer<T>["resolve"];
-  let reject: Defer<T>["reject"];
+  let resolve!: Defer<T>["resolve"];
+  let reject!: Defer<T>["reject"];
   const promise = new Promise<T>((_resolve, _reject) => {
     resolve = _resolve;
     reject = _reject;

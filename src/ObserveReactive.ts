@@ -93,9 +93,9 @@ export function collect<T extends AnyFunction>(
   subscribe("get", collectHandler);
   const originMark = ObserveFlags.mark;
   const originGetFlag = ObserveFlags.get;
-  ObserveFlags.mark = mark;
+  ObserveFlags.mark = mark || "";
   ObserveFlags.get = true;
-  const result: ReturnType<T> = fn(...args);
+  const result: ReturnType<T> = fn(...(args || []));
   ObserveFlags.get = originGetFlag;
   ObserveFlags.mark = originMark;
   unsubscribe("get", collectHandler);
@@ -129,7 +129,7 @@ export function reactivable<T extends ReactiveFunction>(
 ) {
   const { bind = true, batch, mark, ignore, callback } = { ...options };
   let subscribed = bind !== false;
-  let setHandler: ObserveEventHandler<ObserveData> = null;
+  let setHandler: ObserveEventHandler<ObserveData> = null!;
   const wrapper: ReactiveFunction = (...args: Parameters<T>) => {
     ReactiveOwner.value = wrapper;
     ObserveFlags.unref = false;
@@ -139,7 +139,7 @@ export function reactivable<T extends ReactiveFunction>(
     setHandler.dependencies = dependencies;
     wrapper.dependencies = dependencies;
     if (subscribed) subscribe("set", setHandler);
-    ReactiveOwner.value = null;
+    ReactiveOwner.value = null!;
     return result;
   };
   const requestUpdate = () => (callback ? callback() : wrapper());
@@ -192,11 +192,11 @@ export function computed<T extends ReactiveFunction>(
 ) {
   const { bind = true, batch = false, ...others } = { ...options };
   let subscribed = bind !== false;
-  let ref: Ref<T> = null;
+  let ref: Ref<T> = null!;
   const wrapper: ReactiveFunction = () => {
     if (!ReactiveOwner.value && !subscribed) return fn();
     if (!ref) {
-      const target: Ref<T> = { value: null };
+      const target: Ref<T> = { value: null! };
       const { id: mark } = observeInfo(target);
       const refKeys = [`${mark}.value`];
       ref = createProxy(target);
@@ -205,23 +205,23 @@ export function computed<T extends ReactiveFunction>(
       reactive();
       const destroy = () => {
         if (!subscribed) return;
-        reactive.unsubscribe();
+        reactive.unsubscribe!();
         unsubscribe("unref", destroy);
         subscribed = false;
-        ref = null;
+        ref = null!;
       };
       destroy.dependencies = new Set(refKeys);
       if (subscribed) subscribe("unref", destroy);
       const init = () => {
         if (subscribed) return;
-        reactive.subscribe();
+        reactive.subscribe?.();
         subscribe("unref", destroy);
         subscribed = true;
       };
       wrapper.subscribe = init;
       wrapper.unsubscribe = destroy;
     }
-    if (!subscribed) wrapper.subscribe();
+    if (!subscribed) wrapper.subscribe!();
     return ref.value;
   };
   return wrapper as ReactiveFunction<T>;

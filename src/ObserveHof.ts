@@ -49,9 +49,9 @@ export function observable<T = any>(target: T): T {
 }
 
 export function action<T extends AnyFunction>(target: T): T;
-export function action(target: any, member?: string) {
+export function action(target: any, member?: string): any {
   if (isFunction(target) && !member) {
-    return function (...args: any[]) {
+    return function (this: any, ...args: any[]) {
       ObserveFlags.action = true;
       const result = target.call(this, ...args);
       ObserveFlags.action = false;
@@ -65,7 +65,7 @@ export function action(target: any, member?: string) {
 }
 
 export function bind<T extends AnyFunction>(target: T): T;
-export function bind(target: any, member?: string) {
+export function bind(target: any, member?: string): any {
   if (isFunction(target) && !member) {
     if (isArrowFunction(target)) {
       throw ObserveError("Bind cannot be used for arrow functions");

@@ -4,16 +4,25 @@
     "declarationDir": "./types/",
     "sourceMap": false,
     "declaration": true,
-    "noImplicitAny": true,
     "module": "ESNext",
     "target": "es5",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "moduleResolution": "node",
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
     "importHelpers": true,
     "esModuleInterop": true,
+    /* 严格检查 */
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "noImplicitThis": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "skipDefaultLibCheck": true,
+    "skipLibCheck": true,
+    /* 严格检查 */
     "lib": [
       "dom",
       "es2017"

@@ -12,9 +12,9 @@ export interface ObserveEventHandler<T> {
 }
 
 export type ObserveEvents = {
-  get?: ObserveEventHandler<ObserveData>;
-  set?: ObserveEventHandler<ObserveData>;
-  unref?: ObserveEventHandler<ObserveData & { type?: keyof ObserveEvents }>;
+  get: ObserveEventHandler<ObserveData>;
+  set: ObserveEventHandler<ObserveData>;
+  unref: ObserveEventHandler<ObserveData & { type?: keyof ObserveEvents }>;
 };
 
 export type ObserveEventHandlerStore = {
