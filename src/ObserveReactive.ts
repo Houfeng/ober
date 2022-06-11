@@ -116,9 +116,21 @@ export type ReactiveFunction<T extends AnyFunction = AnyFunction> = T & {
 };
 
 export type ReactiveOptions = {
-  callback?: () => any;
-  bind?: boolean;
+  /**
+   * 是否自动合并更新
+   * 设置为 true 时，可观察对象的所有同步变更，都将同步触发 update
+   * 默认为 false
+   */
   batch?: boolean;
+  /**
+   * 触发更新的函数，默认为 reactivable 函数自身
+   */
+  update?: () => any;
+  /**
+   * 是否自动绑定，设置为 false 时，在手动调用返回函数 .subscribe 方法才能激活
+   * 默认为 true
+   */
+  bind?: boolean;
 } & Omit<CollectOptions<any>, "args">;
 
 const ReactiveOwner: Ref<ReactiveFunction> = {};
@@ -127,7 +139,7 @@ export function reactivable<T extends ReactiveFunction>(
   fn: T,
   options?: ReactiveOptions
 ) {
-  const { bind = true, batch, mark, ignore, callback } = { ...options };
+  const { bind = true, batch, mark, ignore, update } = { ...options };
   let subscribed = bind !== false;
   let setHandler: ObserveEventHandler<ObserveData> = null!;
   const wrapper: ReactiveFunction = (...args: Parameters<T>) => {
@@ -142,7 +154,7 @@ export function reactivable<T extends ReactiveFunction>(
     ReactiveOwner.value = null!;
     return result;
   };
-  const requestUpdate = () => (callback ? callback() : wrapper());
+  const requestUpdate = () => (update ? update() : wrapper());
   setHandler = (data: ObserveData) => {
     if (isSymbol(data.member) || isPrivateKey(data.member)) return;
     return batch ? nextTick(requestUpdate, true) : requestUpdate();
@@ -172,9 +184,12 @@ export function autorun<T extends AnyFunction>(
 export function watch<T>(
   selector: () => T,
   fn: (newValue?: T, oldValue?: T) => void,
-  options?: Pick<ReactiveOptions, "batch"> & { immed?: boolean }
+  options?: (Pick<ReactiveOptions, "batch"> & { immed?: boolean }) | boolean
 ) {
-  const { immed, ...others } = { ...options };
+  const normalizeOptions = isObject(options)
+    ? { ...options }
+    : { immed: options };
+  const { immed, ...others } = normalizeOptions;
   let oldValue: any = Nothing;
   return autorun(() => {
     const value = selector();
@@ -186,6 +201,12 @@ export function watch<T>(
   }, others);
 }
 
+/**
+ * 将普通函数转换为一个具备缓存和计算能能力的函数
+ * @param fn 计算函数
+ * @param options 计算函数选项
+ * @returns 具备缓存和计算能能力的函数
+ */
 export function computed<T extends ReactiveFunction>(
   fn: T,
   options?: Pick<ReactiveOptions, "bind" | "batch">

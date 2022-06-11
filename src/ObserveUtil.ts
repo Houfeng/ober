@@ -97,7 +97,7 @@ function isError(value: any): value is Error {
 
 function isDOMError(value: any) {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  //@ts-ignore
+  // @ts-ignore
   return typeof DOMError !== undef && value instanceof DOMError;
 }
 
