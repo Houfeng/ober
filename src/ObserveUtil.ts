@@ -6,18 +6,20 @@
 
 import { ObserveSymbols } from "./ObserveSymbols";
 
-export type AnyFunction = (...args: any[]) => any;
-
 export type AnyClass = (new (...args: any[]) => any) & {
   displayName?: string;
 };
+
+export type AnyFunction = (...args: any[]) => any;
+
+export type AnyObject = Record<string, any>;
 
 export type Member = string | number | symbol;
 
 export const undef = "undefined";
 export const obj = "object";
 
-function isString(value: any): value is string {
+export function isString(value: any): value is string {
   return typeof value === "string";
 }
 

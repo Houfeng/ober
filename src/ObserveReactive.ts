@@ -6,9 +6,12 @@
 
 import {
   AnyFunction,
+  AnyObject,
   Ref,
+  isFunction,
   isObject,
   isPrivateKey,
+  isString,
   isSymbol,
   shallowEqual,
 } from "./ObserveUtil";
@@ -19,6 +22,7 @@ import { ObserveData } from "./ObserveData";
 import { ObserveEventHandler } from "./ObserveEvents";
 import { ObserveFlags } from "./ObserveFlags";
 import { ObserveKey } from "./ObserveKey";
+import { ObserveReflect } from "./ObserveReflect";
 import { ObserveSymbols } from "./ObserveSymbols";
 import { ObserveText } from "./ObserveError";
 import { createProxy } from "./ObserveProxy";
@@ -276,6 +280,8 @@ export function watch<T>(
   }, others);
 }
 
+type ComputableOptions = Pick<ReactiveOptions, "bind" | "batch">;
+
 /**
  * 将普通函数转换为一个具备缓存和计算能能力的函数
  *
@@ -287,9 +293,9 @@ export function watch<T>(
  * @param options 计算函数选项
  * @returns 具备缓存和计算能能力的函数
  */
-export function computed<T extends ReactiveFunction>(
+export function computable<T extends ReactiveFunction>(
   fn: T,
-  options?: Pick<ReactiveOptions, "bind" | "batch">
+  options?: ComputableOptions
 ) {
   const { bind = true, batch = false, ...others } = { ...options };
   let subscribed = bind !== false;
@@ -326,4 +332,60 @@ export function computed<T extends ReactiveFunction>(
     return ref.value;
   };
   return wrapper as ReactiveFunction<T>;
+}
+
+/**
+ * 作为一个类成员装饰器使用
+ * @param target 类
+ * @param member 类成员
+ */
+export function computed<T extends AnyObject>(target: T, member: string): T;
+/**
+ * 作为一个支持选项的类成员装饰器使用
+ * @param target 类
+ * @param member 类成员
+ */
+export function computed(
+  options?: ComputableOptions
+): <T extends AnyObject>(target: T, member: string) => T;
+/**
+ * 将普通函数转换为一个具备缓存和计算能能力的函数
+ *
+ * ★特别注意★ 在计算函数没有被任何一个可响应函数使用时，
+ * 将会自动退普普通函数，只要被任何一个可响应函数使用，它就会恢复为具备计算和缓存能力的函数。
+ * 可响应函数包括「reactivable、autorun、watch」
+ *
+ * @param fn 计算函数
+ * @param options 计算函数选项
+ * @returns 具备缓存和计算能能力的函数
+ */
+export function computed<T extends ReactiveFunction>(
+  fn: T,
+  options?: ComputableOptions
+): ReactiveFunction<T>;
+/**
+ * usage 1: computed(()=>{...})
+ * usage 2: computed(()=>{...},options)
+ * usage 3: @computed
+ * usage 4: @computed(options)
+ */
+export function computed<T extends AnyObject | ComputableOptions>(
+  target: T,
+  options?: ComputableOptions | string
+): any {
+  if (isFunction(target) && !isString(options)) {
+    // 作为高阶函数命名用，待价于 computable
+    return computable(target, options);
+  } else if ((!target || !isFunction(target)) && !options) {
+    // 作为带选项的类成员装饰器使用，返回一个装饰器函数
+    return (target: AnyObject, member: string) => {
+      const descriptor = ObserveReflect.getPropertyDescriptor(target, member);
+      if (!descriptor?.get) return;
+      const getter = computable(descriptor?.get, target);
+      descriptor.get = getter;
+    };
+  } else if (!isFunction(target) && isString(options)) {
+    // 作为无选择的类成员装饰器使用，直接处理
+    return computed()(target, options);
+  }
 }

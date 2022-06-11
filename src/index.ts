@@ -21,6 +21,7 @@ export {
   untrackable,
   collect,
   reactivable,
+  computable,
   autorun,
   watch,
   computed,
