@@ -233,8 +233,9 @@ export function reactivable<T extends ReactiveFunction>(
  */
 export function autorun<T extends AnyFunction>(
   fn: T,
-  options?: Pick<ReactiveOptions, "batch">
+  options?: Pick<ReactiveOptions, "batch"> | boolean
 ) {
+  options = isObject(options) ? { ...options } : { batch: options };
   const wrapper = reactivable(fn, { batch: true, ...options, bind: true });
   wrapper();
   return wrapper.unsubscribe;
@@ -256,10 +257,8 @@ export function watch<T>(
   fn: (newValue?: T, oldValue?: T) => void,
   options?: (Pick<ReactiveOptions, "batch"> & { immed?: boolean }) | boolean
 ) {
-  const normalizeOptions = isObject(options)
-    ? { ...options }
-    : { immed: options };
-  const { immed, ...others } = normalizeOptions;
+  options = isObject(options) ? { ...options } : { immed: options };
+  const { immed, ...others } = options;
   let oldValue: any = Nothing;
   return autorun(() => {
     const value = selector();
