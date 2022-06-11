@@ -45,9 +45,8 @@ export function unsubscribe<T extends keyof ObserveEvents>(
     const list = ObserveHandlers[type].get(key);
     if (!list || !list.has(handler)) return;
     list.delete(handler);
-    if (ObserveFlags.unref && list.size < 1) {
+    if (ObserveFlags.unref && key !== GENERIC_KEY && list.size < 1) {
       const [id, member] = key.split(".");
-      console.log("publish unref", id, member, list);
       publish("unref", { type, id, member });
     }
   });

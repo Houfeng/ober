@@ -3,7 +3,6 @@ import "./helpers/mode";
 import { computed, reactivable } from '../src/ObserveReactive';
 
 import { AnyFunction } from "../src/ObserveUtil";
-import { inspect } from 'util';
 import { observable } from "../src/ObserveHof";
 import { sleep } from './helpers/utils';
 import { strictEqual } from "assert";
@@ -15,12 +14,10 @@ describe('Computed', () => {
     let throwError: AnyFunction;
     const func = computed(() => {
       if (throwError) throwError('computed: unsubscribe failed');
-      console.log('computing', model.b, model.a);
       return model.b * model.a;
     });
     let times = 0;
     const reactive = reactivable(() => {
-      console.log(`times:${times}`);
       if (throwError) throwError('reactive: unsubscribe failed');
       times++;
       const value = func();
@@ -29,21 +26,20 @@ describe('Computed', () => {
       if (times === 3) strictEqual(value, 8, `+8 -${value}`);
     });
     reactive();
-    await sleep(100);
+    await sleep(0);
     strictEqual(reactive.dependencies.size, 1);
     model.b = 2;
-    await sleep(100);
+    await sleep(0);
     strictEqual(reactive.dependencies.size, 1);
     model.a = 4;
-    await sleep(100);
+    await sleep(0);
     strictEqual(reactive.dependencies.size, 1);
-    console.log('reactive.dependencies', inspect(reactive.dependencies))
     reactive.unsubscribe();
     throwError = (message) => {
       throw new Error(message);
     }
     model.a = 5;
-    await sleep(100);
+    await sleep(0);
   });
 
 });

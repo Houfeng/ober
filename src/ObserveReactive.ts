@@ -62,17 +62,20 @@ export function trackable<T extends AnyFunction>(fn: T) {
 export type CollectOptions<T extends AnyFunction> = {
   args?: Parameters<T>;
   mark?: string;
+  ignore?: string[];
 };
 
 export function collect<T extends AnyFunction>(
   fn: T,
   options?: CollectOptions<T>
 ) {
-  const { mark, args } = { ...options };
+  const { mark, args, ignore = [] } = { ...options };
   const dependencies = new Set<string>();
   const collectHandler = (data: ObserveData) => {
     if (data.mark && data.mark !== mark) return;
-    dependencies.add(ObserveKey(data));
+    const key = ObserveKey(data);
+    if (ignore && ignore.indexOf(key) > -1) return;
+    dependencies.add(key);
   };
   subscribe("get", collectHandler);
   const originMark = ObserveFlags.mark;
@@ -103,7 +106,7 @@ export type ReactiveOptions = {
   callback?: () => any;
   bind?: boolean;
   batch?: boolean;
-} & Pick<CollectOptions<any>, "mark">;
+} & Omit<CollectOptions<any>, "args">;
 
 const ReactiveOwner: Ref<ReactiveFunction> = {};
 
@@ -111,22 +114,22 @@ export function reactivable<T extends ReactiveFunction>(
   fn: T,
   options?: ReactiveOptions
 ) {
-  const { bind = true, batch, mark, callback } = { ...options };
+  const { bind = true, batch, mark, ignore, callback } = { ...options };
   let subscribed = bind !== false;
   let setHandler: ObserveEventHandler<ObserveData> = null;
-  const requestUpdate = () => (callback ? callback() : wrapper());
   const wrapper: ReactiveFunction = (...args: Parameters<T>) => {
     ReactiveOwner.value = wrapper;
     ObserveFlags.unref = false;
     unsubscribe("set", setHandler);
     ObserveFlags.unref = true;
-    const { result, dependencies } = collect(fn, { args, mark });
+    const { result, dependencies } = collect(fn, { args, mark, ignore });
     setHandler.dependencies = dependencies;
     wrapper.dependencies = dependencies;
     if (subscribed) subscribe("set", setHandler);
     ReactiveOwner.value = null;
     return result;
   };
+  const requestUpdate = () => (callback ? callback() : wrapper());
   setHandler = (data: ObserveData) => {
     if (isSymbol(data.member) || isPrivateKey(data.member)) return;
     return batch ? nextTick(requestUpdate, true) : requestUpdate();
@@ -138,7 +141,6 @@ export function reactivable<T extends ReactiveFunction>(
   };
   wrapper.unsubscribe = () => {
     if (!subscribed) return;
-    console.log("wrapper.unsubscribe", setHandler);
     unsubscribe("set", setHandler);
     subscribed = false;
   };
@@ -173,42 +175,36 @@ export function watch<T>(
 
 export function computed<T extends ReactiveFunction>(
   fn: T,
-  options?: Omit<ReactiveOptions, "callback">
+  options?: Omit<ReactiveOptions, "callback" | "ignore">
 ) {
   const { bind = true, batch = false, ...others } = { ...options };
   let subscribed = bind !== false;
   let ref: Ref<T> = null;
   const wrapper: ReactiveFunction = () => {
-    console.log("entry1");
     if (!ReactiveOwner.value && !subscribed) return fn();
-    console.log("entry2");
     if (!ref) {
       const target: Ref<T> = { value: null };
       const { id } = observeInfo(target);
-      const refKey = `${id}.value`;
+      const key = `${id}.value`;
       ref = createProxy(target);
-      const reactiveOptions = { ...others, bind, batch, mark: refKey };
-      const reactive = reactivable(() => {
-        ref.value = fn();
-      }, reactiveOptions);
+      const reactOpts = { ...others, bind, batch, mark: key, ignore: [key] };
+      const reactive = reactivable(() => (ref.value = fn()), reactOpts);
       reactive();
       const destroy = () => {
-        console.log("destroy+++++++++");
+        if (!subscribed) return;
         reactive.unsubscribe();
         unsubscribe("unref", destroy);
         subscribed = false;
         ref = null;
       };
-      destroy.dependencies = new Set([refKey]);
+      destroy.dependencies = new Set([key]);
+      if (subscribed) subscribe("unref", destroy);
       const init = () => {
-        console.log("init+++++++++");
         if (subscribed) return;
         reactive.subscribe();
         subscribe("unref", destroy);
         subscribed = true;
       };
-      console.log("first create", subscribed);
-      if (subscribed) subscribe("unref", destroy);
       wrapper.subscribe = init;
       wrapper.unsubscribe = destroy;
     }
