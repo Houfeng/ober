@@ -21,6 +21,7 @@ import { isArrowFunction } from "./ObserveUtil";
 
 /**
  * 创建一个可观察的对象或类
+ * 也可作为类装饰器 @observable 使用
  * @param 原始对象或类，也可以是一个返回对象的工场函数
  * @returns 可观察对象或类（类实列将自动是可观察的）
  */
@@ -53,6 +54,12 @@ export function observable<T = any>(target: T): T {
  * @param target 原始函数
  */
 export function action<T extends AnyFunction>(target: T): T;
+/**
+ * Action 还可作为类成员装饰器 @action 使用
+ * @param target 类
+ * @param member 类成员
+ * @returns void
+ */
 export function action(target: any, member?: string): any {
   if (isFunction(target) && !member) {
     return function (this: any, ...args: any[]) {
@@ -75,6 +82,12 @@ export function action(target: any, member?: string): any {
  * @param target 原始函数
  */
 export function bind<T extends AnyFunction>(target: T): T;
+/**
+ * bind 也可作为类成员装饰器 @bind 使用
+ * @param target 类
+ * @param member 类成员
+ * @returns void
+ */
 export function bind(target: any, member?: string): any {
   if (isFunction(target) && !member) {
     if (isArrowFunction(target)) {
