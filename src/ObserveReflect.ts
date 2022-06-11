@@ -7,7 +7,10 @@
 import { Member, isProxy } from "./ObserveUtil";
 
 export const ObserveReflect = {
-  getPropertyDescriptor(target: any, key: Member) {
+  getPropertyDescriptor(
+    target: any,
+    key: Member
+  ): PropertyDescriptor | undefined {
     if (!target) return;
     return (
       Object.getOwnPropertyDescriptor(target, key) ||
@@ -21,7 +24,7 @@ export const ObserveReflect = {
     }
     const descriptor = this.getPropertyDescriptor(target, key);
     if (descriptor && descriptor.get) {
-      return descriptor.get.call(receiver, key);
+      return descriptor.get.call(receiver);
     } else {
       return target[key];
     }

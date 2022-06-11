@@ -1,4 +1,4 @@
-import { ObserveConfig, ObserveEvent, ObserveMode, ObserveState, isProxy, observable, subscribe } from "../src";
+import { ObserveConfig, ObserveFlags, isProxy, observable, subscribe } from "../src";
 //import { ObserveConfig } from '../src/ObserveConfig';
 //import { action } from "../src/ObserveAction";
 
@@ -11,11 +11,11 @@ import { ObserveConfig, ObserveEvent, ObserveMode, ObserveState, isProxy, observ
 
 //ObserveConfig.strict = true;
 
-ObserveState.get = true;
-ObserveConfig.mode = ObserveMode.proxy;
+ObserveFlags.get = true;
+ObserveConfig.mode = "proxy";
 
-subscribe(ObserveEvent.get, info => console.log("GET", info));
-subscribe(ObserveEvent.set, info => console.log("SET", info));
+subscribe("get", info => console.log("GET", info));
+subscribe("set", info => console.log("SET", info));
 
 // const model = observable({ items: [{ v: 1 }, { v: 2 }, { v: 3 }] });
 // console.log("#0:", JSON.stringify(model.items));

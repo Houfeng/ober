@@ -1,4 +1,4 @@
-import "./mode";
+import "./helpers/mode";
 
 import { autorun } from '../src/ObserveReactive';
 import { observable } from '../src/ObserveHof';

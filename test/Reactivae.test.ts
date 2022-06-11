@@ -1,4 +1,4 @@
-import "./mode";
+import "./helpers/mode";
 
 import { collect, reactivable, untrack, untrackable } from '../src/ObserveReactive';
 

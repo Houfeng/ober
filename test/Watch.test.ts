@@ -1,4 +1,4 @@
-import "./mode";
+import "./helpers/mode";
 
 import { observable } from '../src/ObserveHof';
 import { strictEqual } from "assert";

@@ -9,11 +9,7 @@ import { isObject, undef } from "./ObserveUtil";
 import { ObserveError } from "./ObserveError";
 import { ObserveFlags } from "./ObserveFlags";
 
-export enum ObserveMode {
-  proxy = "proxy",
-  property = "property",
-  auto = "auto",
-}
+export type ObserveMode = "proxy" | "property" | "auto";
 
 export interface ObserveConfigDefinition {
   mode: ObserveMode;
@@ -39,7 +35,7 @@ export const ObserveEnvConfig: Partial<ObserveConfigDefinition> = (() => {
 })();
 
 export const ObserveConfig: ObserveConfigDefinition = {
-  mode: ObserveMode.property,
+  mode: "property",
   strict: false,
   maxDependencies: 1000,
   maxHandlers: 100,

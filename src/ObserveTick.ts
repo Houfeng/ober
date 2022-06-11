@@ -70,6 +70,13 @@ function createTickResolver() {
 
 const resolveAllTickItems = createTickResolver();
 
+/**
+ * 在下一个 tick 中执行，当前同步任务执行完成后将立即触发
+ * @param callback 待执行的函数
+ * @param unique 是否唯一，
+ *  当设置为 true 时同一个函数即使调用 nextTick 多次也只执行一次
+ * @returns Promise 可 await callback 的执行完成
+ */
 export function nextTick(callback: () => void, unique?: boolean) {
   if (!callback) return;
   if (unique === true) {

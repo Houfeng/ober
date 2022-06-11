@@ -97,7 +97,7 @@ function isError(value: any): value is Error {
 
 function isDOMError(value: any) {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  //@ts-ignore
+  // @ts-ignore
   return typeof DOMError !== undef && value instanceof DOMError;
 }
 
@@ -210,7 +210,7 @@ export function isDevelopment() {
 }
 
 export function isBindRequiredFunction<T extends AnyFunction>(
-  value: T
+  value: T | undefined
 ): value is T {
   return value && (value as any)[ObserveSymbols.BindRequired];
 }
@@ -222,11 +222,13 @@ export interface Defer<T> {
 }
 
 export function Defer<T = any>(): Defer<T> {
-  let resolve: Defer<T>["resolve"];
-  let reject: Defer<T>["reject"];
+  let resolve!: Defer<T>["resolve"];
+  let reject!: Defer<T>["reject"];
   const promise = new Promise<T>((_resolve, _reject) => {
     resolve = _resolve;
     reject = _reject;
   });
   return { promise, resolve, reject };
 }
+
+export type Ref<T> = { value?: T };
