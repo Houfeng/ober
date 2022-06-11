@@ -78,6 +78,14 @@ export type CollectOptions<T extends AnyFunction> = {
   ignore?: string[];
 };
 
+/**
+ * 执行一个函数并收集其依赖
+ * 一般情况下，不需要直接调用此 API，通常用于更上层 API 或 库，
+ *
+ * @param fn 将执行并收集依赖的数据
+ * @param options 收集选项
+ * @returns 执行结果和依赖清单
+ */
 export function collect<T extends AnyFunction>(
   fn: T,
   options?: CollectOptions<T>
@@ -135,6 +143,17 @@ export type ReactiveOptions = {
 
 const ReactiveOwner: Ref<ReactiveFunction> = {};
 
+/**
+ * 创建一个可响应函数
+ *
+ * 特别注意：返回的可响应函数，当不在使用时必须调用销毁方法进行释放，
+ * 否则，将带来不必要的重复执行，因为不释放还可能导致程序的内存泄露问题
+ * 如果你不确认在干什么，请不要直接使用 reactivable api，
+ *
+ * @param fn 原始函数
+ * @param options 响应选项
+ * @returns 可响应函数 (调用 <ReturnFunc>.unsubscribe() 可销毁)
+ */
 export function reactivable<T extends ReactiveFunction>(
   fn: T,
   options?: ReactiveOptions
@@ -172,6 +191,16 @@ export function reactivable<T extends ReactiveFunction>(
   return wrapper as ReactiveFunction<T>;
 }
 
+/**
+ * 启动一个自执行函数，当函数中用到的数据发生变化时它将自动重新执行
+ *
+ * 特别注意：返回值是销毁函数，当不在使用时必须调用销毁函数进行释放，
+ * 否则，将带来不必要的重复执行，因为不释放还可能导致程序的内存泄露问题
+ *
+ * @param fn 将执行的函数
+ * @param options 自执行函数选项
+ * @returns 销毁函数
+ */
 export function autorun<T extends AnyFunction>(
   fn: T,
   options?: Pick<ReactiveOptions, "batch">
@@ -181,6 +210,17 @@ export function autorun<T extends AnyFunction>(
   return wrapper.unsubscribe;
 }
 
+/**
+ * 创建一个观察器，每当用到的数据发生变化时，将重新计算
+ *
+ * 特别注意：返回值是销毁函数，当不在使用时必须调用销毁函数进行释放，
+ * 否则，将带来不必要的重复执行，因为不释放还可能导致程序的内存泄露问题
+ *
+ * @param selector 计算函数，需返回一个值，将对新旧值进行浅对比，决定是否调用执行函数
+ * @param fn 执行函数，由 selector 的计算结果决定是否重新执行
+ * @param options 观察器选项
+ * @returns 销毁函数
+ */
 export function watch<T>(
   selector: () => T,
   fn: (newValue?: T, oldValue?: T) => void,
