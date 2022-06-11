@@ -222,14 +222,14 @@ export function reactivable<T extends ReactiveFunction>(
  * 否则，将带来不必要的重复执行，因为不释放还可能导致程序的内存泄露问题
  *
  * @param fn 将执行的函数
- * @param options 自执行函数选项
+ * @param options 自执行函数选项（★其中 batch 默认为 true）
  * @returns 销毁函数
  */
 export function autorun<T extends AnyFunction>(
   fn: T,
   options?: Pick<ReactiveOptions, "batch">
 ) {
-  const wrapper = reactivable(fn, { ...options, bind: true });
+  const wrapper = reactivable(fn, { batch: true, ...options, bind: true });
   wrapper();
   return wrapper.unsubscribe;
 }
@@ -242,7 +242,7 @@ export function autorun<T extends AnyFunction>(
  *
  * @param selector 计算函数，需返回一个值，将对新旧值进行浅对比，决定是否调用执行函数
  * @param fn 执行函数，由 selector 的计算结果决定是否重新执行
- * @param options 观察器选项
+ * @param options 观察器选项（★其中 batch 默认为 true）
  * @returns 销毁函数
  */
 export function watch<T>(
