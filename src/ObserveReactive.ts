@@ -175,7 +175,7 @@ export function watch<T>(
 
 export function computed<T extends ReactiveFunction>(
   fn: T,
-  options?: Omit<ReactiveOptions, "callback" | "ignore">
+  options?: Pick<ReactiveOptions, "bind" | "batch">
 ) {
   const { bind = true, batch = false, ...others } = { ...options };
   let subscribed = bind !== false;

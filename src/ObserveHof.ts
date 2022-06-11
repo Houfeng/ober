@@ -19,6 +19,11 @@ import { ObserveSymbols } from "./ObserveSymbols";
 import { createProxy } from "./ObserveProxy";
 import { isArrowFunction } from "./ObserveUtil";
 
+/**
+ * Convert a normal object/class to an observable object/class
+ * @param target Original object (object/class/function)
+ * @returns Observable object
+ */
 export function observable<T = any>(target: T): T {
   if (isProxy(target)) {
     return target;
