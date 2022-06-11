@@ -60,8 +60,21 @@ export function trackable<T extends AnyFunction>(fn: T) {
 }
 
 export type CollectOptions<T extends AnyFunction> = {
+  /**
+   * arguments passed to the collection function
+   */
   args?: Parameters<T>;
+  /**
+   * 收集标记，打上收集标记后，将阻止上层收集函数收集
+   * 如果没有完全搞懂它，请不要使用它
+   * @internal
+   */
   mark?: string;
+  /**
+   * 要忽略收集的 key (格式 id.member)
+   * 如果没有完全搞懂它，请不要使用它
+   * @internal
+   */
   ignore?: string[];
 };
 
@@ -184,10 +197,10 @@ export function computed<T extends ReactiveFunction>(
     if (!ReactiveOwner.value && !subscribed) return fn();
     if (!ref) {
       const target: Ref<T> = { value: null };
-      const { id } = observeInfo(target);
-      const key = `${id}.value`;
+      const { id: mark } = observeInfo(target);
+      const refKeys = [`${mark}.value`];
       ref = createProxy(target);
-      const reactOpts = { ...others, bind, batch, mark: key, ignore: [key] };
+      const reactOpts = { ...others, bind, batch, mark, ignore: refKeys };
       const reactive = reactivable(() => (ref.value = fn()), reactOpts);
       reactive();
       const destroy = () => {
@@ -197,7 +210,7 @@ export function computed<T extends ReactiveFunction>(
         subscribed = false;
         ref = null;
       };
-      destroy.dependencies = new Set([key]);
+      destroy.dependencies = new Set(refKeys);
       if (subscribed) subscribe("unref", destroy);
       const init = () => {
         if (subscribed) return;
