@@ -152,12 +152,18 @@ export type ReactiveOptions = {
    * 是否自动合并更新
    * 设置为 true 时，可观察对象的所有同步变更，都将同步触发 update
    * 默认为 false
+   *
+   * ★当 batch 为 true，将不会向 update 函数传递 data 参数
+   *
    */
   batch?: boolean;
   /**
    * 触发更新的函数，默认为 reactivable 函数自身
+   *
+   * ★当 batch 为 true，将不会向 update 函数传递 data 参数
+   *
    */
-  update?: () => any;
+  update?: (data?: ObserveData) => any;
   /**
    * 是否自动绑定，设置为 false 时，在手动调用返回函数 .subscribe 方法才能激活
    * 默认为 true
@@ -197,10 +203,10 @@ export function reactivable<T extends ReactiveFunction>(
     ReactiveOwner.value = null!;
     return result;
   };
-  const requestUpdate = () => (update ? update() : wrapper());
+  const requestUpdate = (it?: ObserveData) => (update ? update(it) : wrapper());
   setHandler = (data: ObserveData) => {
     if (isSymbol(data.member) || isPrivateKey(data.member)) return;
-    return batch ? nextTick(requestUpdate, true) : requestUpdate();
+    return batch ? nextTick(requestUpdate, true) : requestUpdate(data);
   };
   wrapper.subscribe = () => {
     if (subscribed) return;
