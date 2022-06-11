@@ -11,6 +11,9 @@ examples/
 tslint.json
 tsconfig.json
 .eslintrc.yml
+.eslintrc
+rollup.config.js
 server.yml
 .dawn/
+.vscode/
 *.js.map
