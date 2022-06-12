@@ -132,8 +132,8 @@ export type ReactiveSubscribe = () => void;
 
 export type ReactiveFunction<T extends AnyFunction = AnyFunction> = T & {
   dependencies?: Set<string>;
-  subscribe?: ReactiveUnsubscribe;
-  unsubscribe?: ReactiveSubscribe;
+  subscribe?: ReactiveSubscribe;
+  unsubscribe?: ReactiveUnsubscribe;
 };
 
 export type ReactiveOptions = {
@@ -295,40 +295,41 @@ export function computable<T extends ReactiveFunction>(
   options?: ComputableOptions
 ) {
   const { bind = true, batch = false, ...others } = { ...options };
-  let subscribed = bind !== false;
+  let subscribed = false;
   let ref: Ref<T> = null!;
+  let reactive: ReactiveFunction;
   const wrapper: ReactiveFunction = function (this: any) {
     if (!ReactiveOwner.value && !subscribed) return fn();
-    if (!ref) {
+    if (!ref || !reactive) {
       const target: Ref<T> = { value: null! };
       const { id: mark } = observeInfo(target);
-      const refKeys = [`${mark}.value`];
+      const keys = [`${mark}.value`];
       ref = createProxy(target);
-      const reactOpts = { ...others, bind, batch, mark, ignore: refKeys };
-      const reactive = reactivable(
-        () => (ref.value = fn.call(this)),
-        reactOpts
-      );
-      reactive();
+      const opts = { ...others, batch, mark, bind: false, ignore: keys };
+      reactive = reactivable(() => (ref.value = fn.call(this)), opts);
+      // 取消订阅处理
       const destroy = () => {
         if (!subscribed) return;
         reactive.unsubscribe!();
         unsubscribe("unref", destroy);
         subscribed = false;
-        ref = null!;
       };
-      destroy.dependencies = new Set(refKeys);
-      if (subscribed) subscribe("unref", destroy);
-      const init = () => {
+      destroy.dependencies = new Set(keys);
+      wrapper.unsubscribe = destroy;
+      // 建立订阅处理
+      wrapper.subscribe = () => {
         if (subscribed) return;
+        reactive();
         reactive.subscribe?.();
         subscribe("unref", destroy);
         subscribed = true;
       };
-      wrapper.subscribe = init;
-      wrapper.unsubscribe = destroy;
     }
-    if (!subscribed) wrapper.subscribe!();
+    if (bind) {
+      wrapper.subscribe!();
+    } else {
+      reactive();
+    }
     return ref.value;
   };
   return wrapper as ReactiveFunction<T>;

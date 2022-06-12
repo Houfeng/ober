@@ -21,7 +21,7 @@ describe('Computed', () => {
       if (throwError) throwError('reactive: unsubscribe failed');
       times++;
       const value = func();
-      if (times === 1) strictEqual(value, 0, `+2 -${value}`);
+      if (times === 1) strictEqual(value, 0, `+0 -${value}`);
       if (times === 2) strictEqual(value, 4, `+4 -${value}`);
       if (times === 3) strictEqual(value, 8, `+8 -${value}`);
     });
