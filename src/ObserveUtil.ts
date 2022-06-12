@@ -234,3 +234,19 @@ export function Defer<T = any>(): Defer<T> {
 }
 
 export type Ref<T> = { value?: T };
+
+export type DecoratorContext = {
+  kind: string;
+  name: string | symbol;
+  access: {
+    get?(): unknown;
+    set?(value: unknown): void;
+  };
+  isPrivate?: boolean;
+  isStatic?: boolean;
+  addInitializer?(initializer: () => void): void;
+};
+
+export function isDecoratorContext(value: any): value is DecoratorContext {
+  return value && value.kind && value.name;
+}

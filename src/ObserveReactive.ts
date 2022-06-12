@@ -7,6 +7,7 @@
 import {
   AnyFunction,
   AnyObject,
+  DecoratorContext,
   Ref,
   isFunction,
   isObject,
@@ -26,6 +27,7 @@ import { ObserveReflect } from "./ObserveReflect";
 import { ObserveSymbols } from "./ObserveSymbols";
 import { ObserveText } from "./ObserveError";
 import { createProxy } from "./ObserveProxy";
+import { isDecoratorContext } from "./ObserveUtil";
 import { nextTick } from "./ObserveTick";
 import { observeInfo } from "./ObserveInfo";
 
@@ -335,20 +337,6 @@ export function computable<T extends ReactiveFunction>(
 }
 
 /**
- * 作为一个类成员装饰器使用
- * @param target 类
- * @param member 类成员
- */
-export function computed<T extends AnyObject>(target: T, member: string): T;
-/**
- * 作为一个支持选项的类成员装饰器使用
- * @param target 类
- * @param member 类成员
- */
-export function computed(
-  options?: ComputableOptions
-): <T extends AnyObject>(target: T, member: string) => T;
-/**
  * 将普通函数转换为一个具备缓存和计算能能力的函数
  *
  * ★特别注意★ 在计算函数没有被任何一个可响应函数使用时，
@@ -364,28 +352,74 @@ export function computed<T extends ReactiveFunction>(
   options?: ComputableOptions
 ): ReactiveFunction<T>;
 /**
+ * 作为一个类成员装饰器使用
+ *
+ * ★ legacy 模式的 @computed
+ *
+ * @param prototype 类
+ * @param member 类成员
+ */
+export function computed<T extends AnyObject>(prototype: T, member: string): T;
+/**
+ * computed 还可作为类成员装饰器 @computed 使用
+ *
+ * ★ Stage-3 模式的 @computed
+ *
+ * @param value 原始类成员函数
+ * @param context 装饰器上下文对象
+ * @returns any
+ */
+export function computed(value: AnyFunction, context: DecoratorContext): any;
+/**
+ * 作为一个支持选项的类成员装饰器使用
+ * @param target 类
+ * @param member 类成员
+ */
+export function computed(
+  options?: ComputableOptions
+): <T extends AnyObject | AnyFunction>(
+  value: T,
+  context: DecoratorContext | string
+) => T;
+/**
  * usage 1: computed(()=>{...})
  * usage 2: computed(()=>{...},options)
  * usage 3: @computed
  * usage 4: @computed(options)
  */
-export function computed<T extends AnyObject | ComputableOptions>(
+export function computed<T extends AnyObject | ComputableOptions | AnyFunction>(
   target: T,
-  options?: ComputableOptions | string
+  options?: ComputableOptions | DecoratorContext | string
 ): any {
-  if (isFunction(target) && !isString(options)) {
+  if (
+    isFunction(target) &&
+    !isString(options) &&
+    !isDecoratorContext(options)
+  ) {
     // 作为高阶函数命名用，待价于 computable
     return computable(target, options);
   } else if ((!target || !isFunction(target)) && !options) {
     // 作为带选项的类成员装饰器使用，返回一个装饰器函数
-    return (target: AnyObject, member: string) => {
-      const descriptor = ObserveReflect.getPropertyDescriptor(target, member);
-      if (!descriptor?.get) return;
-      const getter = computable(descriptor?.get, target);
-      descriptor.get = getter;
+    return (
+      value: AnyObject | AnyFunction,
+      context: DecoratorContext | string
+    ): any => {
+      if (isFunction(value) && isDecoratorContext(context)) {
+        // stage-3 规范装饰器 @computed(options), target is options
+        return computable(value, target);
+      } else if (isObject(value) && isString(context)) {
+        // legacy 规范装饰器 @computed(options), target is options
+        const descriptor = ObserveReflect.getPropertyDescriptor(value, context);
+        if (!descriptor?.get) return;
+        const getter = computable(descriptor?.get, target);
+        descriptor.get = getter;
+      }
     };
+  } else if (isFunction(target) && isDecoratorContext(options)) {
+    // stage-3 规范装饰器 @computed
+    return computable(target);
   } else if (!isFunction(target) && isString(options)) {
-    // 作为无选择的类成员装饰器使用，直接处理
+    // legacy 规范装饰器 @computed ，options is member
     return computed()(target, options);
   }
 }
