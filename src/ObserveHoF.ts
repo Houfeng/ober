@@ -184,9 +184,7 @@ export function bind(
  * @param options 计算函数选项
  * @returns 具备缓存和计算能能力的函数
  */
-export function computed<T extends ReactiveFunction>(
-  fn: T
-): ReactiveFunction<T>;
+export function computed<T>(fn: () => T): ReactiveFunction<() => T>;
 /**
  * 作为一个类成员装饰器使用 (只可用于 Getter)
  *
