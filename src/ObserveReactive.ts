@@ -128,9 +128,9 @@ export type ReactiveUnsubscribe = () => void;
 export type ReactiveSubscribe = () => void;
 
 export type ReactiveFunction<T extends AnyFunction = AnyFunction> = T & {
-  dependencies?: Set<string>;
-  subscribe?: ReactiveSubscribe;
-  unsubscribe?: ReactiveUnsubscribe;
+  dependencies: Set<string>;
+  subscribe: ReactiveSubscribe;
+  unsubscribe: ReactiveUnsubscribe;
 };
 
 export type ReactiveOptions = {
@@ -170,17 +170,14 @@ const ReactiveOwner: Ref<ReactiveFunction> = {};
  * @param options 响应选项
  * @returns 可响应函数 (调用 <ReturnFunc>.unsubscribe() 可销毁)
  */
-export function reactivable<T extends ReactiveFunction>(
+export function reactivable<T extends AnyFunction>(
   fn: T,
   options?: ReactiveOptions
 ) {
   const { bind = true, batch, mark, ignore, update } = { ...options };
   let subscribed = bind !== false;
   let setHandler: ObserveEventHandler<ObserveData> = null!;
-  const wrapper: ReactiveFunction = function (
-    this: any,
-    ...args: Parameters<T>
-  ) {
+  const wrapper = function (this: any, ...args: Parameters<T>) {
     ReactiveOwner.value = wrapper;
     ObserveFlags.unref = false;
     unsubscribe("set", setHandler);
@@ -192,7 +189,7 @@ export function reactivable<T extends ReactiveFunction>(
     if (subscribed) subscribe("set", setHandler);
     ReactiveOwner.value = null!;
     return result;
-  };
+  } as ReactiveFunction<T>;
   const requestUpdate = (it?: ObserveData) => (update ? update(it) : wrapper());
   setHandler = (data: ObserveData) => {
     if (isSymbol(data.member) || isPrivateKey(data.member)) return;
@@ -208,7 +205,7 @@ export function reactivable<T extends ReactiveFunction>(
     unsubscribe("set", setHandler);
     subscribed = false;
   };
-  return wrapper as ReactiveFunction<T>;
+  return wrapper;
 }
 
 /**
@@ -268,7 +265,7 @@ export type ComputableOptions = Pick<ReactiveOptions, "bind" | "batch">;
  * @param options 计算函数选项
  * @returns 具备缓存和计算能能力的函数
  */
-export function computable<T extends ReactiveFunction>(
+export function computable<T extends AnyFunction>(
   fn: T,
   options?: ComputableOptions
 ) {
@@ -276,7 +273,7 @@ export function computable<T extends ReactiveFunction>(
   let subscribed = false;
   let ref: Ref<T> = null!;
   let reactive: ReactiveFunction;
-  const wrapper: ReactiveFunction = function (this: any) {
+  const wrapper = function (this: any) {
     if (!ReactiveOwner.value && !subscribed) return fn();
     if (!ref || !reactive) {
       const target: Ref<T> = { value: null! };
@@ -309,6 +306,6 @@ export function computable<T extends ReactiveFunction>(
       reactive();
     }
     return ref.value;
-  };
-  return wrapper as ReactiveFunction<T>;
+  } as ReactiveFunction<T>;
+  return wrapper;
 }
