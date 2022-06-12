@@ -22,16 +22,16 @@ import { ObserveSymbols } from "./ObserveSymbols";
 import { createProxy } from "./ObserveProxy";
 
 /**
- * 创建一个可观察的对象或类
- * 也可作为类装饰器 @observable 使用
+ * 创建一个可观察对象或类型
  *
- * ★ 作类装饰器同时兼容 Stage-3/legacy 规范
+ * ★ 也可作为类装饰器 @observable 使用，作类装饰器同时兼容 Stage-3/legacy 规范
  *
- * @param 原始对象或类，也可以是一个返回对象的工场函数
+ * @param target 原始对象或类，也可以是一个返回对象的工场函数
  * @returns 可观察对象或类（类实列将自动是可观察的）
  */
-export function observable<T = AnyClass>(target: T): T;
-export function observable<T = any>(target: T): T {
+export function observable<T = AnyObject | AnyClass | AnyFunction>(
+  target: T
+): T {
   if (isProxy(target)) {
     return target;
   } else if (isFunction<AnyClass>(target)) {

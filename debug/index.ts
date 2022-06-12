@@ -1,6 +1,8 @@
 import { ObserveConfig, ObserveFlags, isProxy, observable, subscribe } from "../src";
+
 //import { ObserveConfig } from '../src/ObserveConfig';
 //import { action } from "../src/ObserveAction";
+import { computed } from '../src';
 
 // const demo = observable({ msg: 'a', num: 1 });
 // autorun(() => {
@@ -12,7 +14,7 @@ import { ObserveConfig, ObserveFlags, isProxy, observable, subscribe } from "../
 //ObserveConfig.strict = true;
 
 ObserveFlags.get = true;
-ObserveConfig.mode = "proxy";
+ObserveConfig.mode = "proxy";  
 
 subscribe("get", info => console.log("GET", info));
 subscribe("set", info => console.log("SET", info));

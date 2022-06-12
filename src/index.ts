@@ -31,3 +31,4 @@ export {
   type ReactiveUnsubscribe,
 } from "./ObserveReactive";
 export { nextTick } from "./ObserveTick";
+export { type DecoratorContext } from "./ObserveUtil";

@@ -352,7 +352,7 @@ export function computed<T extends ReactiveFunction>(
   options?: ComputableOptions
 ): ReactiveFunction<T>;
 /**
- * 作为一个类成员装饰器使用
+ * 作为一个类成员装饰器使用 (只可用于 Getter)
  *
  * ★ legacy 模式的 @computed
  *
@@ -361,11 +361,11 @@ export function computed<T extends ReactiveFunction>(
  */
 export function computed<T extends AnyObject>(prototype: T, member: string): T;
 /**
- * computed 还可作为类成员装饰器 @computed 使用
+ * computed 还可作为类 Getter 成员装饰器 @computed 使用 (只可用于 Getter)
  *
  * ★ Stage-3 模式的 @computed
  *
- * @param value 原始类成员函数
+ * @param value Getter 函数
  * @param context 装饰器上下文对象
  * @returns any
  */
