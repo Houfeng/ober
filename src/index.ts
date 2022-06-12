@@ -4,7 +4,7 @@
  * @author Houfeng <houzhanfeng@gmail.com>
  */
 
-export { observable, action, bind } from "./ObserveHoF";
+export { observable, action, computed, bind } from "./ObserveHoF";
 export { subscribe, unsubscribe, ObserveHandlers } from "./ObserveBus";
 export { ObserveConfig, type ObserveMode } from "./ObserveConfig";
 export { type ObserveData } from "./ObserveData";
@@ -22,15 +22,11 @@ export {
   computable,
   autorun,
   watch,
-  computed,
   type CollectOptions,
   type ReactiveFunction,
   type ReactiveOptions,
   type ReactiveSubscribe,
   type ReactiveUnsubscribe,
   type ComputableOptions,
-  type AutorunOptions,
-  type WatchOptions,
 } from "./ObserveReactive";
 export { nextTick } from "./ObserveTick";
-export { type DecoratorContext } from "./ObserveUtil";

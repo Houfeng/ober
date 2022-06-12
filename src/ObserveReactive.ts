@@ -6,13 +6,9 @@
 
 import {
   AnyFunction,
-  AnyObject,
-  DecoratorContext,
   Ref,
-  isFunction,
   isObject,
   isPrivateKey,
-  isString,
   isSymbol,
   shallowEqual,
 } from "./ObserveUtil";
@@ -23,11 +19,9 @@ import { ObserveData } from "./ObserveData";
 import { ObserveEventHandler } from "./ObserveEvents";
 import { ObserveFlags } from "./ObserveFlags";
 import { ObserveKey } from "./ObserveKey";
-import { ObserveReflect } from "./ObserveReflect";
 import { ObserveSymbols } from "./ObserveSymbols";
 import { ObserveText } from "./ObserveError";
 import { createProxy } from "./ObserveProxy";
-import { isDecoratorContext } from "./ObserveUtil";
 import { nextTick } from "./ObserveTick";
 import { observeInfo } from "./ObserveInfo";
 
@@ -71,6 +65,9 @@ export function untrack<T extends AnyFunction>(fn: T, ...args: any[]) {
 }
 
 export type CollectOptions<T extends AnyFunction> = {
+  /**
+   * 指定 this 对象
+   */
   context?: any;
   /**
    * 传递给收集函数的参数
@@ -158,7 +155,7 @@ export type ReactiveOptions = {
    * 默认为 true
    */
   bind?: boolean;
-} & Omit<CollectOptions<any>, "args">;
+} & Omit<CollectOptions<any>, "context" | "args">;
 
 const ReactiveOwner: Ref<ReactiveFunction> = {};
 
@@ -214,67 +211,48 @@ export function reactivable<T extends ReactiveFunction>(
   return wrapper as ReactiveFunction<T>;
 }
 
-export type AutorunOptions = Pick<ReactiveOptions, "batch"> | boolean;
-
 /**
  * 启动一个自执行函数，当函数中用到的数据发生变化时它将自动重新执行
  *
  * ★特别注意★：返回值是销毁函数，当不在使用时必须调用销毁函数进行释放，
- * 否则，将带来不必要的重复执行，因为不释放还可能导致程序的内存泄露问题
+ * 否则，将带来不必要的重复执行，因为不释放还可能导致程序的内存泄露问题，
+ * 因为需要必需的销毁处理，所以不支持直接作为装饰器使用。
  *
- * 因为需要必需的销毁处理，所以不支持作为装饰器使用，
- * 但上层配合一些库的生命周期可封装装饰器风格的 API，比如 React 在卸载时自动销毁
- *
- * @param fn 将执行的函数
- * @param options 自执行函数选项（★其中 batch 默认为 true）
+ * @param handler 将执行的函数
  * @returns 销毁函数
  */
-export function autorun<T extends AnyFunction>(
-  fn: T,
-  options?: AutorunOptions
-) {
-  options = isObject(options) ? { ...options } : { batch: options };
-  const wrapper = reactivable(fn, { batch: true, ...options, bind: true });
+export function autorun<T extends AnyFunction>(handler: T) {
+  const wrapper = reactivable(handler, { batch: true, bind: true });
   wrapper();
   return wrapper.unsubscribe;
 }
-
-export type WatchOptions =
-  | (Pick<ReactiveOptions, "batch"> & {
-      immed?: boolean;
-    })
-  | boolean;
 
 /**
  * 创建一个观察器，每当用到的数据发生变化时，将重新计算
  *
  * ★特别注意★：返回值是销毁函数，当不在使用时必须调用销毁函数进行释放，
- * 否则，将带来不必要的重复执行，因为不释放还可能导致程序的内存泄露问题
- *
- * 因为需要必需的销毁处理，所以不支持作为装饰器使用，
- * 但上层配合一些库的生命周期可封装装饰器风格的 API，比如 React 在卸载时自动销毁
+ * 否则，将带来不必要的重复执行，因为不释放还可能导致程序的内存泄露问题，
+ * 因为需要必需的销毁处理，所以不支持作为装饰器使用。
  *
  * @param selector 计算函数，需返回一个值，将对新旧值进行浅对比，决定是否调用执行函数
- * @param fn 执行函数，由 selector 的计算结果决定是否重新执行
- * @param options 观察器选项（★其中 batch 默认为 true）
+ * @param handler 执行函数，由 selector 的计算结果决定是否重新执行
+ * @param immed 是否立即执行一次 handler
  * @returns 销毁函数
  */
 export function watch<T>(
   selector: () => T,
-  fn: (newValue?: T, oldValue?: T) => void,
-  options?: WatchOptions
+  handler: (newValue?: T, oldValue?: T) => void,
+  immed = false
 ) {
-  options = isObject(options) ? { ...options } : { immed: options };
-  const { immed, ...others } = options;
   let oldValue: any = Nothing;
   return autorun(() => {
     const value = selector();
     const newValue = isObject(value) ? { ...value } : value;
     if (!shallowEqual(newValue, oldValue) && (oldValue !== Nothing || immed)) {
-      fn(newValue, oldValue);
+      handler(newValue, oldValue);
     }
     oldValue = newValue;
-  }, others);
+  });
 }
 
 export type ComputableOptions = Pick<ReactiveOptions, "bind" | "batch">;
@@ -333,91 +311,4 @@ export function computable<T extends ReactiveFunction>(
     return ref.value;
   };
   return wrapper as ReactiveFunction<T>;
-}
-
-/**
- * 将普通函数转换为一个具备缓存和计算能能力的函数
- *
- * ★特别注意★ 在计算函数没有被任何一个可响应函数使用时，
- * 将会自动退普普通函数，只要被任何一个可响应函数使用，它就会恢复为具备计算和缓存能力的函数。
- * 可响应函数包括「reactivable、autorun、watch」
- *
- * @param fn 计算函数
- * @param options 计算函数选项
- * @returns 具备缓存和计算能能力的函数
- */
-export function computed<T extends ReactiveFunction>(
-  fn: T,
-  options?: ComputableOptions
-): ReactiveFunction<T>;
-/**
- * 作为一个类成员装饰器使用 (只可用于 Getter)
- *
- * ★ legacy 模式的 @computed
- *
- * @param prototype 类
- * @param member 类成员
- */
-export function computed<T extends AnyObject>(prototype: T, member: string): T;
-/**
- * computed 还可作为类 Getter 成员装饰器 @computed 使用 (只可用于 Getter)
- *
- * ★ Stage-3 模式的 @computed
- *
- * @param value Getter 函数
- * @param context 装饰器上下文对象
- * @returns any
- */
-export function computed(value: AnyFunction, context: DecoratorContext): any;
-/**
- * 作为一个支持选项的类成员装饰器使用
- * ★ Stage-3 & legacy (只可用于 Getter)
- */
-export function computed(
-  options?: ComputableOptions
-): <T extends AnyObject | AnyFunction>(
-  value: T,
-  context: DecoratorContext | string
-) => T;
-/**
- * usage 1: computed(()=>{...})
- * usage 2: computed(()=>{...},options)
- * usage 3: @computed
- * usage 4: @computed(options)
- */
-export function computed<T extends AnyObject | ComputableOptions | AnyFunction>(
-  target: T,
-  options?: ComputableOptions | DecoratorContext | string
-): any {
-  if (
-    isFunction(target) &&
-    !isString(options) &&
-    !isDecoratorContext(options)
-  ) {
-    // 作为高阶函数命名用，待价于 computable
-    return computable(target, options);
-  } else if ((!target || !isFunction(target)) && !options) {
-    // 作为带选项的类成员装饰器使用，返回一个装饰器函数
-    return (
-      value: AnyObject | AnyFunction,
-      context: DecoratorContext | string
-    ): any => {
-      if (isFunction(value) && isDecoratorContext(context)) {
-        // stage-3 规范装饰器 @computed(options), target is options
-        return computable(value, target);
-      } else if (isObject(value) && isString(context)) {
-        // legacy 规范装饰器 @computed(options), target is options
-        const descriptor = ObserveReflect.getDescriptor(value, context);
-        if (!descriptor?.get) return;
-        const getter = computable(descriptor?.get, target);
-        descriptor.get = getter;
-      }
-    };
-  } else if (isFunction(target) && isDecoratorContext(options)) {
-    // stage-3 规范装饰器 @computed
-    return computable(target);
-  } else if (!isFunction(target) && isString(options)) {
-    // legacy 规范装饰器 @computed ，options is member
-    return computed()(target, options);
-  }
 }

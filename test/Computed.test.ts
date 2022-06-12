@@ -1,9 +1,9 @@
 import "./helpers/mode";
 
-import { computed, reactivable } from '../src/ObserveReactive';
+import { computed, observable } from "../src/ObserveHof";
 
 import { AnyFunction } from "../src/ObserveUtil";
-import { observable } from "../src/ObserveHof";
+import { reactivable } from '../src/ObserveReactive';
 import { sleep } from './helpers/utils';
 import { strictEqual } from "assert";
 

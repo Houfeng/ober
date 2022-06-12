@@ -15,10 +15,11 @@ import {
   isObject,
   isProxy,
 } from "./ObserveUtil";
-import { isArrowFunction, isDecoratorContext, isString } from "./ObserveUtil";
+import { ReactiveFunction, computable } from "./ObserveReactive";
+import { isDecoratorContext, isString } from "./ObserveUtil";
 
-import { ObserveError } from "./ObserveError";
 import { ObserveFlags } from "./ObserveFlags";
+import { ObserveReflect } from "./ObserveReflect";
 import { ObserveSymbols } from "./ObserveSymbols";
 import { createProxy } from "./ObserveProxy";
 
@@ -70,7 +71,7 @@ export function action<T extends AnyFunction>(fn: T): T;
  * @param member 类成员
  * @returns any
  */
-export function action(prototype: AnyObject, member: string): any;
+export function action(prototype: AnyObject, member: string): void;
 /**
  * Action 还可作为类成员装饰器 @action 使用
  *
@@ -80,7 +81,10 @@ export function action(prototype: AnyObject, member: string): any;
  * @param context 装饰器上下文对象
  * @returns any
  */
-export function action(value: AnyFunction, context: DecoratorContext): any;
+export function action<T extends AnyFunction>(
+  value: T,
+  context: DecoratorContext
+): T;
 /**
  * usage 1: action(()=>{...});
  * usage 2: @action
@@ -125,7 +129,7 @@ export function bind<T extends AnyFunction>(fn: T): T;
  * @param member 类成员
  * @returns void
  */
-export function bind(prototype: AnyObject, member: string): any;
+export function bind(prototype: AnyObject, member: string): void;
 /**
  * bind 还可作为类成员装饰器 @bind 使用
  *
@@ -135,7 +139,10 @@ export function bind(prototype: AnyObject, member: string): any;
  * @param context 装饰器上下文对象
  * @returns any
  */
-export function bind(value: AnyFunction, context: DecoratorContext): any;
+export function bind<T extends AnyFunction>(
+  value: T,
+  context: DecoratorContext
+): T;
 /**
  * usage 1: bind(()=>{...});
  * usage 2: @bind
@@ -145,10 +152,7 @@ export function bind(
   context?: string | DecoratorContext
 ): any {
   if (isFunction(target) && !context) {
-    // 普通高阶函数用法
-    if (isArrowFunction(target)) {
-      throw ObserveError("Bind cannot be used for arrow functions");
-    }
+    // 高阶函数
     define(target, ObserveSymbols.BindRequired, true);
     return target;
   } else if (isFunction(target) && isDecoratorContext(context)) {
@@ -159,5 +163,68 @@ export function bind(
     const method = target[context];
     if (!isFunction(method)) return;
     target[context] = bind(method);
+  }
+}
+
+/**
+ * 将普通函数转换为一个具备缓存和计算能能力的函数
+ *
+ * ★特别注意★ 在计算函数没有被任何一个可响应函数使用时，
+ * 将会自动退普普通函数，只要被任何一个可响应函数使用，它就会恢复为具备计算和缓存能力的函数。
+ * 可响应函数包括「reactivable、autorun、watch」
+ *
+ * @param fn 计算函数
+ * @param options 计算函数选项
+ * @returns 具备缓存和计算能能力的函数
+ */
+export function computed<T extends ReactiveFunction>(
+  fn: T
+): ReactiveFunction<T>;
+/**
+ * 作为一个类成员装饰器使用 (只可用于 Getter)
+ *
+ * ★ legacy 模式的 @computed
+ *
+ * @param prototype 类
+ * @param member 类成员
+ */
+export function computed<T extends AnyObject>(
+  prototype: T,
+  member: string
+): void;
+/**
+ * computed 还可作为类 Getter 成员装饰器 @computed 使用 (只可用于 Getter)
+ *
+ * ★ Stage-3 模式的 @computed
+ *
+ * @param value Getter 函数
+ * @param context 装饰器上下文对象
+ * @returns any
+ */
+export function computed<T extends AnyFunction>(
+  value: T,
+  context: DecoratorContext
+): ReactiveFunction<T>;
+/**
+ * usage 1: computed(()=>{...})
+ * usage 2: @computed
+ */
+export function computed<T extends AnyObject | AnyFunction>(
+  target: T,
+  context?: DecoratorContext | string
+): any {
+  if (isFunction(target) && !context) {
+    // 高阶函数，等价于没有 options 的 computable
+    const wrapper = computable(target);
+    return isBindRequiredFunction(target) ? bind(wrapper) : wrapper;
+  } else if (isFunction(target) && isDecoratorContext(context)) {
+    // stage-3 规范装饰器 @computed, getter 无需 isBindRequiredFunction 检查
+    return computable(target);
+  } else if (isObject(target) && !isFunction(target) && isString(context)) {
+    // legacy 规范装饰器 @computed，getter 无需 isBindRequiredFunction 检查
+    const descriptor = ObserveReflect.getDescriptor(target, context);
+    if (!descriptor?.get) return;
+    const getter = computable(descriptor?.get, target);
+    descriptor.get = getter;
   }
 }

@@ -81,9 +81,7 @@ export function createProxy<T extends object>(target: T): T {
       const value = ObserveReflect.get(target, member, receiver);
       if (!isValidKey(member)) return value;
       if (isNativeProxy() && isArrowFunction(value)) {
-        throw ObserveError(
-          `Proxy mode observable cannot have arrow function: ${member}`
-        );
+        throw ObserveError(`Proxy mode cannot have arrow function: ${member}`);
       }
       if (isBindRequiredFunction(value)) {
         return useBoundMethod(target, member, value, receiver);
