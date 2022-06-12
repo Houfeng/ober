@@ -218,7 +218,7 @@ export function reactivable<T extends AnyFunction>(
  * @param handler 将执行的函数
  * @returns 销毁函数
  */
-export function autorun<T extends AnyFunction>(handler: T) {
+export function autorun(handler: () => void) {
   const wrapper = reactivable(handler, { batch: true, bind: true });
   wrapper();
   return wrapper.unsubscribe;
@@ -265,10 +265,7 @@ export type ComputableOptions = Pick<ReactiveOptions, "bind" | "batch">;
  * @param options 计算函数选项
  * @returns 具备缓存和计算能能力的函数
  */
-export function computable<T extends AnyFunction>(
-  fn: T,
-  options?: ComputableOptions
-) {
+export function computable<T>(fn: () => T, options?: ComputableOptions) {
   const { bind = true, batch = false, ...others } = { ...options };
   let subscribed = false;
   let ref: Ref<T> = null!;
@@ -306,6 +303,6 @@ export function computable<T extends AnyFunction>(
       reactive();
     }
     return ref.value;
-  } as ReactiveFunction<T>;
+  } as ReactiveFunction<() => T>;
   return wrapper;
 }

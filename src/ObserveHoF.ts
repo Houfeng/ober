@@ -19,7 +19,6 @@ import { ReactiveFunction, computable } from "./ObserveReactive";
 import { isDecoratorContext, isString } from "./ObserveUtil";
 
 import { ObserveFlags } from "./ObserveFlags";
-import { ObserveReflect } from "./ObserveReflect";
 import { ObserveSymbols } from "./ObserveSymbols";
 import { createProxy } from "./ObserveProxy";
 
@@ -71,7 +70,11 @@ export function action<T extends AnyFunction>(fn: T): T;
  * @param member 类成员
  * @returns any
  */
-export function action(prototype: AnyObject, member: string): void;
+export function action(
+  prototype: AnyObject,
+  member: string,
+  descriptor: PropertyDescriptor
+): PropertyDescriptor;
 /**
  * Action 还可作为类成员装饰器 @action 使用
  *
@@ -91,7 +94,8 @@ export function action<T extends AnyFunction>(
  */
 export function action(
   target: AnyObject | AnyFunction,
-  context?: string | DecoratorContext
+  context?: string | DecoratorContext,
+  descriptor?: PropertyDescriptor
 ): any {
   if (isFunction(target) && !context) {
     // 普通高阶函数用法
@@ -105,11 +109,10 @@ export function action(
   } else if (isFunction(target) && isDecoratorContext(context)) {
     // stage-3 规范装饰器 @action
     return action(target);
-  } else if (!isFunction(target) && isString(context)) {
+  } else if (!isFunction(target) && isString(context) && descriptor) {
     // legacy 规范装饰器 @action
-    const method = target[context];
-    if (!isFunction(method)) return;
-    target[context] = action(method);
+    if (!descriptor?.value) return;
+    return { ...descriptor, value: action(descriptor.value) };
   }
 }
 
@@ -129,7 +132,11 @@ export function bind<T extends AnyFunction>(fn: T): T;
  * @param member 类成员
  * @returns void
  */
-export function bind(prototype: AnyObject, member: string): void;
+export function bind(
+  prototype: AnyObject,
+  member: string,
+  descriptor: PropertyDescriptor
+): PropertyDescriptor;
 /**
  * bind 还可作为类成员装饰器 @bind 使用
  *
@@ -149,7 +156,8 @@ export function bind<T extends AnyFunction>(
  */
 export function bind(
   target: AnyObject | AnyFunction,
-  context?: string | DecoratorContext
+  context?: string | DecoratorContext,
+  descriptor?: PropertyDescriptor
 ): any {
   if (isFunction(target) && !context) {
     // 高阶函数
@@ -158,11 +166,10 @@ export function bind(
   } else if (isFunction(target) && isDecoratorContext(context)) {
     // stage-3 规范装饰器 @bind
     return bind(target);
-  } else if (!isFunction(target) && isString(context)) {
+  } else if (!isFunction(target) && isString(context) && descriptor) {
     // legacy 规范装饰器 @bind
-    const method = target[context];
-    if (!isFunction(method)) return;
-    target[context] = bind(method);
+    if (!descriptor?.value) return;
+    return { ...descriptor, value: bind(descriptor.value) };
   }
 }
 
@@ -190,8 +197,9 @@ export function computed<T extends ReactiveFunction>(
  */
 export function computed<T extends AnyObject>(
   prototype: T,
-  member: string
-): void;
+  member: string,
+  descriptor: PropertyDescriptor
+): PropertyDescriptor;
 /**
  * computed 还可作为类 Getter 成员装饰器 @computed 使用 (只可用于 Getter)
  *
@@ -211,7 +219,8 @@ export function computed<T extends AnyFunction>(
  */
 export function computed<T extends AnyObject | AnyFunction>(
   target: T,
-  context?: DecoratorContext | string
+  context?: DecoratorContext | string,
+  descriptor?: PropertyDescriptor
 ): any {
   if (isFunction(target) && !context) {
     // 高阶函数，等价于没有 options 的 computable
@@ -220,11 +229,14 @@ export function computed<T extends AnyObject | AnyFunction>(
   } else if (isFunction(target) && isDecoratorContext(context)) {
     // stage-3 规范装饰器 @computed, getter 无需 isBindRequiredFunction 检查
     return computable(target);
-  } else if (isObject(target) && !isFunction(target) && isString(context)) {
+  } else if (
+    isObject(target) &&
+    !isFunction(target) &&
+    isString(context) &&
+    descriptor
+  ) {
     // legacy 规范装饰器 @computed，getter 无需 isBindRequiredFunction 检查
-    const descriptor = ObserveReflect.getDescriptor(target, context);
     if (!descriptor?.get) return;
-    const getter = computable(descriptor?.get, target);
-    descriptor.get = getter;
+    return { ...descriptor, get: computable(descriptor.get) };
   }
 }
