@@ -70,25 +70,8 @@ export function untrack<T extends AnyFunction>(fn: T, ...args: any[]) {
   return trackSwitch(fn, false, ...args);
 }
 
-/**
- * 创建一个禁用依赖追踪的函数
- * @param fn 原始函数
- * @returns 禁用依赖追踪的函数
- */
-export function untrackable<T extends AnyFunction>(fn: T) {
-  return (...args: any[]) => untrack(fn, ...args) as T;
-}
-
-/**
- * 创建一个开启依赖追踪的函数
- * @param fn 原始函数
- * @returns 开启依赖追踪的函数
- */
-export function trackable<T extends AnyFunction>(fn: T) {
-  return (...args: any[]) => track(fn, ...args) as T;
-}
-
 export type CollectOptions<T extends AnyFunction> = {
+  context?: any;
   /**
    * 传递给收集函数的参数
    */
@@ -133,7 +116,7 @@ export function collect<T extends AnyFunction>(
   const originGetFlag = ObserveFlags.get;
   ObserveFlags.mark = mark || "";
   ObserveFlags.get = true;
-  const result: ReturnType<T> = fn(...(args || []));
+  const result: ReturnType<T> = fn.call(context, ...(args || []));
   ObserveFlags.get = originGetFlag;
   ObserveFlags.mark = originMark;
   unsubscribe("get", collectHandler);
@@ -197,12 +180,16 @@ export function reactivable<T extends ReactiveFunction>(
   const { bind = true, batch, mark, ignore, update } = { ...options };
   let subscribed = bind !== false;
   let setHandler: ObserveEventHandler<ObserveData> = null!;
-  const wrapper: ReactiveFunction = (...args: Parameters<T>) => {
+  const wrapper: ReactiveFunction = function (
+    this: any,
+    ...args: Parameters<T>
+  ) {
     ReactiveOwner.value = wrapper;
     ObserveFlags.unref = false;
     unsubscribe("set", setHandler);
     ObserveFlags.unref = true;
-    const { result, dependencies } = collect(fn, { args, mark, ignore });
+    const collectOptions = { context: this, args, mark, ignore };
+    const { result, dependencies } = collect(fn, collectOptions);
     setHandler.dependencies = dependencies;
     wrapper.dependencies = dependencies;
     if (subscribed) subscribe("set", setHandler);
@@ -302,7 +289,7 @@ export function computable<T extends ReactiveFunction>(
   const { bind = true, batch = false, ...others } = { ...options };
   let subscribed = bind !== false;
   let ref: Ref<T> = null!;
-  const wrapper: ReactiveFunction = () => {
+  const wrapper: ReactiveFunction = function (this: any) {
     if (!ReactiveOwner.value && !subscribed) return fn();
     if (!ref) {
       const target: Ref<T> = { value: null! };
@@ -310,7 +297,10 @@ export function computable<T extends ReactiveFunction>(
       const refKeys = [`${mark}.value`];
       ref = createProxy(target);
       const reactOpts = { ...others, bind, batch, mark, ignore: refKeys };
-      const reactive = reactivable(() => (ref.value = fn()), reactOpts);
+      const reactive = reactivable(
+        () => (ref.value = fn.call(this)),
+        reactOpts
+      );
       reactive();
       const destroy = () => {
         if (!subscribed) return;
@@ -372,8 +362,7 @@ export function computed<T extends AnyObject>(prototype: T, member: string): T;
 export function computed(value: AnyFunction, context: DecoratorContext): any;
 /**
  * 作为一个支持选项的类成员装饰器使用
- * @param target 类
- * @param member 类成员
+ * ★ Stage-3 & legacy (只可用于 Getter)
  */
 export function computed(
   options?: ComputableOptions

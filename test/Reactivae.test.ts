@@ -1,6 +1,6 @@
 import "./helpers/mode";
 
-import { collect, reactivable, untrack, untrackable } from '../src/ObserveReactive';
+import { collect, reactivable, untrack } from '../src/ObserveReactive';
 
 import { observable } from "../src/ObserveHof";
 import { observeInfo } from "../src/ObserveInfo";
@@ -45,18 +45,6 @@ describe('Reactivable', () => {
     });
     strictEqual(func(), 4);
     untrack(() => model.a = 4);
-    strictEqual(model.b, 4);
-    done();
-  });
-
-  it('untrackable', (done) => {
-    const model = observable({ a: 2, b: 0 });
-    const func = reactivable(() => {
-      model.b = model.a * 2;
-      return model.b;
-    });
-    strictEqual(func(), 4);
-    untrackable(() => model.a = 4)();
     strictEqual(model.b, 4);
     done();
   });

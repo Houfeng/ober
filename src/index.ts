@@ -17,8 +17,6 @@ export { isProxy } from "./ObserveUtil";
 export {
   track,
   untrack,
-  trackable,
-  untrackable,
   collect,
   reactivable,
   computable,

@@ -10,6 +10,7 @@ import {
   AnyObject,
   DecoratorContext,
   define,
+  isBindRequiredFunction,
   isFunction,
   isObject,
   isProxy,
@@ -90,12 +91,13 @@ export function action(
 ): any {
   if (isFunction(target) && !context) {
     // 普通高阶函数用法
-    return function (this: any, ...args: any[]) {
+    const wrapper = function (this: any, ...args: any[]) {
       ObserveFlags.action = true;
       const result = target.call(this, ...args);
       ObserveFlags.action = false;
       return result;
     };
+    return isBindRequiredFunction(target) ? bind(wrapper) : wrapper;
   } else if (isFunction(target) && isDecoratorContext(context)) {
     // stage-3 规范装饰器 @action
     return action(target);
