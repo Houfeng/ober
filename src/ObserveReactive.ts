@@ -100,7 +100,7 @@ export function collect<T extends AnyFunction>(
   fn: T,
   options?: CollectOptions<T>
 ) {
-  const { mark, args, ignore = [] } = { ...options };
+  const { mark, context, args, ignore = [] } = { ...options };
   const dependencies = new Set<string>();
   const collectHandler = (data: ObserveData) => {
     if (data.mark && data.mark !== mark) return;
