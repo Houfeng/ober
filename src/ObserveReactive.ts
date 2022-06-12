@@ -214,6 +214,8 @@ export function reactivable<T extends ReactiveFunction>(
   return wrapper as ReactiveFunction<T>;
 }
 
+export type AutorunOptions = Pick<ReactiveOptions, "batch"> | boolean;
+
 /**
  * 启动一个自执行函数，当函数中用到的数据发生变化时它将自动重新执行
  *
@@ -229,13 +231,19 @@ export function reactivable<T extends ReactiveFunction>(
  */
 export function autorun<T extends AnyFunction>(
   fn: T,
-  options?: Pick<ReactiveOptions, "batch"> | boolean
+  options?: AutorunOptions
 ) {
   options = isObject(options) ? { ...options } : { batch: options };
   const wrapper = reactivable(fn, { batch: true, ...options, bind: true });
   wrapper();
   return wrapper.unsubscribe;
 }
+
+export type WatchOptions =
+  | (Pick<ReactiveOptions, "batch"> & {
+      immed?: boolean;
+    })
+  | boolean;
 
 /**
  * 创建一个观察器，每当用到的数据发生变化时，将重新计算
@@ -254,7 +262,7 @@ export function autorun<T extends AnyFunction>(
 export function watch<T>(
   selector: () => T,
   fn: (newValue?: T, oldValue?: T) => void,
-  options?: (Pick<ReactiveOptions, "batch"> & { immed?: boolean }) | boolean
+  options?: WatchOptions
 ) {
   options = isObject(options) ? { ...options } : { immed: options };
   const { immed, ...others } = options;
@@ -269,7 +277,7 @@ export function watch<T>(
   }, others);
 }
 
-type ComputableOptions = Pick<ReactiveOptions, "bind" | "batch">;
+export type ComputableOptions = Pick<ReactiveOptions, "bind" | "batch">;
 
 /**
  * 将普通函数转换为一个具备缓存和计算能能力的函数

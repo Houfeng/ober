@@ -26,10 +26,17 @@ export function subscribe<T extends keyof ObserveEvents>(
   if (!type) throw ObserveError("Invalid ObserveEvent");
   if (!ObserveHandlers[type]) ObserveHandlers[type] = new Map();
   (handler.dependencies || GENERIC_DEPENDENCIES).forEach((key) => {
+    let list: Set<any> | undefined;
     if (ObserveHandlers[type]!.has(key)) {
-      ObserveHandlers[type]!.get(key)!.add(handler);
+      list = ObserveHandlers[type]!.get(key);
+      list!.add(handler);
     } else {
-      ObserveHandlers[type]!.set(key, new Set([handler]));
+      list = new Set([handler]);
+      ObserveHandlers[type]!.set(key, list);
+    }
+    if (ObserveFlags.ref && key !== GENERIC_KEY && list!.size === 1) {
+      const [id, member] = key.split(".");
+      publish("ref", { type, id, member });
     }
   });
   if (inspector.onSubscribe) inspector.onSubscribe({ type, handler });

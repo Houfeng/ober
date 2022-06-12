@@ -18,6 +18,10 @@ export const ObserveFlags = {
    */
   unref: true,
   /**
+   * 是否触发 ref 事件
+   */
+  ref: true,
+  /**
    * 当前是否正在 action 执行中
    */
   action: false,

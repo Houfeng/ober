@@ -23,10 +23,14 @@ export {
   autorun,
   watch,
   computed,
+  type CollectOptions,
   type ReactiveFunction,
   type ReactiveOptions,
   type ReactiveSubscribe,
   type ReactiveUnsubscribe,
+  type ComputableOptions,
+  type AutorunOptions,
+  type WatchOptions,
 } from "./ObserveReactive";
 export { nextTick } from "./ObserveTick";
 export { type DecoratorContext } from "./ObserveUtil";
