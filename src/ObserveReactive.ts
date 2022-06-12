@@ -406,7 +406,7 @@ export function computed<T extends AnyObject | ComputableOptions | AnyFunction>(
         return computable(value, target);
       } else if (isObject(value) && isString(context)) {
         // legacy 规范装饰器 @computed(options), target is options
-        const descriptor = ObserveReflect.getPropertyDescriptor(value, context);
+        const descriptor = ObserveReflect.getDescriptor(value, context);
         if (!descriptor?.get) return;
         const getter = computable(descriptor?.get, target);
         descriptor.get = getter;

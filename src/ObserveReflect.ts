@@ -7,14 +7,11 @@
 import { Member, isProxy } from "./ObserveUtil";
 
 export const ObserveReflect = {
-  getPropertyDescriptor(
-    target: any,
-    key: Member
-  ): PropertyDescriptor | undefined {
+  getDescriptor(target: any, key: Member): PropertyDescriptor | undefined {
     if (!target) return;
     return (
       Object.getOwnPropertyDescriptor(target, key) ||
-      this.getPropertyDescriptor(Object.getPrototypeOf(target), key)
+      this.getDescriptor(Object.getPrototypeOf(target), key)
     );
   },
 
@@ -22,7 +19,7 @@ export const ObserveReflect = {
     if (!isProxy(receiver) || target === receiver) {
       return target[key];
     }
-    const descriptor = this.getPropertyDescriptor(target, key);
+    const descriptor = this.getDescriptor(target, key);
     if (descriptor && descriptor.get) {
       return descriptor.get.call(receiver);
     } else {
@@ -35,7 +32,7 @@ export const ObserveReflect = {
       target[key] = value;
       return;
     }
-    const descriptor = this.getPropertyDescriptor(target, key);
+    const descriptor = this.getDescriptor(target, key);
     if (descriptor && descriptor.set) {
       descriptor.set.call(receiver, value);
     } else {
