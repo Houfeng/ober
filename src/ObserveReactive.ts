@@ -9,9 +9,9 @@ import {
   Ref,
   isObject,
   isPrivateKey,
-  isSymbol,
   shallowEqual,
 } from "./ObserveUtil";
+import { ObserveSymbols, isSymbol } from "./ObserveSymbols";
 import { subscribe, unsubscribe } from "./ObserveBus";
 
 import { ObserveConfig } from "./ObserveConfig";
@@ -19,7 +19,6 @@ import { ObserveData } from "./ObserveData";
 import { ObserveEventHandler } from "./ObserveEvents";
 import { ObserveFlags } from "./ObserveFlags";
 import { ObserveKey } from "./ObserveKey";
-import { ObserveSymbols } from "./ObserveSymbols";
 import { ObserveText } from "./ObserveError";
 import { createProxy } from "./ObserveProxy";
 import { nextTick } from "./ObserveTick";

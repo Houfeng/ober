@@ -4,7 +4,7 @@
  * @author Houfeng <houzhanfeng@gmail.com>
  */
 
-import { FastMap, isPrivateKey, isSymbol } from "./ObserveUtil";
+import { FastMap, isPrivateKey } from "./ObserveUtil";
 import { ObserveError, ObserveText } from "./ObserveError";
 
 import { ObserveConfig } from "./ObserveConfig";
@@ -12,6 +12,7 @@ import { ObserveEvents } from "./ObserveEvents";
 import { ObserveFlags } from "./ObserveFlags";
 import { ObserveKey } from "./ObserveKey";
 import { ObserveInspector as inspector } from "./ObserveInspector";
+import { isSymbol } from "./ObserveSymbols";
 
 type ObserveEventHandlerStore = {
   [T in keyof ObserveEvents]: FastMap<string, Set<ObserveEvents[T]>>;

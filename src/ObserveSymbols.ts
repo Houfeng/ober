@@ -6,13 +6,18 @@
 
 import { UNDEF } from "./ObserveConstants";
 
-export function isSupportSymbol() {
-  return typeof Symbol !== UNDEF;
+const supported = typeof Symbol !== UNDEF;
+const symbolMark = "__Symbol";
+
+export function isSymbol(value: any): value is symbol {
+  return supported
+    ? typeof value === "symbol"
+    : (value as string)?.slice?.(0, symbolMark.length) === symbolMark;
 }
 
 export function createSymbol(description: string): symbol {
   return (
-    isSupportSymbol() ? Symbol(description) : `Symbol(${description})`
+    supported ? Symbol(description) : `${symbolMark}(${description})`
   ) as symbol;
 }
 

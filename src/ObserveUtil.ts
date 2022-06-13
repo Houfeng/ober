@@ -5,7 +5,7 @@
  */
 
 import { OBJ, UNDEF } from "./ObserveConstants";
-import { ObserveSymbols, isSupportSymbol } from "./ObserveSymbols";
+import { ObserveSymbols, isSymbol } from "./ObserveSymbols";
 
 export type AnyClass = (new (...args: any[]) => any) & {
   displayName?: string;
@@ -57,14 +57,8 @@ export function isNullOrUndefined(value: any): value is undefined | null {
   return isNull(value) || isUndefined(value);
 }
 
-export function isSymbol(value: any): value is symbol | string {
-  return isSupportSymbol()
-    ? typeof value === "symbol"
-    : isString(value) && /^Symbol\([\s\S]+\)$/.test(value);
-}
-
 export function isPrivateKey(value: any): value is string {
-  return isString(value) && value.substr(0, 2) === "__";
+  return isString(value) && value.slice(0, 2) === "__";
 }
 
 export function define(target: any, member: string | symbol, value: any) {
