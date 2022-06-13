@@ -4,49 +4,34 @@
  * @author Houfeng <houzhanfeng@gmail.com>
  */
 
-import { Defer, undef } from "./ObserveUtil";
+import { UNDEF } from "./ObserveConstants";
 
-interface TickItem {
-  readonly defer: Defer<any>;
-  readonly callback: () => void;
+type TickTask = (() => void) & { __pending: boolean };
+type TickOwner = { readonly tasks: TickTask[]; pending: boolean };
+
+const tickOwner: TickOwner = { tasks: [], pending: false };
+const builtInBatch = (fn: () => any) => fn();
+
+function executeTickTask(task: TickTask) {
+  task();
+  task.__pending = false;
 }
-
-interface TickOwner {
-  readonly items: TickItem[];
-  pending: boolean;
-}
-
-const tickOwner: TickOwner = {
-  items: [],
-  pending: false,
-};
-
-function executeTickItem(item: TickItem) {
-  const { defer, callback } = item;
-  try {
-    defer.resolve(callback());
-  } catch (err) {
-    defer.reject(err);
-  }
-}
-
-const execute = (fn: () => any) => fn();
 
 function executeTickItems() {
   tickOwner.pending = false;
-  const items = tickOwner.items.slice(0);
-  tickOwner.items.length = 0;
-  const { batch = execute } = nextTick;
-  batch(() => items.forEach((it) => executeTickItem(it)));
+  const tasks = tickOwner.tasks.slice(0);
+  tickOwner.tasks.length = 0;
+  const { batch = builtInBatch } = nextTick;
+  batch(() => tasks.forEach((task) => executeTickTask(task)));
 }
 
 function createTickResolver() {
-  if (typeof Promise !== undef) {
+  if (typeof Promise !== UNDEF) {
     const promise = Promise.resolve();
     return () =>
       promise.then(executeTickItems).catch((err) => console.error(err));
   } else if (
-    typeof MutationObserver !== undef ||
+    typeof MutationObserver !== UNDEF ||
     // PhantomJS and iOS 7.x
     window.MutationObserver.toString() ===
       "[object MutationObserverConstructor]"
@@ -72,24 +57,18 @@ const resolveAllTickItems = createTickResolver();
 
 /**
  * 在下一个 tick 中执行，当前同步任务执行完成后将立即触发
- * @param callback 待执行的函数
- * @param unique 是否唯一，
- *  当设置为 true 时同一个函数即使调用 nextTick 多次也只执行一次
- * @returns Promise 可 await callback 的执行完成
+ * @param callback 待执行的函数，同时一函数引用调用多次 nextTick 只会执行一次
+ * @returns void
  */
-export function nextTick(callback: () => void, unique?: boolean) {
-  if (!callback) return;
-  if (unique === true) {
-    const item = tickOwner.items.find((it) => it.callback === callback);
-    if (item) return item.defer.promise;
-  }
-  const defer = Defer();
-  tickOwner.items.push({ defer, callback });
+export function nextTick(callback: () => void): void {
+  const task = callback as TickTask;
+  if (!task || task.__pending) return;
+  task.__pending = true;
+  tickOwner.tasks.push(task);
   if (!tickOwner.pending) {
     tickOwner.pending = true;
     resolveAllTickItems();
   }
-  return defer.promise;
 }
 
-nextTick.batch = execute;
+nextTick.batch = builtInBatch;

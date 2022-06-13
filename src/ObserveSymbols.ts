@@ -4,11 +4,15 @@
  * @author Houfeng <houzhanfeng@gmail.com>
  */
 
-import { undef } from "./ObserveUtil";
+import { UNDEF } from "./ObserveConstants";
+
+export function isSupportSymbol() {
+  return typeof Symbol !== UNDEF;
+}
 
 export function createSymbol(description: string): symbol {
   return (
-    typeof Symbol !== undef ? Symbol(description) : `Symbol(${description})`
+    isSupportSymbol() ? Symbol(description) : `Symbol(${description})`
   ) as symbol;
 }
 

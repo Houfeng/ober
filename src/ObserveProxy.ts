@@ -13,7 +13,6 @@ import {
   isProxy,
   isValidKey,
   isWholeValue,
-  undef,
 } from "./ObserveUtil";
 import { ObserveConfig, checkStrictMode } from "./ObserveConfig";
 
@@ -22,10 +21,11 @@ import { ObserveError } from "./ObserveError";
 import { ObserveFlags } from "./ObserveFlags";
 import { ObserveReflect } from "./ObserveReflect";
 import { ObserveSymbols } from "./ObserveSymbols";
+import { UNDEF } from "./ObserveConstants";
 import { observeInfo } from "./ObserveInfo";
 import { publish } from "./ObserveBus";
 
-export const NativeProxy = typeof Proxy !== undef ? Proxy : null;
+export const NativeProxy = typeof Proxy !== UNDEF ? Proxy : null;
 
 function useProxyClass() {
   switch (ObserveConfig.mode) {

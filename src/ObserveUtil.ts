@@ -4,7 +4,8 @@
  * @author Houfeng <houzhanfeng@gmail.com>
  */
 
-import { ObserveSymbols } from "./ObserveSymbols";
+import { OBJ, UNDEF } from "./ObserveConstants";
+import { ObserveSymbols, isSupportSymbol } from "./ObserveSymbols";
 
 export type AnyClass = (new (...args: any[]) => any) & {
   displayName?: string;
@@ -16,9 +17,6 @@ export type AnyObject = Record<string, any>;
 
 export type Member = string | number | symbol;
 
-export const undef = "undefined";
-export const obj = "object";
-
 export function isString(value: any): value is string {
   return typeof value === "string";
 }
@@ -28,7 +26,7 @@ function isNumber(value: any): value is number {
 }
 
 export function isObject(value: any): value is object {
-  return !isNullOrUndefined(value) && typeof value === obj;
+  return !isNullOrUndefined(value) && typeof value === OBJ;
 }
 
 export function isArray(value: any): value is Array<any> {
@@ -60,10 +58,9 @@ export function isNullOrUndefined(value: any): value is undefined | null {
 }
 
 export function isSymbol(value: any): value is symbol | string {
-  return (
-    typeof value === "symbol" ||
-    (isString(value) && /^Symbol\([\s\S]+\)$/.test(value))
-  );
+  return isSupportSymbol()
+    ? typeof value === "symbol"
+    : isString(value) && /^Symbol\([\s\S]+\)$/.test(value);
 }
 
 export function isPrivateKey(value: any): value is string {
@@ -86,53 +83,53 @@ export function isValidKey(key: any): key is string {
 }
 
 function isDomNode(value: any): value is Node {
-  return typeof Node !== undef && value instanceof Node;
+  return typeof Node !== UNDEF && value instanceof Node;
 }
 
 function isEventTarget(value: any): value is EventTarget {
-  return typeof EventTarget !== undef && value instanceof EventTarget;
+  return typeof EventTarget !== UNDEF && value instanceof EventTarget;
 }
 
 function isError(value: any): value is Error {
-  return typeof Error !== undef && value instanceof Error;
+  return typeof Error !== UNDEF && value instanceof Error;
 }
 
 function isDOMError(value: any) {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
-  return typeof DOMError !== undef && value instanceof DOMError;
+  return typeof DOMError !== UNDEF && value instanceof DOMError;
 }
 
 function isEvent(value: any): value is Event {
-  return typeof Event !== undef && value instanceof Event;
+  return typeof Event !== UNDEF && value instanceof Event;
 }
 
 function isPromise(value: any): value is Promise<any> {
-  return typeof Promise !== undef && value instanceof Promise;
+  return typeof Promise !== UNDEF && value instanceof Promise;
 }
 
 function isDate(value: any): value is Date {
-  return typeof Date !== undef && value instanceof Date;
+  return typeof Date !== UNDEF && value instanceof Date;
 }
 
 function isURL(value: any): value is URL {
-  return typeof URL !== undef && value instanceof URL;
+  return typeof URL !== UNDEF && value instanceof URL;
 }
 
 function isMap(value: any): value is Map<any, any> {
-  return typeof Map !== undef && value instanceof Map;
+  return typeof Map !== UNDEF && value instanceof Map;
 }
 
 function isSet(value: any): value is Set<any> {
-  return typeof Set !== undef && value instanceof Set;
+  return typeof Set !== UNDEF && value instanceof Set;
 }
 
 function isWeakMap(value: any): value is WeakMap<any, any> {
-  return typeof WeakMap !== undef && value instanceof WeakMap;
+  return typeof WeakMap !== UNDEF && value instanceof WeakMap;
 }
 
 function isWeakSet(value: any): value is WeakSet<any> {
-  return typeof WeakSet !== undef && value instanceof WeakSet;
+  return typeof WeakSet !== UNDEF && value instanceof WeakSet;
 }
 
 function isExtensible(value: any) {
@@ -189,9 +186,9 @@ export function is(x: any, y: any) {
 export function shallowEqual(objA: any, objB: any) {
   if (is(objA, objB)) return true;
   if (
-    typeof objA !== obj ||
+    typeof objA !== OBJ ||
     objA === null ||
-    typeof objB !== obj ||
+    typeof objB !== OBJ ||
     objB === null
   ) {
     return false;
@@ -215,22 +212,6 @@ export function isBindRequiredFunction<T extends AnyFunction>(
   value: T | undefined
 ): value is T {
   return value && (value as any)[ObserveSymbols.BindRequired];
-}
-
-export interface Defer<T> {
-  readonly promise: PromiseLike<T>;
-  readonly resolve: (value: T) => void;
-  readonly reject: (error: any) => void;
-}
-
-export function Defer<T = any>(): Defer<T> {
-  let resolve!: Defer<T>["resolve"];
-  let reject!: Defer<T>["reject"];
-  const promise = new Promise<T>((_resolve, _reject) => {
-    resolve = _resolve;
-    reject = _reject;
-  });
-  return { promise, resolve, reject };
 }
 
 export type Ref<T> = { value?: T };

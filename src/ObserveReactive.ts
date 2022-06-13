@@ -193,7 +193,7 @@ export function reactivable<T extends AnyFunction>(
   const requestUpdate = (it?: ObserveData) => (update ? update(it) : wrapper());
   setHandler = (data: ObserveData) => {
     if (isSymbol(data.member) || isPrivateKey(data.member)) return;
-    return batch ? nextTick(requestUpdate, true) : requestUpdate(data);
+    return batch ? nextTick(requestUpdate) : requestUpdate(data);
   };
   wrapper.subscribe = () => {
     if (subscribed) return;

@@ -4,10 +4,10 @@
  * @author Houfeng <houzhanfeng@gmail.com>
  */
 
-import { isObject, undef } from "./ObserveUtil";
-
 import { ObserveError } from "./ObserveError";
 import { ObserveFlags } from "./ObserveFlags";
+import { UNDEF } from "./ObserveConstants";
+import { isObject } from "./ObserveUtil";
 
 export type ObserveMode = "proxy" | "property" | "auto";
 
@@ -22,7 +22,7 @@ export interface ObserveConfigDefinition {
 export const DEFAULT_LOG_PREFIX = "OBER";
 
 export const ObserveEnvConfig: Partial<ObserveConfigDefinition> = (() => {
-  if (typeof process === undef) return {};
+  if (typeof process === UNDEF) return {};
   const OBER_CONFIG: any = process.env && process.env.OBER_CONFIG;
   if (!OBER_CONFIG) return {};
   if (isObject(OBER_CONFIG)) return OBER_CONFIG;
