@@ -4,16 +4,21 @@
  * @author Houfeng <houzhanfeng@gmail.com>
  */
 
+import { FastMap, isPrivateKey, isSymbol } from "./ObserveUtil";
 import { ObserveError, ObserveText } from "./ObserveError";
-import { ObserveEventHandlerStore, ObserveEvents } from "./ObserveEvents";
-import { isPrivateKey, isSymbol } from "./ObserveUtil";
 
 import { ObserveConfig } from "./ObserveConfig";
+import { ObserveEvents } from "./ObserveEvents";
 import { ObserveFlags } from "./ObserveFlags";
 import { ObserveKey } from "./ObserveKey";
 import { ObserveInspector as inspector } from "./ObserveInspector";
 
-export const ObserveHandlers: Partial<ObserveEventHandlerStore> = {};
+type ObserveEventHandlerStore = {
+  [T in keyof ObserveEvents]: FastMap<string, Set<ObserveEvents[T]>>;
+};
+
+export const ObserveHandlers: Partial<ObserveEventHandlerStore> =
+  Object.create(null);
 
 const GENERIC_KEY = "*";
 const GENERIC_DEPENDENCIES = new Set([GENERIC_KEY]);
@@ -24,7 +29,7 @@ export function subscribe<T extends keyof ObserveEvents>(
 ) {
   if (!handler) throw ObserveError("Invalid ObserveHandler");
   if (!type) throw ObserveError("Invalid ObserveEvent");
-  if (!ObserveHandlers[type]) ObserveHandlers[type] = new Map();
+  if (!ObserveHandlers[type]) ObserveHandlers[type] = FastMap();
   (handler.dependencies || GENERIC_DEPENDENCIES).forEach((key) => {
     let list: Set<any> | undefined;
     if (ObserveHandlers[type]!.has(key)) {

@@ -19,7 +19,3 @@ export type ObserveEvents = {
   // 在第一个监听建立时触发
   ref: ObserveEventHandler<ObserveData & { type?: keyof ObserveEvents }>;
 };
-
-export type ObserveEventHandlerStore = {
-  [T in keyof ObserveEvents]: Map<string, Set<ObserveEvents[T]>>;
-};
