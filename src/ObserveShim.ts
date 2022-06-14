@@ -16,6 +16,7 @@ import {
 import { ObserveError } from "./ObserveError";
 import { ObserveSymbols } from "./ObserveSymbols";
 import { checkStrictMode } from "./ObserveConfig";
+import { getOwnDescriptor } from "./ObserveReflect";
 import { observeInfo } from "./ObserveInfo";
 import { publish } from "./ObserveBus";
 
@@ -25,7 +26,7 @@ function createObservableMember<T extends object>(
   handler: ProxyHandler<T>
 ) {
   if (!target || !isValidKey(member)) return;
-  const desc = Object.getOwnPropertyDescriptor(target, member);
+  const desc = getOwnDescriptor(target, member);
   if (!desc || !("value" in desc)) return;
   const { shadow } = observeInfo(target);
   if (!(member in shadow)) shadow[member] = desc.value;

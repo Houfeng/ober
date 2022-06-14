@@ -5,7 +5,7 @@
  */
 
 export { observable, action, computed, bind } from "./ObserveHoF";
-export { subscribe, unsubscribe, ObserveHandlers } from "./ObserveBus";
+export { subscribe, unsubscribe } from "./ObserveBus";
 export { ObserveConfig, type ObserveMode } from "./ObserveConfig";
 export { type ObserveData } from "./ObserveData";
 export { type ObserveEventHandler } from "./ObserveEvents";
@@ -22,6 +22,7 @@ export {
   computable,
   autorun,
   watch,
+  ReactiveCurrent,
   type CollectOptions,
   type ReactiveFunction,
   type ReactiveOptions,

@@ -10,14 +10,14 @@ type TickTask = (() => void) & { __pending: boolean };
 type TickOwner = { readonly tasks: TickTask[]; pending: boolean };
 
 const tickOwner: TickOwner = { tasks: [], pending: false };
-const builtInBatch = (fn: () => any) => fn();
+const builtInBatch = (fn: () => void) => fn();
 
 function executeTickTask(task: TickTask) {
   task();
   task.__pending = false;
 }
 
-function executeTickItems() {
+function executeTickTasks() {
   tickOwner.pending = false;
   const tasks = tickOwner.tasks.slice(0);
   tickOwner.tasks.length = 0;
@@ -29,7 +29,7 @@ function createTickResolver() {
   if (typeof Promise !== UNDEF) {
     const promise = Promise.resolve();
     return () =>
-      promise.then(executeTickItems).catch((err) => console.error(err));
+      promise.then(executeTickTasks).catch((err) => console.error(err));
   } else if (
     typeof MutationObserver !== UNDEF ||
     // PhantomJS and iOS 7.x
@@ -39,7 +39,7 @@ function createTickResolver() {
     // use MutationObserver where native Promise is not available,
     // e.g. PhantomJS IE11, iOS7, Android 4.4
     let counter = 1;
-    const observer = new MutationObserver(executeTickItems);
+    const observer = new MutationObserver(executeTickTasks);
     const textNode = document.createTextNode(String(counter));
     observer.observe(textNode, { characterData: true });
     return () => {
@@ -49,7 +49,7 @@ function createTickResolver() {
   } else {
     // fallback to setTimeout
     /* istanbul ignore next */
-    return () => setTimeout(executeTickItems, 0);
+    return () => setTimeout(executeTickTasks, 0);
   }
 }
 

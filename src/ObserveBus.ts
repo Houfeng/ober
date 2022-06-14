@@ -4,7 +4,7 @@
  * @author Houfeng <houzhanfeng@gmail.com>
  */
 
-import { FastMap, isPrivateKey } from "./ObserveUtil";
+import { FastMap, isPrivateKey, isSymbol } from "./ObserveUtil";
 import { ObserveError, ObserveText } from "./ObserveError";
 
 import { ObserveConfig } from "./ObserveConfig";
@@ -12,14 +12,12 @@ import { ObserveEvents } from "./ObserveEvents";
 import { ObserveFlags } from "./ObserveFlags";
 import { ObserveKey } from "./ObserveKey";
 import { ObserveInspector as inspector } from "./ObserveInspector";
-import { isSymbol } from "./ObserveSymbols";
 
 type ObserveEventHandlerStore = {
   [T in keyof ObserveEvents]: FastMap<string, Set<ObserveEvents[T]>>;
 };
 
-export const ObserveHandlers: Partial<ObserveEventHandlerStore> =
-  Object.create(null);
+const ObserveHandlers: Partial<ObserveEventHandlerStore> = Object.create(null);
 
 const GENERIC_KEY = "*";
 const GENERIC_DEPENDENCIES = new Set([GENERIC_KEY]);
@@ -40,7 +38,12 @@ export function subscribe<T extends keyof ObserveEvents>(
       list = new Set([handler]);
       ObserveHandlers[type]!.set(key, list);
     }
-    if (ObserveFlags.ref && key !== GENERIC_KEY && list!.size === 1) {
+    if (
+      ObserveFlags.ref &&
+      key !== GENERIC_KEY &&
+      ObserveHandlers["ref"] &&
+      list!.size === 1
+    ) {
       const [id, member] = key.split(".");
       publish("ref", { type, id, member });
     }
@@ -58,7 +61,12 @@ export function unsubscribe<T extends keyof ObserveEvents>(
     const list = ObserveHandlers[type]!.get(key);
     if (!list || !list.has(handler)) return;
     list.delete(handler);
-    if (ObserveFlags.unref && key !== GENERIC_KEY && list.size < 1) {
+    if (
+      ObserveFlags.unref &&
+      key !== GENERIC_KEY &&
+      ObserveHandlers["unref"] &&
+      list.size < 1
+    ) {
       const [id, member] = key.split(".");
       publish("unref", { type, id, member });
     }

@@ -9,9 +9,9 @@ import {
   Ref,
   isObject,
   isPrivateKey,
+  isSymbol,
   shallowEqual,
 } from "./ObserveUtil";
-import { ObserveSymbols, isSymbol } from "./ObserveSymbols";
 import { subscribe, unsubscribe } from "./ObserveBus";
 
 import { ObserveConfig } from "./ObserveConfig";
@@ -19,6 +19,7 @@ import { ObserveData } from "./ObserveData";
 import { ObserveEventHandler } from "./ObserveEvents";
 import { ObserveFlags } from "./ObserveFlags";
 import { ObserveKey } from "./ObserveKey";
+import { ObserveSymbols } from "./ObserveSymbols";
 import { ObserveText } from "./ObserveError";
 import { createProxy } from "./ObserveProxy";
 import { nextTick } from "./ObserveTick";
@@ -156,7 +157,7 @@ export type ReactiveOptions = {
   bind?: boolean;
 } & Omit<CollectOptions<any>, "context" | "args">;
 
-const ReactiveOwner: Ref<ReactiveFunction> = {};
+export const ReactiveCurrent: Ref<ReactiveFunction> = {};
 
 /**
  * 创建一个可响应函数
@@ -177,7 +178,7 @@ export function reactivable<T extends AnyFunction>(
   let subscribed = bind !== false;
   let setHandler: ObserveEventHandler<ObserveData> = null!;
   const wrapper = function (this: any, ...args: Parameters<T>) {
-    ReactiveOwner.value = wrapper;
+    ReactiveCurrent.value = wrapper;
     ObserveFlags.unref = false;
     unsubscribe("set", setHandler);
     ObserveFlags.unref = true;
@@ -186,7 +187,7 @@ export function reactivable<T extends AnyFunction>(
     setHandler.dependencies = dependencies;
     wrapper.dependencies = dependencies;
     if (subscribed) subscribe("set", setHandler);
-    ReactiveOwner.value = null!;
+    ReactiveCurrent.value = null!;
     return result;
   } as ReactiveFunction<T>;
   const requestUpdate = (it?: ObserveData) => (update ? update(it) : wrapper());
@@ -270,7 +271,7 @@ export function computable<T>(fn: () => T, options?: ComputableOptions) {
   let ref: Ref<T> = null!;
   let reactive: ReactiveFunction;
   const wrapper = function (this: any) {
-    if (!ReactiveOwner.value && !subscribed) return fn();
+    if (!ReactiveCurrent.value && !subscribed) return fn();
     if (!ref || !reactive) {
       const target: Ref<T> = { value: null! };
       const { id: mark } = observeInfo(target);

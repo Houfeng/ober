@@ -6,3 +6,5 @@
 
 export const UNDEF = "undefined";
 export const OBJ = "object";
+export const SMBL = "__Symbol";
+export const SUPT_SMBL = typeof Symbol !== UNDEF;

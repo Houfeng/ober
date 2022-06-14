@@ -4,8 +4,9 @@
  * @author Houfeng <houzhanfeng@gmail.com>
  */
 
-import { OBJ, UNDEF } from "./ObserveConstants";
-import { ObserveSymbols, isSymbol } from "./ObserveSymbols";
+import { OBJ, SMBL, SUPT_SMBL, UNDEF } from "./ObserveConstants";
+
+import { ObserveSymbols } from "./ObserveSymbols";
 
 export type AnyClass = (new (...args: any[]) => any) & {
   displayName?: string;
@@ -57,8 +58,19 @@ export function isNullOrUndefined(value: any): value is undefined | null {
   return isNull(value) || isUndefined(value);
 }
 
+export function startsWith(str: string, sub: string) {
+  if (!str || !sub) return false;
+  return str.startsWith
+    ? str.startsWith(sub)
+    : str.slice && str.slice(0, sub.length) === sub;
+}
+
+export function isSymbol(value: any): value is symbol {
+  return SUPT_SMBL ? typeof value === "symbol" : startsWith(value, SMBL);
+}
+
 export function isPrivateKey(value: any): value is string {
-  return isString(value) && value.slice(0, 2) === "__";
+  return startsWith(value, "__");
 }
 
 export function define(target: any, member: string | symbol, value: any) {

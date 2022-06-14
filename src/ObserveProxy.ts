@@ -15,11 +15,11 @@ import {
   isWholeValue,
 } from "./ObserveUtil";
 import { ObserveConfig, checkStrictMode } from "./ObserveConfig";
+import { getOwnDescriptor, getValue, setValue } from "./ObserveReflect";
 
 import { LowProxy } from "./ObserveShim";
 import { ObserveError } from "./ObserveError";
 import { ObserveFlags } from "./ObserveFlags";
-import { ObserveReflect } from "./ObserveReflect";
 import { ObserveSymbols } from "./ObserveSymbols";
 import { UNDEF } from "./ObserveConstants";
 import { observeInfo } from "./ObserveInfo";
@@ -75,10 +75,10 @@ export function createProxy<T extends object>(target: T): T {
       if (member === ObserveSymbols.Proxy) {
         return { configurable: true, enumerable: false, value: true };
       }
-      return Object.getOwnPropertyDescriptor(target, member);
+      return getOwnDescriptor(target, member);
     },
     get(target: any, member: Member, receiver: any) {
-      const value = ObserveReflect.get(target, member, receiver);
+      const value = getValue(target, member, receiver);
       if (!isValidKey(member)) return value;
       if (isNativeProxy() && isArrowFunction(value)) {
         throw ObserveError(`Proxy mode cannot have arrow function: ${member}`);
@@ -98,7 +98,7 @@ export function createProxy<T extends object>(target: T): T {
       if (info.shadow[member] === value && !isSetArrayLength(target, member)) {
         return true;
       }
-      ObserveReflect.set(target, member, value, receiver);
+      setValue(target, member, value, receiver);
       info.shadow[member] = value;
       if (!ObserveFlags.set || !isValidKey(member)) return true;
       publish("set", { id: info.id, member, value });
