@@ -11,7 +11,7 @@ import { ObserveConfig } from "./ObserveConfig";
 import { ObserveEvents } from "./ObserveEvents";
 import { ObserveFlags } from "./ObserveFlags";
 import { ObserveKey } from "./ObserveKey";
-import { ObserveInspector as inspector } from "./ObserveInspector";
+import { ObserveInspector as inspector } from "./ObserveDebug";
 
 type ObserveEventHandlerStore = {
   [T in keyof ObserveEvents]: FastMap<string, Set<ObserveEvents[T]>>;
