@@ -9,13 +9,13 @@ import { isObject } from "./ObserveUtil";
 
 export type ObserveMode = "proxy" | "property" | "auto";
 
-export interface ObserveConfigDefinition {
+export type ObserveConfigDefinition = {
   mode: ObserveMode;
   strict: boolean;
   maxDependencies: number;
   maxListeners: number;
   logPrefix: string;
-}
+};
 
 export const DEFAULT_LOG_PREFIX = "OBER";
 

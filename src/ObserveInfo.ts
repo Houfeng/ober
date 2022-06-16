@@ -10,14 +10,14 @@ import { ObserveId } from "./ObserveId";
 import { ObserveSymbols } from "./ObserveSymbols";
 import { throwError } from "./ObserveLogger";
 
-export interface ObserveInfo<T extends object> {
+export type ObserveInfo<T extends object> = {
   id: string;
   proxy: T;
   target: T;
   shadow: any;
   isWrappedObject: boolean;
   isWrappedArray: boolean;
-}
+};
 
 export function observeInfo<T extends object = any>(
   _target: T

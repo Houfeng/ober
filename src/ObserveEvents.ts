@@ -6,10 +6,10 @@
 
 import { ObserveData } from "./ObserveData";
 
-export interface ObserveListener<T> {
+export type ObserveListener<T> = {
   (data: T): any;
   dependencies?: Array<string>;
-}
+};
 
 export type ObserveEvents = {
   change: ObserveListener<ObserveData>;

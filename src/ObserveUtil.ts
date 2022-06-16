@@ -162,12 +162,12 @@ export function isDecoratorContext(value: any): value is DecoratorContext {
   return value && value.kind && value.name;
 }
 
-export interface FastMap<K extends string, V> {
+export type FastMap<K extends string, V> = {
   get: (key: K) => V | undefined;
   set: (key: K, value: V) => void;
   has: (key: K) => boolean;
   del: (key: K) => void;
-}
+};
 
 /**
  * 原生 Map 性能相较 object 作为 map 性能有明显差距
