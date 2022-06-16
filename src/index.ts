@@ -9,7 +9,7 @@ export { subscribe, unsubscribe } from "./ObserveBus";
 export { ObserveConfig, type ObserveMode } from "./ObserveConfig";
 export { type ObserveData } from "./ObserveData";
 export { type ObserveListener as ObserveEventHandler } from "./ObserveEvents";
-export { ObserveInspector, takeDependencies } from "./ObserveDebug";
+export { ObserveSpy, takeDependencies } from "./ObserveDebug";
 export { observeInfo } from "./ObserveInfo";
 export { ObserveFlags } from "./ObserveFlags";
 export { isProxy } from "./ObserveUtil";

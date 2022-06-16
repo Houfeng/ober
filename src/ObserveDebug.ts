@@ -4,10 +4,10 @@
  * @author Houfeng <houzhanfeng@gmail.com>
  */
 
+import { ObserveEventNames, ObserveEvents } from "./ObserveEvents";
 import { log, table } from "./ObserveLogger";
 
 import { ObserveData } from "./ObserveData";
-import { ObserveListener } from "./ObserveEvents";
 import { ReactiveCurrent } from "./ObserveReactive";
 import { isFunction } from "./ObserveUtil";
 import { nextTick } from "./ObserveTick";
@@ -30,18 +30,14 @@ export function takeDependencies(
   });
 }
 
-export const ObserveInspector: {
-  onPublish?: (info: {
-    type: string;
-    data: ObserveData;
-    listeners: ArrayLike<ObserveListener<any>>;
-  }) => void;
-  onSubscribe?: (info: {
-    type: string;
-    listener: ObserveListener<any>;
-  }) => void;
-  onUnsubscribe?: (info: {
-    type: string;
-    listener: ObserveListener<any>;
-  }) => void;
-} = {};
+type ObserveSpy<T extends ObserveEventNames = ObserveEventNames> = {
+  publish?: (
+    type: T,
+    data: ObserveData,
+    listeners: ArrayLike<ObserveEvents[T]>
+  ) => void;
+  subscribe?: (type: T, listener: ObserveEvents[T]) => void;
+  unsubscribe?: (type: T, listener: ObserveEvents[T]) => void;
+};
+
+export const ObserveSpy: ObserveSpy = {};

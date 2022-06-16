@@ -5,22 +5,22 @@
  */
 
 import { FastMap, isPrivateKey, isSymbol } from "./ObserveUtil";
+import { ObserveEventNames, ObserveEvents } from "./ObserveEvents";
 import { throwError, warn } from "./ObserveLogger";
 
 import { ObserveConfig } from "./ObserveConfig";
 import { ObserveData } from "./ObserveData";
-import { ObserveEvents } from "./ObserveEvents";
 import { ObserveFlags } from "./ObserveFlags";
 import { ObserveKey } from "./ObserveKey";
-import { ObserveInspector as inspector } from "./ObserveDebug";
+import { ObserveSpy as spy } from "./ObserveDebug";
 
 type ObserveListenerStore = {
-  [T in keyof ObserveEvents]: FastMap<string, Set<ObserveEvents[T]>>;
+  [T in ObserveEventNames]: FastMap<string, Set<ObserveEvents[T]>>;
 };
 
 const ObserveListeners: Partial<ObserveListenerStore> = Object.create(null);
 
-export function subscribe<T extends keyof ObserveEvents>(
+export function subscribe<T extends ObserveEventNames>(
   type: T,
   listener: ObserveEvents[T]
 ) {
@@ -38,7 +38,7 @@ export function subscribe<T extends keyof ObserveEvents>(
     }
     if (list!.size === 1) notifyRef(key);
   });
-  if (inspector.onSubscribe) inspector.onSubscribe({ type, listener });
+  if (spy.subscribe) spy.subscribe(type, listener);
 }
 
 export function unsubscribe<T extends keyof ObserveEvents>(
@@ -53,10 +53,10 @@ export function unsubscribe<T extends keyof ObserveEvents>(
     list.delete(listener);
     if (list.size < 1) notifyUnref(key);
   });
-  if (inspector.onUnsubscribe) inspector.onUnsubscribe({ type, listener });
+  if (spy.unsubscribe) spy.unsubscribe(type, listener);
 }
 
-function publish<T extends keyof ObserveEvents>(
+function publish<T extends ObserveEventNames>(
   type: T,
   data: Parameters<ObserveEvents[T]>[0]
 ) {
@@ -70,9 +70,7 @@ function publish<T extends keyof ObserveEvents>(
   if (listeners.length > 0) {
     listeners.forEach((handler) => handler!(data));
   }
-  if (inspector.onPublish) {
-    inspector.onPublish({ type, data, listeners });
-  }
+  if (spy.publish) spy.publish(type, data, listeners);
 }
 
 function notifyUnref(key: string) {

@@ -18,3 +18,5 @@ export type ObserveEvents = {
   // 在第一个监听建立时触发
   ref: ObserveListener<ObserveData>;
 };
+
+export type ObserveEventNames = keyof ObserveEvents;
