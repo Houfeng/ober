@@ -19,6 +19,7 @@ import { checkStrictMode } from "./ObserveConfig";
 import { getOwnDescriptor } from "./ObserveReflect";
 import { observeInfo } from "./ObserveInfo";
 import { publish } from "./ObserveBus";
+import { report } from "./ObserveCollect";
 
 function createObservableMember<T extends object>(
   target: T,
@@ -68,7 +69,7 @@ function createObservableArray<T extends Array<any>>(
 ) {
   const info = observeInfo(target);
   const { id, shadow, isWrappedArray } = info;
-  publish("get", { id, member: "length", value: target });
+  report({ id, member: "length", value: target });
   if (!isArray(target) || isWrappedArray) return target;
   info.isWrappedArray = true;
   const methods = ["push", "pop", "shift", "unshift", "splice", "reverse"];

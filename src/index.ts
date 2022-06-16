@@ -15,12 +15,7 @@ export { observeInfo } from "./ObserveInfo";
 export { ObserveFlags } from "./ObserveFlags";
 export { isProxy } from "./ObserveUtil";
 
-export {
-  track,
-  untrack,
-  collect,
-  type CollectOptions,
-} from "./ObserveCollect";
+export { track, untrack, collect, type CollectOptions } from "./ObserveCollect";
 
 export {
   reactivable,

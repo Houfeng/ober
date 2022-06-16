@@ -24,6 +24,7 @@ import { ObserveSymbols } from "./ObserveSymbols";
 import { UNDEF } from "./ObserveConstants";
 import { observeInfo } from "./ObserveInfo";
 import { publish } from "./ObserveBus";
+import { report } from "./ObserveCollect";
 
 export const NativeProxy = typeof Proxy !== UNDEF ? Proxy : null;
 
@@ -89,8 +90,7 @@ export function createProxy<T extends object>(target: T): T {
       if (isFunction(value)) return value;
       const proxyValue =
         isObject(value) && !isWholeValue(value) ? createProxy(value) : value;
-      if (!ObserveFlags.get) return proxyValue;
-      publish("get", { id: info.id, member, value });
+      report({ id: info.id, member, value });
       return proxyValue;
     },
     set(target: any, member: Member, value: any, receiver: any) {

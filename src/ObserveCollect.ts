@@ -4,18 +4,22 @@
  * @author Houfeng <houzhanfeng@gmail.com>
  */
 
-import { AnyFunction, Ref } from './ObserveUtil';
-import { subscribe, unsubscribe } from './ObserveBus';
+import { AnyFunction, Ref } from "./ObserveUtil";
 
-import { ObserveConfig } from './ObserveConfig';
-import { ObserveData } from './ObserveData';
-import { ObserveFlags } from './ObserveFlags';
-import { ObserveKey } from './ObserveKey';
-import { ObserveText } from './ObserveError';
+import { ObserveConfig } from "./ObserveConfig";
+import { ObserveData } from "./ObserveData";
+import { ObserveFlags } from "./ObserveFlags";
+import { ObserveKey } from "./ObserveKey";
+import { ObserveText } from "./ObserveError";
 
 export type CollectFunction = (data: ObserveData) => void;
 export const CollectCurrent: Ref<CollectFunction> = {};
 
+export function report(data: ObserveData) {
+  if (ObserveFlags.reporting && CollectCurrent.value) {
+    CollectCurrent.value(data);
+  }
+}
 
 function trackSwitch<T extends AnyFunction>(
   fn: T,
@@ -24,12 +28,12 @@ function trackSwitch<T extends AnyFunction>(
 ) {
   if (!fn) return;
   const originSetFlag = ObserveFlags.set;
-  const originGetFlag = ObserveFlags.get;
+  const originGetFlag = ObserveFlags.reporting;
   ObserveFlags.set = flag;
-  ObserveFlags.get = flag;
+  ObserveFlags.reporting = flag;
   const result = fn(...args);
   ObserveFlags.set = originSetFlag;
-  ObserveFlags.get = originGetFlag;
+  ObserveFlags.reporting = originGetFlag;
   return result as ReturnType<T>;
 }
 
@@ -93,22 +97,22 @@ export function collect<T extends AnyFunction>(
   const { mark, context, args, ignore = [] } = { ...options };
   const dependencies: string[] = [];
   const appendDependencies: Record<string, boolean> = {};
-  const collectHandler = (data: ObserveData) => {
+  const prevCollectFunction = CollectCurrent.value;
+  CollectCurrent.value = (data: ObserveData) => {
     if (data.mark && data.mark !== mark) return;
     const key = ObserveKey(data);
     if (ignore && ignore.indexOf(key) > -1) return;
     if (!appendDependencies[key]) dependencies.push(key);
     appendDependencies[key] = true;
   };
-  subscribe("get", collectHandler);
-  const originMark = ObserveFlags.mark;
-  const originGetFlag = ObserveFlags.get;
-  ObserveFlags.mark = mark || "";
-  ObserveFlags.get = true;
+  const prevReportMark = ObserveFlags.reportMark;
+  const prevReporting = ObserveFlags.reporting;
+  ObserveFlags.reportMark = mark || "";
+  ObserveFlags.reporting = true;
   const result: ReturnType<T> = fn.call(context, ...(args || []));
-  ObserveFlags.get = originGetFlag;
-  ObserveFlags.mark = originMark;
-  unsubscribe("get", collectHandler);
+  ObserveFlags.reporting = prevReporting;
+  ObserveFlags.reportMark = prevReportMark;
+  CollectCurrent.value = prevCollectFunction;
   const count = dependencies.length;
   if (count > ObserveConfig.maxDependencies) {
     console.warn(ObserveText(`A single function has ${count} dependencies`));

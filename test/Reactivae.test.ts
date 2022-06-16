@@ -1,9 +1,10 @@
 import "./helpers/mode";
 
-import { collect, reactivable, untrack } from '../src/ObserveReactive';
+import { collect, untrack } from "../src/ObserveCollect";
 
 import { observable } from "../src/ObserveHof";
 import { observeInfo } from "../src/ObserveInfo";
+import { reactivable } from '../src/ObserveReactive';
 import { strictEqual } from "assert";
 
 describe('Reactivable', () => {

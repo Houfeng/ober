@@ -6,9 +6,13 @@
 
 export const ObserveFlags = {
   /**
-   * 是否触发 get 事件
+   * 是否打开依赖使用 report
    */
-  get: false,
+  reporting: false,
+  /**
+   * 当前 report 标记
+   */
+  reportMark: "",
   /**
    * 是否触发 set 事件
    */
@@ -25,8 +29,4 @@ export const ObserveFlags = {
    * 当前是否正在 action 执行中
    */
   action: false,
-  /**
-   * 当前集收函数标记
-   */
-  mark: "",
 };

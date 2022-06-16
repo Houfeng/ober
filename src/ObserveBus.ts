@@ -80,10 +80,10 @@ export function publish<T extends keyof ObserveEvents>(
   matchOnly = false
 ) {
   if (!ObserveHandlers[type]) return;
-  if (!ObserveFlags.get && type === "get") return;
+  if (!ObserveFlags.reporting && type === "get") return;
   if (!ObserveFlags.set && type === "set") return;
   if (isSymbol(data.member) || isPrivateKey(data.member)) return;
-  data.mark = ObserveFlags.mark;
+  data.mark = ObserveFlags.reportMark;
   const observeKey = ObserveKey(data);
   const matchedHandlers = Array.from(
     ObserveHandlers[type]!.get(observeKey) || []
