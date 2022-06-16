@@ -4,7 +4,7 @@
  * @author Houfeng <houzhanfeng@gmail.com>
  */
 
-import { Member, isProxy } from "./ObserveUtil";
+import { Member } from "./ObserveUtil";
 
 export function getOwnDescriptor(
   target: any,
@@ -25,7 +25,7 @@ export function getDescriptor(
 }
 
 export function getValue(target: any, key: Member, receiver: any) {
-  if (!isProxy(receiver) || target === receiver) {
+  if (target === receiver) {
     return target[key];
   }
   const descriptor = getDescriptor(target, key);
@@ -37,7 +37,7 @@ export function getValue(target: any, key: Member, receiver: any) {
 }
 
 export function setValue(target: any, key: Member, value: any, receiver: any) {
-  if (!isProxy(receiver) || target === receiver) {
+  if (target === receiver) {
     target[key] = value;
     return;
   }
