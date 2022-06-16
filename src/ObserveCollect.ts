@@ -29,13 +29,13 @@ function trackSwitch<T extends AnyFunction>(
   ...args: any[]
 ) {
   if (!fn) return;
-  const originSetFlag = ObserveFlags.change;
-  const originGetFlag = ObserveFlags.report;
+  const prevChangeFlag = ObserveFlags.change;
+  const prevReportFlag = ObserveFlags.report;
   ObserveFlags.change = flag;
   ObserveFlags.report = flag;
   const result = fn(...args);
-  ObserveFlags.change = originSetFlag;
-  ObserveFlags.report = originGetFlag;
+  ObserveFlags.change = prevChangeFlag;
+  ObserveFlags.report = prevReportFlag;
   return result as ReturnType<T>;
 }
 
@@ -108,11 +108,11 @@ export function collect<T extends AnyFunction>(
     appendDependencies[key] = true;
   };
   const prevReportMark = ObserveFlags.reportMark;
-  const prevReporting = ObserveFlags.report;
+  const prevReportFlag = ObserveFlags.report;
   ObserveFlags.reportMark = mark || "";
   ObserveFlags.report = true;
   const result: ReturnType<T> = fn.call(context, ...(args || []));
-  ObserveFlags.report = prevReporting;
+  ObserveFlags.report = prevReportFlag;
   ObserveFlags.reportMark = prevReportMark;
   CollectCurrent.value = prevCollectFunction;
   const count = dependencies.length;

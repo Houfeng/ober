@@ -26,25 +26,31 @@ import { observeInfo } from "./ObserveInfo";
 import { report } from "./ObserveCollect";
 import { throwError } from "./ObserveLogger";
 
-export const NativeProxy = typeof Proxy !== UNDEF ? Proxy : null;
+const NativeProxy = typeof Proxy !== UNDEF ? Proxy : null;
+let CurrentProxy: (ProxyConstructor | typeof LowProxy) | null;
 
-function useProxyClass() {
+function getCurrentProxyClass() {
+  if (CurrentProxy) return CurrentProxy;
   switch (ObserveConfig.mode) {
     case "property":
-      return LowProxy;
+      CurrentProxy = LowProxy;
+      break;
     case "auto":
-      return NativeProxy || LowProxy;
+      CurrentProxy = NativeProxy || LowProxy;
+      break;
     case "proxy":
     default:
-      return NativeProxy;
+      CurrentProxy = NativeProxy;
+      break;
   }
+  return CurrentProxy;
 }
 
 function isNativeProxy() {
-  return NativeProxy === useProxyClass();
+  return NativeProxy === getCurrentProxyClass();
 }
 
-export function shouldAutoProxy(value: any): value is any {
+function shouldAutoProxy(value: any): value is any {
   if (!value || !isObject(value) || !isExtensible(value)) return false;
   const ctor = value.constructor;
   return ctor === Object || ctor === Array;
@@ -72,7 +78,7 @@ export function createProxy<T extends object>(target: T): T {
   const info = observeInfo(target);
   if (!info) return target;
   if (info.proxy) return info.proxy;
-  const ObserveProxy = useProxyClass();
+  const ObserveProxy = getCurrentProxyClass();
   if (!ObserveProxy) {
     const { mode } = ObserveConfig;
     throwError(`Current environment does not support '${mode}'`);
