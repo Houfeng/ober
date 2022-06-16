@@ -6,9 +6,9 @@
 
 import { define, hasOwn, isArray, isObject } from "./ObserveUtil";
 
-import { ObserveError } from "./ObserveError";
 import { ObserveId } from "./ObserveId";
 import { ObserveSymbols } from "./ObserveSymbols";
+import { throwError } from "./ObserveLogger";
 
 export interface ObserveInfo<T extends object> {
   id: string;
@@ -22,9 +22,7 @@ export interface ObserveInfo<T extends object> {
 export function observeInfo<T extends object = any>(
   _target: T
 ): ObserveInfo<T> {
-  if (!_target || !isObject(_target)) {
-    throw ObserveError("Invalid observe target");
-  }
+  if (!_target || !isObject(_target)) throwError("Invalid observe target");
   const target: any = _target;
   if (!hasOwn(target, ObserveSymbols.Observable)) {
     const specified =

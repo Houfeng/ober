@@ -5,6 +5,7 @@
  */
 
 import { UNDEF } from "./ObserveConstants";
+import { error } from "./ObserveLogger";
 
 type TickTask = (() => void) & { __pending: boolean };
 type TickOwner = { readonly tasks: TickTask[]; pending: boolean };
@@ -28,8 +29,7 @@ function executeTickTasks() {
 function createTickResolver() {
   if (typeof Promise !== UNDEF) {
     const promise = Promise.resolve();
-    return () =>
-      promise.then(executeTickTasks).catch((err) => console.error(err));
+    return () => promise.then(executeTickTasks).catch((err) => error(err));
   } else if (
     typeof MutationObserver !== UNDEF ||
     // PhantomJS and iOS 7.x

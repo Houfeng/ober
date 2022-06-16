@@ -13,13 +13,13 @@ import {
   isValidKey,
 } from "./ObserveUtil";
 
-import { ObserveError } from "./ObserveError";
 import { ObserveSymbols } from "./ObserveSymbols";
-import { checkStrictMode } from "./ObserveConfig";
+import { checkStrictMode } from "./ObserveStrictMode";
 import { getOwnDescriptor } from "./ObserveReflect";
 import { notify } from "./ObserveBus";
 import { observeInfo } from "./ObserveInfo";
 import { report } from "./ObserveCollect";
+import { throwError } from "./ObserveLogger";
 
 function createObservableMember<T extends object>(
   target: T,
@@ -96,7 +96,7 @@ export class LowProxy<T extends object> {
       define(target, ObserveSymbols.Proxy, true);
       return createObservableObject(target, handler);
     } else {
-      throw ObserveError("Invalid LowProxy target");
+      throwError("Invalid LowProxy target");
     }
   }
 }

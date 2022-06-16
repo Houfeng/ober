@@ -4,9 +4,10 @@
  * @author Houfeng <houzhanfeng@gmail.com>
  */
 
+import { log, table } from "./ObserveLogger";
+
 import { ObserveData } from "./ObserveData";
 import { ObserveListener } from "./ObserveEvents";
-import { ObserveText } from "./ObserveError";
 import { ReactiveCurrent } from "./ObserveReactive";
 import { isFunction } from "./ObserveUtil";
 import { nextTick } from "./ObserveTick";
@@ -24,10 +25,8 @@ export function takeDependencies(
     if (!reactiver || !reactiver.dependencies) return;
     const list = Array.from(reactiver.dependencies || []);
     if (isFunction(subject)) subject(list);
-    if (subject) {
-      console.log(`%c${ObserveText(subject as string)}`, "color:red;");
-    }
-    return console.table ? console.table(list) : console.log(list);
+    if (subject) log(`%c${subject as string}`, "color:red;");
+    return table(list);
   });
 }
 

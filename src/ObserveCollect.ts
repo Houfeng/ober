@@ -10,7 +10,7 @@ import { ObserveConfig } from "./ObserveConfig";
 import { ObserveData } from "./ObserveData";
 import { ObserveFlags } from "./ObserveFlags";
 import { ObserveKey } from "./ObserveKey";
-import { ObserveText } from "./ObserveError";
+import { warn } from "./ObserveLogger";
 
 export type CollectFunction = (data: ObserveData) => void;
 
@@ -117,7 +117,7 @@ export function collect<T extends AnyFunction>(
   CollectCurrent.value = prevCollectFunction;
   const count = dependencies.length;
   if (count > ObserveConfig.maxDependencies) {
-    console.warn(ObserveText(`A single function has ${count} dependencies`));
+    warn(`A single function has ${count} dependencies`);
   }
   return { result, dependencies };
 }

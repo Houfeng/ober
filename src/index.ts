@@ -10,7 +10,6 @@ export { ObserveConfig, type ObserveMode } from "./ObserveConfig";
 export { type ObserveData } from "./ObserveData";
 export { type ObserveListener as ObserveEventHandler } from "./ObserveEvents";
 export { ObserveInspector, takeDependencies } from "./ObserveDebug";
-export { ObserveError } from "./ObserveError";
 export { observeInfo } from "./ObserveInfo";
 export { ObserveFlags } from "./ObserveFlags";
 export { isProxy } from "./ObserveUtil";

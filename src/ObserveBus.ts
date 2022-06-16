@@ -5,7 +5,7 @@
  */
 
 import { FastMap, isPrivateKey, isSymbol } from "./ObserveUtil";
-import { ObserveError, ObserveText } from "./ObserveError";
+import { throwError, warn } from "./ObserveLogger";
 
 import { ObserveConfig } from "./ObserveConfig";
 import { ObserveData } from "./ObserveData";
@@ -24,8 +24,8 @@ export function subscribe<T extends keyof ObserveEvents>(
   type: T,
   listener: ObserveEvents[T]
 ) {
-  if (!listener) throw ObserveError("Invalid ObserveHandler");
-  if (!type) throw ObserveError("Invalid ObserveEvent");
+  if (!listener) throwError("Invalid ObserveHandler");
+  if (!type) throwError("Invalid ObserveEvent");
   if (!ObserveListeners[type]) ObserveListeners[type] = FastMap();
   (listener.dependencies || []).forEach((key) => {
     let list: Set<any> | undefined;
@@ -64,8 +64,8 @@ function publish<T extends keyof ObserveEvents>(
   if (isSymbol(data.member) || isPrivateKey(data.member)) return;
   const observeKey = ObserveKey(data);
   const listeners = Array.from(ObserveListeners[type]!.get(observeKey) || []);
-  if (listeners.length > ObserveConfig.maxHandlers) {
-    console.warn(ObserveText(`Trigger ${listeners.length} handlers`));
+  if (listeners.length > ObserveConfig.maxListeners) {
+    warn(`Trigger ${listeners.length} handlers`);
   }
   if (listeners.length > 0) {
     listeners.forEach((handler) => handler!(data));

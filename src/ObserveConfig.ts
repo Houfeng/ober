@@ -4,8 +4,6 @@
  * @author Houfeng <houzhanfeng@gmail.com>
  */
 
-import { ObserveError } from "./ObserveError";
-import { ObserveFlags } from "./ObserveFlags";
 import { UNDEF } from "./ObserveConstants";
 import { isObject } from "./ObserveUtil";
 
@@ -15,13 +13,13 @@ export interface ObserveConfigDefinition {
   mode: ObserveMode;
   strict: boolean;
   maxDependencies: number;
-  maxHandlers: number;
+  maxListeners: number;
   logPrefix: string;
 }
 
 export const DEFAULT_LOG_PREFIX = "OBER";
 
-export const ObserveEnvConfig: Partial<ObserveConfigDefinition> = (() => {
+export const ObserveENVConfig: Partial<ObserveConfigDefinition> = (() => {
   if (typeof process === UNDEF) return {};
   const OBER_CONFIG: any = process.env && process.env.OBER_CONFIG;
   if (!OBER_CONFIG) return {};
@@ -30,7 +28,7 @@ export const ObserveEnvConfig: Partial<ObserveConfigDefinition> = (() => {
     return JSON.parse(OBER_CONFIG) || {};
   } catch {
     const prefix = DEFAULT_LOG_PREFIX;
-    throw new Error(`${prefix}: "${prefix}_CONFIG" is incorrect`);
+    throw new Error(`${prefix}: "${prefix}_CONFIG" has error`);
   }
 })();
 
@@ -38,13 +36,7 @@ export const ObserveConfig: ObserveConfigDefinition = {
   mode: "property",
   strict: false,
   maxDependencies: 1000,
-  maxHandlers: 100,
+  maxListeners: 100,
   logPrefix: DEFAULT_LOG_PREFIX,
-  ...ObserveEnvConfig,
+  ...ObserveENVConfig,
 };
-
-export function checkStrictMode() {
-  if (ObserveConfig.strict && !ObserveFlags.action) {
-    throw ObserveError("Strict mode change model, must be in action");
-  }
-}

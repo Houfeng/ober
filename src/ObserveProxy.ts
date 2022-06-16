@@ -14,16 +14,17 @@ import {
   isProxy,
   isValidKey,
 } from "./ObserveUtil";
-import { ObserveConfig, checkStrictMode } from "./ObserveConfig";
 import { getOwnDescriptor, getValue, setValue } from "./ObserveReflect";
 
 import { LowProxy } from "./ObserveShim";
-import { ObserveError } from "./ObserveError";
+import { ObserveConfig } from "./ObserveConfig";
 import { ObserveSymbols } from "./ObserveSymbols";
 import { UNDEF } from "./ObserveConstants";
+import { checkStrictMode } from "./ObserveStrictMode";
 import { notify } from "./ObserveBus";
 import { observeInfo } from "./ObserveInfo";
 import { report } from "./ObserveCollect";
+import { throwError } from "./ObserveLogger";
 
 export const NativeProxy = typeof Proxy !== UNDEF ? Proxy : null;
 
@@ -74,7 +75,7 @@ export function createProxy<T extends object>(target: T): T {
   const ObserveProxy = useProxyClass();
   if (!ObserveProxy) {
     const { mode } = ObserveConfig;
-    throw ObserveError(`Current environment does not support '${mode}'`);
+    throwError(`Current environment does not support '${mode}'`);
   }
   //创建 proxy
   info.proxy = new ObserveProxy(target, {
@@ -90,7 +91,7 @@ export function createProxy<T extends object>(target: T): T {
       const value = getValue(target, member, receiver);
       if (!isValidKey(member)) return value;
       if (isNativeProxy() && isArrowFunction(value)) {
-        throw ObserveError(`Proxy mode cannot have arrow function: ${member}`);
+        throwError(`Proxy mode cannot have arrow function: ${member}`);
       }
       if (isBindRequiredFunction(value)) {
         return useBoundMethod(target, member, value, receiver);
