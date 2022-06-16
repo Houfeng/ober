@@ -9,10 +9,10 @@ import {
   Member,
   isArrowFunction,
   isBindRequiredFunction,
+  isExtensible,
   isObject,
   isProxy,
   isValidKey,
-  isWholeValue,
 } from "./ObserveUtil";
 import { ObserveConfig, checkStrictMode } from "./ObserveConfig";
 import { getOwnDescriptor, getValue, setValue } from "./ObserveReflect";
@@ -41,6 +41,12 @@ function useProxyClass() {
 
 function isNativeProxy() {
   return NativeProxy === useProxyClass();
+}
+
+export function shouldAutoProxy(value: any): value is any {
+  if (!value || !isObject(value) || !isExtensible(value)) return false;
+  const ctor = value.constructor;
+  return ctor === Object || ctor === Array;
 }
 
 function useBoundMethod(
@@ -90,10 +96,9 @@ export function createProxy<T extends object>(target: T): T {
         return useBoundMethod(target, member, value, receiver);
       }
       if (isFunction(value)) return value;
-      const proxyValue =
-        isObject(value) && !isWholeValue(value) ? createProxy(value) : value;
+      const proxy = shouldAutoProxy(value) ? createProxy(value) : value;
       report({ id: info.id, member, value });
-      return proxyValue;
+      return proxy;
     },
     //更新数据时
     set(target: any, member: Member, value: any, receiver: any) {

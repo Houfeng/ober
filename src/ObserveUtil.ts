@@ -4,7 +4,7 @@
  * @author Houfeng <houzhanfeng@gmail.com>
  */
 
-import { OBJ, SMBL, SUPT_SMBL, UNDEF } from "./ObserveConstants";
+import { OBJ, SMBL, SUPT_SMBL } from "./ObserveConstants";
 
 import { ObserveSymbols } from "./ObserveSymbols";
 
@@ -88,84 +88,8 @@ export function isValidKey(key: any): key is string {
   );
 }
 
-function isDomNode(value: any): value is Node {
-  return typeof Node !== UNDEF && value instanceof Node;
-}
-
-function isEventTarget(value: any): value is EventTarget {
-  return typeof EventTarget !== UNDEF && value instanceof EventTarget;
-}
-
-function isError(value: any): value is Error {
-  return typeof Error !== UNDEF && value instanceof Error;
-}
-
-function isDOMError(value: any) {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  return typeof DOMError !== UNDEF && value instanceof DOMError;
-}
-
-function isEvent(value: any): value is Event {
-  return typeof Event !== UNDEF && value instanceof Event;
-}
-
-function isPromise(value: any): value is Promise<any> {
-  return typeof Promise !== UNDEF && value instanceof Promise;
-}
-
-function isDate(value: any): value is Date {
-  return typeof Date !== UNDEF && value instanceof Date;
-}
-
-function isURL(value: any): value is URL {
-  return typeof URL !== UNDEF && value instanceof URL;
-}
-
-function isMap(value: any): value is Map<any, any> {
-  return typeof Map !== UNDEF && value instanceof Map;
-}
-
-function isSet(value: any): value is Set<any> {
-  return typeof Set !== UNDEF && value instanceof Set;
-}
-
-function isWeakMap(value: any): value is WeakMap<any, any> {
-  return typeof WeakMap !== UNDEF && value instanceof WeakMap;
-}
-
-function isWeakSet(value: any): value is WeakSet<any> {
-  return typeof WeakSet !== UNDEF && value instanceof WeakSet;
-}
-
-function isExtensible(value: any) {
+export function isExtensible(value: any) {
   return !Object.isExtensible || Object.isExtensible(value);
-}
-
-function isTypedArray(value: any) {
-  return ArrayBuffer.isView(value);
-}
-
-export function isWholeValue(value: any): value is any {
-  return (
-    !isObject(value) ||
-    !isExtensible(value) ||
-    isFunction(value) ||
-    isDate(value) ||
-    isSymbol(value) ||
-    isDomNode(value) ||
-    isError(value) ||
-    isPromise(value) ||
-    isEvent(value) ||
-    isEventTarget(value) ||
-    isURL(value) ||
-    isMap(value) ||
-    isWeakMap(value) ||
-    isSet(value) ||
-    isWeakSet(value) ||
-    isTypedArray(value) ||
-    isDOMError(value)
-  );
 }
 
 export const hasOwn = (target: any, member: Member) => {
