@@ -20,7 +20,7 @@ type ObserveEventHandlerStore = {
 const ObserveHandlers: Partial<ObserveEventHandlerStore> = Object.create(null);
 
 const GENERIC_KEY = "*";
-const GENERIC_DEPENDENCIES = new Set([GENERIC_KEY]);
+const GENERIC_DEPENDENCIES = [GENERIC_KEY];
 
 export function subscribe<T extends keyof ObserveEvents>(
   type: T,
@@ -85,16 +85,20 @@ export function publish<T extends keyof ObserveEvents>(
   if (isSymbol(data.member) || isPrivateKey(data.member)) return;
   data.mark = ObserveFlags.mark;
   const observeKey = ObserveKey(data);
-  const matchedHandlers = new Set(ObserveHandlers[type]!.get(observeKey));
-  const matchedCount = (matchedHandlers && matchedHandlers.size) || 0;
+  const matchedHandlers = Array.from(
+    ObserveHandlers[type]!.get(observeKey) || []
+  );
+  const matchedCount = matchedHandlers.length;
   if (matchedCount > ObserveConfig.maxHandlers) {
     console.warn(ObserveText(`Trigger ${matchedCount} handlers`));
   }
-  if (matchedHandlers && matchedCount > 0) {
+  if (matchedCount > 0) {
     matchedHandlers.forEach((handler) => handler!(data));
   }
-  const commonHandlers = new Set(ObserveHandlers[type]!.get(GENERIC_KEY));
-  if (!matchOnly && commonHandlers && commonHandlers.size > 0) {
+  const commonHandlers = Array.from(
+    ObserveHandlers[type]!.get(GENERIC_KEY) || []
+  );
+  if (!matchOnly && commonHandlers.length > 0) {
     commonHandlers.forEach((handler) => handler!(data));
   }
   if (inspector.onPublish) {

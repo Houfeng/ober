@@ -8,7 +8,7 @@ import { ObserveData } from "./ObserveData";
 
 export interface ObserveEventHandler<T> {
   (data: T): any;
-  dependencies?: Set<string>;
+  dependencies?: Array<string>;
 }
 
 export type ObserveEvents = {

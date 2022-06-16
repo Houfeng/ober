@@ -101,12 +101,14 @@ export function collect<T extends AnyFunction>(
   options?: CollectOptions<T>
 ) {
   const { mark, context, args, ignore = [] } = { ...options };
-  const dependencies = new Set<string>();
+  const dependencies: string[] = [];
+  const appendDependencies: Record<string, boolean> = {};
   const collectHandler = (data: ObserveData) => {
     if (data.mark && data.mark !== mark) return;
     const key = ObserveKey(data);
     if (ignore && ignore.indexOf(key) > -1) return;
-    dependencies.add(key);
+    if (!appendDependencies[key]) dependencies.push(key);
+    appendDependencies[key] = true;
   };
   subscribe("get", collectHandler);
   const originMark = ObserveFlags.mark;
@@ -117,7 +119,7 @@ export function collect<T extends AnyFunction>(
   ObserveFlags.get = originGetFlag;
   ObserveFlags.mark = originMark;
   unsubscribe("get", collectHandler);
-  const count = dependencies && dependencies.size;
+  const count = dependencies.length;
   if (count > ObserveConfig.maxDependencies) {
     console.warn(ObserveText(`A single function has ${count} dependencies`));
   }
@@ -128,7 +130,7 @@ export type ReactiveUnsubscribe = () => void;
 export type ReactiveSubscribe = () => void;
 
 export type ReactiveFunction<T extends AnyFunction = AnyFunction> = T & {
-  dependencies: Set<string>;
+  dependencies: Array<string>;
   subscribe: ReactiveSubscribe;
   unsubscribe: ReactiveUnsubscribe;
 };
@@ -286,7 +288,7 @@ export function computable<T>(fn: () => T, options?: ComputableOptions) {
         unsubscribe("unref", destroy);
         subscribed = false;
       };
-      destroy.dependencies = new Set(keys);
+      destroy.dependencies = keys;
       wrapper.unsubscribe = destroy;
       // 建立订阅处理
       wrapper.subscribe = () => {

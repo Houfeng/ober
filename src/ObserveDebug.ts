@@ -22,8 +22,7 @@ export function takeDependencies(
   const reactiver = ReactiveCurrent.value;
   nextTick(() => {
     if (!reactiver || !reactiver.dependencies) return;
-    const list: string[] = [];
-    reactiver.dependencies.forEach((key) => list.push(key));
+    const list = Array.from(reactiver.dependencies || []);
     if (isFunction(subject)) subject(list);
     if (subject) {
       console.log(`%c${ObserveText(subject as string)}`, "color:red;");
@@ -37,8 +36,8 @@ export const ObserveInspector: {
     type: string;
     data: ObserveData;
     matchOnly: boolean;
-    matchedHandlers: Set<ObserveEventHandler<any>>;
-    commonHandlers: Set<ObserveEventHandler<any>>;
+    matchedHandlers: ArrayLike<ObserveEventHandler<any>>;
+    commonHandlers: ArrayLike<ObserveEventHandler<any>>;
   }) => void;
   onSubscribe?: (info: {
     type: string;

@@ -13,8 +13,8 @@ describe('Reactivable', () => {
     const { result, dependencies } = collect(() => model.a);
     strictEqual(result, 1);
     const { id } = observeInfo(model);
-    strictEqual(dependencies.has(`${id}.a`), true);
-    strictEqual(dependencies.has(`${id}.b`), false);
+    strictEqual(dependencies.includes(`${id}.a`), true);
+    strictEqual(dependencies.includes(`${id}.b`), false);
     done();
   });
 
