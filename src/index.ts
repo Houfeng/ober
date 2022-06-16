@@ -14,20 +14,25 @@ export { ObserveError } from "./ObserveError";
 export { observeInfo } from "./ObserveInfo";
 export { ObserveFlags } from "./ObserveFlags";
 export { isProxy } from "./ObserveUtil";
+
 export {
   track,
   untrack,
   collect,
+  type CollectOptions,
+} from "./ObserveCollect";
+
+export {
   reactivable,
   computable,
   autorun,
   watch,
   ReactiveCurrent,
-  type CollectOptions,
   type ReactiveFunction,
   type ReactiveOptions,
   type ReactiveSubscribe,
   type ReactiveUnsubscribe,
   type ComputableOptions,
 } from "./ObserveReactive";
+
 export { nextTick } from "./ObserveTick";
