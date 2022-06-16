@@ -19,11 +19,10 @@ import { getOwnDescriptor, getValue, setValue } from "./ObserveReflect";
 
 import { LowProxy } from "./ObserveShim";
 import { ObserveError } from "./ObserveError";
-import { ObserveFlags } from "./ObserveFlags";
 import { ObserveSymbols } from "./ObserveSymbols";
 import { UNDEF } from "./ObserveConstants";
+import { notify } from "./ObserveBus";
 import { observeInfo } from "./ObserveInfo";
-import { publish } from "./ObserveBus";
 import { report } from "./ObserveCollect";
 
 export const NativeProxy = typeof Proxy !== UNDEF ? Proxy : null;
@@ -71,13 +70,16 @@ export function createProxy<T extends object>(target: T): T {
     const { mode } = ObserveConfig;
     throw ObserveError(`Current environment does not support '${mode}'`);
   }
+  //创建 proxy
   info.proxy = new ObserveProxy(target, {
+    //获取 descriptor 时
     getOwnPropertyDescriptor(target: any, member: Member) {
       if (member === ObserveSymbols.Proxy) {
         return { configurable: true, enumerable: false, value: true };
       }
       return getOwnDescriptor(target, member);
     },
+    //读到数据时
     get(target: any, member: Member, receiver: any) {
       const value = getValue(target, member, receiver);
       if (!isValidKey(member)) return value;
@@ -93,6 +95,7 @@ export function createProxy<T extends object>(target: T): T {
       report({ id: info.id, member, value });
       return proxyValue;
     },
+    //更新数据时
     set(target: any, member: Member, value: any, receiver: any) {
       checkStrictMode();
       if (info.shadow[member] === value && !isSetArrayLength(target, member)) {
@@ -100,8 +103,8 @@ export function createProxy<T extends object>(target: T): T {
       }
       setValue(target, member, value, receiver);
       info.shadow[member] = value;
-      if (!ObserveFlags.set || !isValidKey(member)) return true;
-      publish("set", { id: info.id, member, value });
+      if (!isValidKey(member)) return true;
+      notify({ id: info.id, member, value });
       return true;
     },
   }) as any;

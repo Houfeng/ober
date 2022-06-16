@@ -17,8 +17,8 @@ import { ObserveError } from "./ObserveError";
 import { ObserveSymbols } from "./ObserveSymbols";
 import { checkStrictMode } from "./ObserveConfig";
 import { getOwnDescriptor } from "./ObserveReflect";
+import { notify } from "./ObserveBus";
 import { observeInfo } from "./ObserveInfo";
-import { publish } from "./ObserveBus";
 import { report } from "./ObserveCollect";
 
 function createObservableMember<T extends object>(
@@ -83,7 +83,7 @@ function createObservableArray<T extends Array<any>>(
         target[i] = shadow[i];
         createObservableMember(target, i, handler);
       }
-      publish("set", { id, member: "length", value: target });
+      notify({ id, member: "length", value: target });
       return result;
     });
   });

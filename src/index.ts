@@ -8,7 +8,7 @@ export { observable, action, computed, bind } from "./ObserveHoF";
 export { subscribe, unsubscribe } from "./ObserveBus";
 export { ObserveConfig, type ObserveMode } from "./ObserveConfig";
 export { type ObserveData } from "./ObserveData";
-export { type ObserveEventHandler } from "./ObserveEvents";
+export { type ObserveListener as ObserveEventHandler } from "./ObserveEvents";
 export { ObserveInspector, takeDependencies } from "./ObserveDebug";
 export { ObserveError } from "./ObserveError";
 export { observeInfo } from "./ObserveInfo";

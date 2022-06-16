@@ -16,8 +16,8 @@ import { CollectOptions, collect } from "./ObserveCollect";
 import { subscribe, unsubscribe } from "./ObserveBus";
 
 import { ObserveData } from "./ObserveData";
-import { ObserveEventHandler } from "./ObserveEvents";
 import { ObserveFlags } from "./ObserveFlags";
+import { ObserveListener } from "./ObserveEvents";
 import { ObserveSymbols } from "./ObserveSymbols";
 import { createProxy } from "./ObserveProxy";
 import { nextTick } from "./ObserveTick";
@@ -77,33 +77,33 @@ export function reactivable<T extends AnyFunction>(
 ) {
   const { bind = true, batch, mark, ignore, update } = { ...options };
   let subscribed = bind !== false;
-  let setHandler: ObserveEventHandler<ObserveData> = null!;
+  let changeListener: ObserveListener<ObserveData> = null!;
   const wrapper = function (this: any, ...args: Parameters<T>) {
     ReactiveCurrent.value = wrapper;
     ObserveFlags.unref = false;
-    unsubscribe("set", setHandler);
+    unsubscribe("change", changeListener);
     ObserveFlags.unref = true;
     const collectOptions = { context: this, args, mark, ignore };
     const { result, dependencies } = collect(fn, collectOptions);
-    setHandler.dependencies = dependencies;
+    changeListener.dependencies = dependencies;
     wrapper.dependencies = dependencies;
-    if (subscribed) subscribe("set", setHandler);
+    if (subscribed) subscribe("change", changeListener);
     ReactiveCurrent.value = null!;
     return result;
   } as ReactiveFunction<T>;
   const requestUpdate = (it?: ObserveData) => (update ? update(it) : wrapper());
-  setHandler = (data: ObserveData) => {
+  changeListener = (data: ObserveData) => {
     if (isSymbol(data.member) || isPrivateKey(data.member)) return;
     return batch ? nextTick(requestUpdate) : requestUpdate(data);
   };
   wrapper.subscribe = () => {
     if (subscribed) return;
-    subscribe("set", setHandler);
+    subscribe("change", changeListener);
     subscribed = true;
   };
   wrapper.unsubscribe = () => {
     if (!subscribed) return;
-    unsubscribe("set", setHandler);
+    unsubscribe("change", changeListener);
     subscribed = false;
   };
   return wrapper;

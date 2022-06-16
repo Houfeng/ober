@@ -5,7 +5,7 @@
  */
 
 import { ObserveData } from "./ObserveData";
-import { ObserveEventHandler } from "./ObserveEvents";
+import { ObserveListener } from "./ObserveEvents";
 import { ObserveText } from "./ObserveError";
 import { ReactiveCurrent } from "./ObserveReactive";
 import { isFunction } from "./ObserveUtil";
@@ -35,16 +35,14 @@ export const ObserveInspector: {
   onPublish?: (info: {
     type: string;
     data: ObserveData;
-    matchOnly: boolean;
-    matchedHandlers: ArrayLike<ObserveEventHandler<any>>;
-    commonHandlers: ArrayLike<ObserveEventHandler<any>>;
+    listeners: ArrayLike<ObserveListener<any>>;
   }) => void;
   onSubscribe?: (info: {
     type: string;
-    handler: ObserveEventHandler<any>;
+    listener: ObserveListener<any>;
   }) => void;
   onUnsubscribe?: (info: {
     type: string;
-    handler: ObserveEventHandler<any>;
+    listener: ObserveListener<any>;
   }) => void;
 } = {};

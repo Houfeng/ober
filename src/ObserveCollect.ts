@@ -13,10 +13,12 @@ import { ObserveKey } from "./ObserveKey";
 import { ObserveText } from "./ObserveError";
 
 export type CollectFunction = (data: ObserveData) => void;
-export const CollectCurrent: Ref<CollectFunction> = {};
+
+const CollectCurrent: Ref<CollectFunction> = {};
 
 export function report(data: ObserveData) {
-  if (ObserveFlags.reporting && CollectCurrent.value) {
+  if (ObserveFlags.report && CollectCurrent.value) {
+    data.mark = ObserveFlags.reportMark;
     CollectCurrent.value(data);
   }
 }
@@ -27,13 +29,13 @@ function trackSwitch<T extends AnyFunction>(
   ...args: any[]
 ) {
   if (!fn) return;
-  const originSetFlag = ObserveFlags.set;
-  const originGetFlag = ObserveFlags.reporting;
-  ObserveFlags.set = flag;
-  ObserveFlags.reporting = flag;
+  const originSetFlag = ObserveFlags.change;
+  const originGetFlag = ObserveFlags.report;
+  ObserveFlags.change = flag;
+  ObserveFlags.report = flag;
   const result = fn(...args);
-  ObserveFlags.set = originSetFlag;
-  ObserveFlags.reporting = originGetFlag;
+  ObserveFlags.change = originSetFlag;
+  ObserveFlags.report = originGetFlag;
   return result as ReturnType<T>;
 }
 
@@ -106,11 +108,11 @@ export function collect<T extends AnyFunction>(
     appendDependencies[key] = true;
   };
   const prevReportMark = ObserveFlags.reportMark;
-  const prevReporting = ObserveFlags.reporting;
+  const prevReporting = ObserveFlags.report;
   ObserveFlags.reportMark = mark || "";
-  ObserveFlags.reporting = true;
+  ObserveFlags.report = true;
   const result: ReturnType<T> = fn.call(context, ...(args || []));
-  ObserveFlags.reporting = prevReporting;
+  ObserveFlags.report = prevReporting;
   ObserveFlags.reportMark = prevReportMark;
   CollectCurrent.value = prevCollectFunction;
   const count = dependencies.length;

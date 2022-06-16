@@ -6,16 +6,15 @@
 
 import { ObserveData } from "./ObserveData";
 
-export interface ObserveEventHandler<T> {
+export interface ObserveListener<T> {
   (data: T): any;
   dependencies?: Array<string>;
 }
 
 export type ObserveEvents = {
-  get: ObserveEventHandler<ObserveData>;
-  set: ObserveEventHandler<ObserveData>;
+  change: ObserveListener<ObserveData>;
   // 在最后一个监听移除时触发
-  unref: ObserveEventHandler<ObserveData & { type?: keyof ObserveEvents }>;
+  unref: ObserveListener<ObserveData>;
   // 在第一个监听建立时触发
-  ref: ObserveEventHandler<ObserveData & { type?: keyof ObserveEvents }>;
+  ref: ObserveListener<ObserveData>;
 };

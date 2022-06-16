@@ -8,7 +8,7 @@ export const ObserveFlags = {
   /**
    * 是否打开依赖使用 report
    */
-  reporting: false,
+  report: false,
   /**
    * 当前 report 标记
    */
@@ -16,7 +16,7 @@ export const ObserveFlags = {
   /**
    * 是否触发 set 事件
    */
-  set: true,
+  change: true,
   /**
    * 是否触发 unref 事件
    */
