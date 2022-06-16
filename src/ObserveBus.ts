@@ -14,11 +14,11 @@ import { ObserveFlags } from "./ObserveFlags";
 import { ObserveKey } from "./ObserveKey";
 import { ObserveSpy as spy } from "./ObserveDebug";
 
-type ObserveListenerStore = {
-  [T in ObserveEventNames]: FastMap<string, Set<ObserveEvents[T]>>;
+const ObserveListenerStores = {
+  change: FastMap<string, Set<ObserveEvents["change"]>>(),
+  ref: FastMap<string, Set<ObserveEvents["ref"]>>(),
+  unref: FastMap<string, Set<ObserveEvents["unref"]>>(),
 };
-
-const ObserveListeners: Partial<ObserveListenerStore> = Object.create(null);
 
 export function subscribe<T extends ObserveEventNames>(
   type: T,
@@ -26,17 +26,15 @@ export function subscribe<T extends ObserveEventNames>(
 ) {
   if (!listener) throwError("Invalid ObserveHandler");
   if (!type) throwError("Invalid ObserveEvent");
-  if (!ObserveListeners[type]) ObserveListeners[type] = FastMap();
+  const store = ObserveListenerStores[type];
+  if (!store) return;
   (listener.dependencies || []).forEach((key) => {
-    let list: Set<any> | undefined;
-    if (ObserveListeners[type]!.has(key)) {
-      list = ObserveListeners[type]!.get(key);
-      list!.add(listener);
+    if (store.has(key)) {
+      store.get(key)!.add(listener);
     } else {
-      list = new Set([listener]);
-      ObserveListeners[type]!.set(key, list);
+      store.set(key, new Set([listener]));
+      notifyRef(key);
     }
-    if (list!.size === 1) notifyRef(key);
   });
   if (spy.subscribe) spy.subscribe(type, listener);
 }
@@ -45,13 +43,18 @@ export function unsubscribe<T extends keyof ObserveEvents>(
   type: T,
   listener: ObserveEvents[T]
 ) {
-  if (!ObserveListeners[type] || !listener) return;
+  const store = ObserveListenerStores[type];
+  if (!store || !listener) return;
   (listener.dependencies || []).forEach((key) => {
-    if (!ObserveListeners[type]!.has(key)) return;
-    const list = ObserveListeners[type]!.get(key);
-    if (!list || !list.has(listener)) return;
-    list.delete(listener);
-    if (list.size < 1) notifyUnref(key);
+    if (!store.has(key)) return;
+    const listeners = store.get(key);
+    if (!listeners || !listeners.has(listener)) return;
+    if (listeners.size === 1) {
+      store.del(key);
+      notifyUnref(key);
+    } else {
+      listeners.delete(listener);
+    }
   });
   if (spy.unsubscribe) spy.unsubscribe(type, listener);
 }
@@ -60,10 +63,10 @@ function publish<T extends ObserveEventNames>(
   type: T,
   data: Parameters<ObserveEvents[T]>[0]
 ) {
-  if (!ObserveListeners[type]) return;
-  if (isSymbol(data.member) || isPrivateKey(data.member)) return;
+  const store = ObserveListenerStores[type];
+  if (!store || isSymbol(data.member) || isPrivateKey(data.member)) return;
   const observeKey = ObserveKey(data);
-  const listeners = Array.from(ObserveListeners[type]!.get(observeKey) || []);
+  const listeners = Array.from(store.get(observeKey) || []);
   if (listeners.length > ObserveConfig.maxListeners) {
     warn(`Trigger ${listeners.length} handlers`);
   }
