@@ -145,7 +145,7 @@ describe('Observable', () => {
     done();
   })
 
-  it.skip("绑定 this 的方法", (done) => {
+  it("绑定 this 的方法", (done) => {
     const X = observable(class InnerX {
       name = "X";
       setX = bind(function (this: InnerX | void, value: string) {
