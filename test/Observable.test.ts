@@ -1,34 +1,33 @@
 import "./helpers/mode";
 
 import { bind, observable } from '../src/ObserveHof';
-import { subscribe, unsubscribe } from '../src/ObserveBus';
 
-import { ObserveData } from '../src/ObserveData';
+import { ObserveSpy } from "../src";
 import { isProxy } from "../src/ObserveUtil";
 import { strictEqual } from "assert";
 
 describe('Observable', () => {
 
-  it.skip('设置可观察对象', (done) => {
+  it('设置可观察对象', (done) => {
     const model = observable({ value: 1 });
     strictEqual(model.value, 1);
     let timer: any;
-    const onSet = ({ member, value }: ObserveData) => {
+    ObserveSpy.publish = (type, { member, value }) => {
+      if (type !== 'change') return;
       strictEqual(member, "value");
       strictEqual(value, 2);
-      unsubscribe("change", onSet);
       done();
+      ObserveSpy.publish = undefined;
       if (timer) clearTimeout(timer);
     };
     timer = setTimeout(() => {
-      unsubscribe("change", onSet);
+      ObserveSpy.publish = undefined;
       throw new Error('Timeout');
     }, 2000);
-    subscribe("change", onSet);
     model.value = 2;
   });
 
-  it.skip('创建可观察类型', (done) => {
+  it('创建可观察类型', (done) => {
     class OriginModel {
       static id = "M";
       value = 1;
@@ -42,18 +41,18 @@ describe('Observable', () => {
     strictEqual(originModel instanceof OriginModel, true);
     strictEqual(model.value, 1);
     let timer: any;
-    const onSet = ({ member, value }: ObserveData) => {
+    ObserveSpy.publish = (type, { member, value }) => {
+      if (type !== 'change') return;
       strictEqual(member, "value");
       strictEqual(value, 2);
-      unsubscribe("change", onSet);
+      ObserveSpy.publish = undefined;
       done();
       if (timer) clearTimeout(timer);
     };
     timer = setTimeout(() => {
-      unsubscribe("change", onSet);
+      ObserveSpy.publish = undefined;
       throw new Error('Timeout');
     }, 2000);
-    subscribe("change", onSet);
     model.value = 2;
   });
 
@@ -155,18 +154,18 @@ describe('Observable', () => {
     });
     let timer: any
     const model = new X();
-    const onSet = ({ member, value }: ObserveData) => {
+    ObserveSpy.publish = (type, { member, value }) => {
+      if (type != "change") return;
       strictEqual(member, "name");
       strictEqual(value, "XX");
-      unsubscribe("change", onSet);
+      ObserveSpy.publish = undefined;
       done();
       if (timer) clearTimeout(timer);
     };
     timer = setTimeout(() => {
-      unsubscribe("change", onSet);
+      ObserveSpy.publish = undefined;
       throw new Error('Timeout');
     }, 2000);
-    subscribe("change", onSet);
     const { setX } = model;
     strictEqual(setX, model.setX);
     setX("XX");
