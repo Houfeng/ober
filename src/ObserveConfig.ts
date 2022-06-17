@@ -12,7 +12,6 @@ export type ObserveMode = "proxy" | "property" | "auto";
 export type ObserveConfigDefinition = {
   mode: ObserveMode;
   strict: boolean;
-  maxDependencies: number;
   maxListeners: number;
   logPrefix: string;
 };
@@ -32,11 +31,13 @@ export const ObserveENVConfig: Partial<ObserveConfigDefinition> = (() => {
   }
 })();
 
-export const ObserveConfig: ObserveConfigDefinition = {
-  mode: "property",
-  strict: false,
-  maxDependencies: 1000,
-  maxListeners: 100,
-  logPrefix: DEFAULT_LOG_PREFIX,
-  ...ObserveENVConfig,
-};
+export const ObserveConfig: ObserveConfigDefinition = Object.assign(
+  {
+    mode: "property",
+    strict: false,
+    maxDependencies: 1000,
+    maxListeners: 100,
+    logPrefix: DEFAULT_LOG_PREFIX,
+  },
+  ObserveENVConfig
+);

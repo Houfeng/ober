@@ -6,11 +6,9 @@
 
 import { AnyFunction, Ref } from "./ObserveUtil";
 
-import { ObserveConfig } from "./ObserveConfig";
 import { ObserveData } from "./ObserveData";
 import { ObserveFlags } from "./ObserveFlags";
 import { ObserveKey } from "./ObserveKey";
-import { warn } from "./ObserveLogger";
 
 export type CollectFunction = (data: ObserveData) => void;
 
@@ -97,15 +95,13 @@ export function collect<T extends AnyFunction>(
   options?: CollectOptions<T>
 ) {
   const { mark, context, args, ignore = [] } = { ...options };
-  const dependencies: string[] = [];
-  const appendDependencies: Record<string, boolean> = {};
+  const dependencies = new Set<string>();
   const prevCollectFunction = CollectCurrent.value;
   CollectCurrent.value = (data: ObserveData) => {
     if (data.mark && data.mark !== mark) return;
     const key = ObserveKey(data);
     if (ignore && ignore.indexOf(key) > -1) return;
-    if (!appendDependencies[key]) dependencies.push(key);
-    appendDependencies[key] = true;
+    dependencies.add(key);
   };
   const prevReportMark = ObserveFlags.reportMark;
   const prevReportFlag = ObserveFlags.report;
@@ -115,9 +111,5 @@ export function collect<T extends AnyFunction>(
   ObserveFlags.report = prevReportFlag;
   ObserveFlags.reportMark = prevReportMark;
   CollectCurrent.value = prevCollectFunction;
-  const count = dependencies.length;
-  if (count > ObserveConfig.maxDependencies) {
-    warn(`A single function has ${count} dependencies`);
-  }
   return { result, dependencies };
 }

@@ -8,7 +8,7 @@ import { ObserveData } from "./ObserveData";
 
 export type ObserveListener<T> = {
   (data: T): any;
-  dependencies?: Array<string>;
+  dependencies?: Set<string>;
 };
 
 export type ObserveEvents = {

@@ -29,7 +29,7 @@ export type ReactiveUnsubscribe = () => void;
 export type ReactiveSubscribe = () => void;
 
 export type ReactiveFunction<T extends AnyFunction = AnyFunction> = T & {
-  dependencies: Array<string>;
+  dependencies: Set<string>;
   subscribe: ReactiveSubscribe;
   unsubscribe: ReactiveUnsubscribe;
 };
@@ -187,7 +187,7 @@ export function computable<T>(fn: () => T, options?: ComputableOptions) {
         unsubscribe("unref", destroy);
         subscribed = false;
       };
-      destroy.dependencies = keys;
+      destroy.dependencies = new Set(keys);
       wrapper.unsubscribe = destroy;
       // 建立订阅处理
       wrapper.subscribe = () => {

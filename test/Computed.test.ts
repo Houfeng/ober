@@ -27,13 +27,13 @@ describe('Computed', () => {
     });
     reactive();
     await sleep(0);
-    strictEqual(reactive.dependencies?.length, 1);
+    strictEqual(reactive.dependencies?.size, 1);
     model.b = 2;
     await sleep(0);
-    strictEqual(reactive.dependencies?.length, 1);
+    strictEqual(reactive.dependencies?.size, 1);
     model.a = 4;
     await sleep(0);
-    strictEqual(reactive.dependencies?.length, 1);
+    strictEqual(reactive.dependencies?.size, 1);
     reactive.unsubscribe?.();
     throwError = (message) => {
       throw new Error(message);
