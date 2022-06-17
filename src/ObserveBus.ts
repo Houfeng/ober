@@ -6,13 +6,13 @@
 
 import { FastMap, isPrivateKey, isSymbol } from "./ObserveUtil";
 import { ObserveEventNames, ObserveEvents } from "./ObserveEvents";
-import { throwError, warn } from "./ObserveLogger";
 
 import { ObserveConfig } from "./ObserveConfig";
 import { ObserveData } from "./ObserveData";
 import { ObserveFlags } from "./ObserveFlags";
 import { ObserveKey } from "./ObserveKey";
 import { ObserveSpy as spy } from "./ObserveDebug";
+import { warn } from "./ObserveLogger";
 
 const ObserveListenerStores = {
   change: FastMap<string, Set<ObserveEvents["change"]>>(),
@@ -24,10 +24,8 @@ export function subscribe<T extends ObserveEventNames>(
   type: T,
   listener: ObserveEvents[T]
 ) {
-  if (!listener) throwError("Invalid ObserveHandler");
-  if (!type) throwError("Invalid ObserveEvent");
   const store = ObserveListenerStores[type];
-  if (!store) return;
+  if (!store || !listener) return;
   (listener.dependencies || []).forEach((key) => {
     if (store.has(key)) {
       store.get(key)!.add(listener);
@@ -65,14 +63,12 @@ function publish<T extends ObserveEventNames>(
 ) {
   const store = ObserveListenerStores[type];
   if (!store || isSymbol(data.member) || isPrivateKey(data.member)) return;
-  const observeKey = ObserveKey(data);
-  const listeners = Array.from(store.get(observeKey) || []);
+  const key = ObserveKey(data);
+  const listeners = Array.from(store.get(key) || []);
   if (listeners.length > ObserveConfig.maxListeners) {
-    warn(`Trigger ${listeners.length} handlers`);
+    warn(`Found ${listeners.length} listeners of ${key}`);
   }
-  if (listeners.length > 0) {
-    listeners.forEach((handler) => handler!(data));
-  }
+  listeners.forEach((handler) => handler!(data));
   if (spy.publish) spy.publish(type, data, listeners);
 }
 

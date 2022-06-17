@@ -10,6 +10,6 @@ import { throwError } from "./ObserveLogger";
 
 export function checkStrictMode() {
   if (ObserveConfig.strict && !ObserveFlags.action) {
-    throwError("Strict mode change model, must be in action");
+    throwError("Update outside of Action");
   }
 }

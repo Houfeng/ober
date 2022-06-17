@@ -30,7 +30,7 @@ const NativeProxy = typeof Proxy !== UNDEF ? Proxy : null;
 let CurrentProxy: (ProxyConstructor | typeof LowProxy) | null;
 
 function getCurrentProxyClass() {
-  if (CurrentProxy) return CurrentProxy;
+  if (CurrentProxy) return CurrentProxy!;
   switch (ObserveConfig.mode) {
     case "property":
       CurrentProxy = LowProxy;
@@ -43,7 +43,7 @@ function getCurrentProxyClass() {
       CurrentProxy = NativeProxy;
       break;
   }
-  return CurrentProxy;
+  return CurrentProxy!;
 }
 
 function isNativeProxy() {
@@ -74,15 +74,10 @@ function isSetArrayLength(target: any, member: Member) {
 }
 
 export function createProxy<T extends object>(target: T): T {
-  if (isProxy(target)) return target;
+  if (isProxy(target) || !isObject(target)) return target;
   const info = observeInfo(target);
-  if (!info) return target;
   if (info.proxy) return info.proxy;
   const ObserveProxy = getCurrentProxyClass();
-  if (!ObserveProxy) {
-    const { mode } = ObserveConfig;
-    throwError(`Current environment does not support '${mode}'`);
-  }
   //创建 proxy
   info.proxy = new ObserveProxy(target, {
     //获取 descriptor 时
@@ -97,7 +92,7 @@ export function createProxy<T extends object>(target: T): T {
       const value = getValue(target, member, receiver);
       if (!isValidKey(member)) return value;
       if (isNativeProxy() && isArrowFunction(value)) {
-        throwError(`Proxy mode cannot have arrow function: ${member}`);
+        throwError(`Cannot have arrow function: ${member}`);
       }
       if (isBindRequiredFunction(value)) {
         return useBoundMethod(target, member, value, receiver);

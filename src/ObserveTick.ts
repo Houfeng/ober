@@ -30,12 +30,7 @@ function createTickResolver() {
   if (typeof Promise !== UNDEF) {
     const promise = Promise.resolve();
     return () => promise.then(executeTickTasks).catch((err) => error(err));
-  } else if (
-    typeof MutationObserver !== UNDEF ||
-    // PhantomJS and iOS 7.x
-    window.MutationObserver.toString() ===
-      "[object MutationObserverConstructor]"
-  ) {
+  } else if (typeof MutationObserver !== UNDEF) {
     // use MutationObserver where native Promise is not available,
     // e.g. PhantomJS IE11, iOS7, Android 4.4
     let counter = 1;
@@ -53,7 +48,7 @@ function createTickResolver() {
   }
 }
 
-const resolveAllTickItems = createTickResolver();
+const resolveAllTickTasks = createTickResolver();
 
 /**
  * 在下一个 tick 中执行，当前同步任务执行完成后将立即触发
@@ -67,7 +62,7 @@ export function nextTick(callback: () => void): void {
   tickOwner.tasks.push(task);
   if (!tickOwner.pending) {
     tickOwner.pending = true;
-    resolveAllTickItems();
+    resolveAllTickTasks();
   }
 }
 
