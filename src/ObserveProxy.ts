@@ -53,7 +53,7 @@ function isNativeProxy() {
 function shouldAutoProxy(value: any): value is any {
   if (!value || !isObject(value) || !isExtensible(value)) return false;
   const ctor = value.constructor;
-  return ctor === Object || ctor === Array;
+  return !ctor || ctor === Object || ctor === Array;
 }
 
 function useBoundMethod(
