@@ -35,10 +35,10 @@ describe('Observable', () => {
     const Model = observable(OriginModel);
     const model = new Model();
     strictEqual(Model.id, "M", "检查 ID");
-    strictEqual(model instanceof Model, true);
-    strictEqual(model instanceof OriginModel, true);
+    strictEqual(model instanceof Model, true, 'model instanceof Model');
+    strictEqual(model instanceof OriginModel, true, 'model instanceof OriginModel');
     const originModel = new OriginModel();
-    strictEqual(originModel instanceof OriginModel, true);
+    strictEqual(originModel instanceof OriginModel, true, 'originModel instanceof OriginModel');
     strictEqual(model.value, 1);
     let timer: any;
     ObserveSpy.publish = (type, { member, value }) => {
