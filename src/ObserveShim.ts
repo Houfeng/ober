@@ -90,13 +90,14 @@ function createObservableArray<T extends Array<any>>(
   return target;
 }
 
-export class LowProxy<T extends object> {
-  constructor(target: T, handler: ProxyHandler<T>) {
-    if (isObject(target)) {
-      define(target, ObserveSymbols.Proxy, true);
-      return createObservableObject(target, handler);
-    } else {
-      throwError("Invalid LowProxy target");
-    }
+export function createLowProxy<T extends object>(
+  target: T,
+  handler: ProxyHandler<T>
+) {
+  if (isObject(target)) {
+    define(target, ObserveSymbols.Proxy, true);
+    return createObservableObject(target, handler);
+  } else {
+    throwError("Invalid LowProxy target");
   }
 }

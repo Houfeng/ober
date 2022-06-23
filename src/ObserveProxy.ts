@@ -16,38 +16,34 @@ import {
 } from "./ObserveUtil";
 import { getOwnDescriptor, getValue, setValue } from "./ObserveReflect";
 
-import { LowProxy } from "./ObserveShim";
 import { ObserveConfig } from "./ObserveConfig";
 import { ObserveSymbols } from "./ObserveSymbols";
 import { UNDEF } from "./ObserveConstants";
 import { checkStrictMode } from "./ObserveStrictMode";
+import { createLowProxy } from "./ObserveShim";
 import { notify } from "./ObserveBus";
 import { observeInfo } from "./ObserveInfo";
 import { report } from "./ObserveCollect";
 import { throwError } from "./ObserveLogger";
 
-const NativeProxy = typeof Proxy !== UNDEF ? Proxy : null;
-let CurrentProxy: (ProxyConstructor | typeof LowProxy) | null;
+const supportNativeProxy = typeof Proxy !== UNDEF;
 
-function getCurrentProxyClass() {
-  if (CurrentProxy) return CurrentProxy!;
-  switch (ObserveConfig.mode) {
-    case "property":
-      CurrentProxy = LowProxy;
-      break;
-    case "auto":
-      CurrentProxy = NativeProxy || LowProxy;
-      break;
-    case "proxy":
-    default:
-      CurrentProxy = NativeProxy;
-      break;
-  }
-  return CurrentProxy!;
+function createNativeProxy<T extends object>(
+  target: T,
+  handler: ProxyHandler<T>
+): T {
+  return new Proxy(target, handler);
 }
 
+const createProxyInstance = (() => {
+  const { mode } = ObserveConfig;
+  if (mode === "property") return createLowProxy;
+  if (mode === "proxy") return createNativeProxy;
+  return supportNativeProxy ? createNativeProxy : createLowProxy;
+})();
+
 function isNativeProxy() {
-  return NativeProxy === getCurrentProxyClass();
+  return createNativeProxy === createProxyInstance;
 }
 
 function shouldAutoProxy(value: any): value is any {
@@ -77,9 +73,8 @@ export function createProxy<T extends object>(target: T): T {
   if (isProxy(target) || !isObject(target)) return target;
   const info = observeInfo(target);
   if (info.proxy) return info.proxy;
-  const ObserveProxy = getCurrentProxyClass();
   //创建 proxy
-  info.proxy = new ObserveProxy(target, {
+  info.proxy = createProxyInstance(target, {
     //获取 descriptor 时
     getOwnPropertyDescriptor(target: any, member: Member) {
       if (member === ObserveSymbols.Proxy) {
