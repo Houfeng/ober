@@ -44,9 +44,7 @@ export function observable<T = AnyObject | AnyClass | AnyFunction>(
       }
     };
     define(ObservableClass, "name", target.name);
-    if (target.displayName) {
-      define(ObservableClass, "displayName", target.displayName);
-    }
+    define(ObservableClass, "displayName", target.displayName);
     define(ObservableClass, ObserveSymbols.Proxy, true);
     return ObservableClass;
   } else if (isObject(target)) {

@@ -25,10 +25,8 @@ export function observeInfo<T extends object = any>(
   if (!_target || !isObject(_target)) throwError("Invalid observe target");
   const target: any = _target;
   if (!hasOwn(target, ObserveSymbols.Observable)) {
-    const specified =
-      target?.[ObserveSymbols.DisplayName] || target?.__displayName;
     const ctor: any = target?.constructor || {};
-    const alias = specified || ctor.displayName || ctor.name || "Object";
+    const alias = ctor.displayName || ctor.name || "Object";
     const id = `${alias}_${ObserveId()}`;
     const shadow = isArray(target) ? target.slice(0) : {};
     define(target, ObserveSymbols.Observable, { id, shadow, target });
