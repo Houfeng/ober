@@ -16,11 +16,26 @@ import {
   isProxy,
 } from "./ObserveUtil";
 import { ReactiveFunction, computable } from "./ObserveReactive";
-import { isDecoratorContext, isString } from "./ObserveUtil";
+import { isDecoratorContext, isNativeClass, isString } from "./ObserveUtil";
 
 import { ObserveFlags } from "./ObserveFlags";
 import { ObserveSymbols } from "./ObserveSymbols";
 import { createProxy } from "./ObserveProxy";
+
+const createNativeObservableClass = (() => {
+  try {
+    const body = `const ObC = class extends $.target {
+      constructor(...args) {
+        super(...args);
+        if (this.constructor !== ObC) return;
+        return $.createProxy(this);
+      }
+    };return ObC;`;
+    return new Function("$", body);
+  } catch {
+    return null;
+  }
+})();
 
 /**
  * 创建一个可观察对象或类型
@@ -36,13 +51,17 @@ export function observable<T = AnyObject | AnyClass | AnyFunction>(
   if (isProxy(target)) {
     return target;
   } else if (isFunction<AnyClass>(target)) {
-    const ObservableClass = class extends target {
-      constructor(...args: any[]) {
-        super(...args);
-        if (this.constructor !== ObservableClass) return;
-        return createProxy(this);
-      }
-    };
+    const willCreateNativeClass =
+      isNativeClass(target) && createNativeObservableClass;
+    const ObservableClass = willCreateNativeClass
+      ? createNativeObservableClass({ target, createProxy })
+      : class ObservableClass extends target {
+          constructor(...args: any[]) {
+            super(...args);
+            if (this.constructor !== ObservableClass) return;
+            return createProxy(this);
+          }
+        };
     define(ObservableClass, "name", target.name);
     define(ObservableClass, ObserveSymbols.Proxy, true);
     return ObservableClass;

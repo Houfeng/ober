@@ -7,6 +7,7 @@
 import { OBJ, SMBL, SUPT_SMBL } from "./ObserveConstants";
 
 import { ObserveSymbols } from "./ObserveSymbols";
+import { getOwnDescriptor } from "./ObserveReflect";
 
 export type AnyClass = (new (...args: any[]) => any) & {
   displayName?: string;
@@ -36,6 +37,10 @@ export function isArray(value: any): value is Array<any> {
 
 export function isFunction<T = AnyFunction>(value: any): value is T {
   return typeof value === "function";
+}
+
+export function isNativeClass<T = AnyFunction>(value: any): value is T {
+  return isFunction(value) && !getOwnDescriptor(value, "prototype")?.writable;
 }
 
 export function isArrowFunction<T = AnyFunction>(value: any): value is T {
