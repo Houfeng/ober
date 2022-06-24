@@ -24,14 +24,12 @@ import { createProxy } from "./ObserveProxy";
 
 const createNativeObservableClass = (() => {
   try {
-    const body = `const ObC = class extends $.target {
-      constructor(...args) {
-        super(...args);
-        if (this.constructor !== ObC) return;
-        return $.createProxy(this);
-      }
-    };return ObC;`;
-    return new Function("$", body);
+    // 反正都动态生成了，那重复的词换为变量，尽可能短
+    const ret = "return";
+    const it = "this";
+    const ctor = "constructor";
+    const body = `${ret} class O extends t{${ctor}(...a){super(...a);${ret} ${it}.${ctor} !== O?null:c( ${it})}}`;
+    return new Function("t", "c", body);
   } catch {
     return null;
   }
@@ -54,7 +52,7 @@ export function observable<T = AnyObject | AnyClass | AnyFunction>(
     const willCreateNativeClass =
       isNativeClass(target) && createNativeObservableClass;
     const ObservableClass = willCreateNativeClass
-      ? createNativeObservableClass({ target, createProxy })
+      ? createNativeObservableClass(target, createProxy)
       : class ObservableClass extends target {
           constructor(...args: any[]) {
             super(...args);
