@@ -22,13 +22,19 @@ import { ObserveFlags } from "./ObserveFlags";
 import { ObserveSymbols } from "./ObserveSymbols";
 import { createProxy } from "./ObserveProxy";
 
+/**
+ * 8.1.14 之前的版本是直接 extends 原始类的
+ * 如果上层应用不编译将一个 Native Class 传入，
+ * 此处 Wrapper 被 ts 编译后 Function 在 extends 时
+ * _supper 将引发 invoked without 'new' 错误，TS/Babel 编译的类代码均有此问题
+ * 所以，在 8.1.14 及之后的版会检查是否转入了 Native class，
+ * 如果是原始类，则也用 Native class 去 extends 它
+ * 如下代码会检查是否原生支持 class，如果支持则动态创建生成 Observable 类的函数
+ */
 const createNativeObservableClass = (() => {
   try {
     // 反正都动态生成了，那重复的词换为变量，尽可能短
-    const ret = "return";
-    const it = "this";
-    const ctor = "constructor";
-    const body = `${ret} class O extends t{${ctor}(...a){super(...a);${ret} ${it}.${ctor} !== O?null:c( ${it})}}`;
+    const body = `return class O extends t{constructor(...a){super(...a);return this.constructor!==O?null:c(this)}}`;
     return new Function("t", "c", body);
   } catch {
     return null;
@@ -49,6 +55,12 @@ export function observable<T = AnyObject | AnyClass | AnyFunction>(
   if (isProxy(target)) {
     return target;
   } else if (isFunction<AnyClass>(target)) {
+    // 8.1.14 之前的版本是直接 extends 原始类的
+    // 如果上层应用不编译将一个 Native Class 传入，
+    // 此处 Wrapper 被 ts 编译后 Function 在 extends 时
+    // _supper 将引发 invoked without 'new' 错误，TS/Babel 编译的类代码均有此问题
+    // 所以，在 8.1.14 及之后的版会检查是否转入了 Native class，
+    // 如果是原始类，则也用 Native class 去 extends 它
     const willCreateNativeClass =
       isNativeClass(target) && createNativeObservableClass;
     const ObservableClass = willCreateNativeClass
