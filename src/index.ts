@@ -12,7 +12,7 @@ export { type ObserveListener as ObserveEventHandler } from "./ObserveEvents";
 export { ObserveSpy, takeDependencies } from "./ObserveDebug";
 export { observeInfo } from "./ObserveInfo";
 export { ObserveFlags } from "./ObserveFlags";
-export { isProxy } from "./ObserveUtil";
+export { isProxy, hasOwn, define, getOwnValue } from "./ObserveUtil";
 
 export { track, untrack, collect, type CollectOptions } from "./ObserveCollect";
 
