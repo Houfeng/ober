@@ -4,12 +4,17 @@
  * @author Houfeng <houzhanfeng@gmail.com>
  */
 
-import { AnyFunction, define, isArray, isFunction } from "./ObserveUtil";
+import {
+  AnyFunction,
+  define,
+  isArray,
+  isFunction,
+  shouldAutoProxy,
+} from "./ObserveUtil";
 import {
   Member,
   isArrowFunction,
   isBindRequiredFunction,
-  isExtensible,
   isObject,
   isProxy,
   isValidKey,
@@ -44,12 +49,6 @@ const createProxyInstance = (() => {
 
 function isNativeProxy() {
   return createNativeProxy === createProxyInstance;
-}
-
-function shouldAutoProxy(value: any): value is any {
-  if (!value || !isObject(value) || !isExtensible(value)) return false;
-  const ctor = value.constructor;
-  return !ctor || ctor === Object || ctor === Array;
 }
 
 function useBoundMethod(

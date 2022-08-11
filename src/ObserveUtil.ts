@@ -143,6 +143,12 @@ export function isDevelopment() {
   return process?.env?.NODE_ENV === "development";
 }
 
+export function shouldAutoProxy(value: any): value is any {
+  if (!value || !isObject(value) || !isExtensible(value)) return false;
+  const ctor = value.constructor;
+  return !ctor || ctor === Object || ctor === Array;
+}
+
 export function isBindRequiredFunction<T extends AnyFunction>(
   value: T | undefined
 ): value is T {

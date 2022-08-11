@@ -9,6 +9,7 @@ import {
   Member,
   define,
   isArray,
+  isExtensible,
   isObject,
   isValidKey,
 } from "./ObserveUtil";
@@ -36,7 +37,7 @@ function createObservableMember<T extends object>(
       const value = handler.get
         ? handler.get(shadow, member, target)
         : shadow[member];
-      return isArray(value)
+      return isArray(value) && isExtensible(value)
         ? createObservableArray(value, handler as ProxyHandler<Array<any>>)
         : value;
     },
