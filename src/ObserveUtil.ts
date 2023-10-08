@@ -97,6 +97,10 @@ export function isExtensible(value: any) {
   return !Object.isExtensible || Object.isExtensible(value);
 }
 
+export function isSealed(value: any) {
+  return Object.isSealed && Object.isSealed(value);
+}
+
 export const hasOwn = (target: any, member: Member) => {
   return Object.prototype.hasOwnProperty.call(target, member);
 };

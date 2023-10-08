@@ -1,6 +1,6 @@
 import "./helpers/mode";
 
-import { observable } from '../src/ObserveHof';
+import { observable } from '../src/ObserveHoF';
 import { strictEqual } from "assert";
 import { watch } from '../src/ObserveReactive';
 

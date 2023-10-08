@@ -11,6 +11,7 @@ import {
   isArray,
   isExtensible,
   isObject,
+  isSealed,
   isValidKey,
 } from "./ObserveUtil";
 
@@ -20,7 +21,7 @@ import { getOwnDescriptor } from "./ObserveReflect";
 import { notify } from "./ObserveBus";
 import { observeInfo } from "./ObserveInfo";
 import { report } from "./ObserveCollect";
-import { throwError } from "./ObserveLogger";
+import { error, throwError } from "./ObserveLogger";
 
 function createObservableMember<T extends object>(
   target: T,
@@ -77,6 +78,9 @@ function createObservableArray<T extends Array<any>>(
   methods.forEach((method: string) => {
     define(target, method, (...args: any[]) => {
       checkStrictMode();
+      if (isSealed(target)) {
+        return error(`Cannot call ${method} of sealed object:`, target);
+      }
       const func = (Array.prototype as any)[method] as AnyFunction;
       const result = func.apply(shadow, args);
       target.length = 0;
