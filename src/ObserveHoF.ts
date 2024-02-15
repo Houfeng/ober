@@ -66,12 +66,12 @@ export function observable<T = AnyObject | AnyClass | AnyFunction>(
     const ObservableClass = willCreateNativeClass
       ? createNativeObservableClass(target, createProxy)
       : class ObservableClass extends target {
-        constructor(...args: any[]) {
-          super(...args);
-          if (this.constructor !== ObservableClass) return;
-          return createProxy(this);
-        }
-      };
+          constructor(...args: any[]) {
+            super(...args);
+            if (this.constructor !== ObservableClass) return;
+            return createProxy(this);
+          }
+        };
     define(ObservableClass, "name", target.name);
     define(ObservableClass, ObserveSymbols.Proxy, true);
     return ObservableClass;
