@@ -26,7 +26,6 @@ function trackSwitch<T extends AnyFunction>(
   flag: boolean,
   ...args: any[]
 ) {
-  if (!fn) return;
   const prevChangeFlag = ObserveFlags.change;
   const prevReportFlag = ObserveFlags.report;
   ObserveFlags.change = flag;
