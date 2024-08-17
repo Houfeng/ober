@@ -1,7 +1,4 @@
-import { ObserveConfig } from "../../src";
+import { ObserveConfig } from '../../src/ObserveConfig';
 
-const { DN_ENV } = process.env;
-console.log(`--------------- ObserveMode:${DN_ENV} ---------------`);
-
-//@ts-ignore
-ObserveConfig.mode = DN_ENV;
+const { mode } = ObserveConfig;
+console.log(`--------------- ObserveMode:${mode} ---------------`);
