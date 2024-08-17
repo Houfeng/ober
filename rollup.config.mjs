@@ -1,4 +1,5 @@
-import { defineConfig } from "rollup";
+import { defineConfig } from 'rollup';
+import terser from '@rollup/plugin-terser'
 
 export default defineConfig({
   input: './lib/index.js',
@@ -22,5 +23,5 @@ export default defineConfig({
       name: "Ober"
     }
   ],
-  plugins: []
+  plugins: [terser]
 });
