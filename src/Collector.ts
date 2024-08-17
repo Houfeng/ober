@@ -8,7 +8,7 @@ import { changeFlag, ObserveEvent, ObserveKey } from "./EventBus";
 import { Flag } from "./Flag";
 
 const depsFlag = Flag<Set<string> | void>(void 0);
-const collectFlag = Flag(false);
+const getFlag = Flag(false);
 
 export function emitCollect(event: ObserveEvent) {
   if (!changeFlag.current()) return;
@@ -23,7 +23,7 @@ export function emitCollect(event: ObserveEvent) {
  * @returns 执行结果
  */
 export function track<T extends () => any>(fn: T) {
-  return collectFlag.run(true, () => changeFlag.run(true, fn));
+  return getFlag.run(true, () => changeFlag.run(true, fn));
 }
 
 /**
@@ -32,7 +32,7 @@ export function track<T extends () => any>(fn: T) {
  * @returns 执行结果
  */
 export function untrack<T extends () => any>(fn: T) {
-  return collectFlag.run(false, () => changeFlag.run(false, fn));
+  return getFlag.run(false, () => changeFlag.run(false, fn));
 }
 
 /**
@@ -47,6 +47,6 @@ export function collect<T extends () => any>(
   fn: T,
 ): [ReturnType<T>, Set<string>] {
   const deps = new Set<string>();
-  const result: ReturnType<T> = depsFlag.run(deps, fn);
+  const result = depsFlag.run(deps, fn);
   return [result, deps];
 }

@@ -74,10 +74,10 @@ export function reactivable<T extends AnyFunction>(
   const { bind = true, batch, update } = { ...options };
   let subscribed = bind !== false;
   let listener: ObserveListener = null!;
-  const wrapper = function () {
+  const wrapper = function (...args: any) {
     return ReactiveOwner.run(wrapper, () => {
       unrefFlag.run(false, () => unsubscribe("change", listener));
-      const [result, dependencies] = collect(fn);
+      const [result, dependencies] = collect(() => fn(...args));
       listener.dependencies = dependencies;
       wrapper.dependencies = dependencies;
       if (subscribed) subscribe("change", listener);
