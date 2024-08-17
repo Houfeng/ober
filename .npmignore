@@ -5,6 +5,7 @@ node_modules/
 coverage/
 debug/
 src/
+lib/
 assets/
 test/
 examples/
