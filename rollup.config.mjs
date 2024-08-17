@@ -1,20 +1,26 @@
-export default {
-  input: './dist/es/index.js',
+import { defineConfig } from "rollup";
+
+export default defineConfig({
+  input: './lib/index.js',
   output: [
     {
-      file: './dist/cjs/index.js',
+      file: './dist/ober.es.js',
+      format: 'esm'
+    },
+    {
+      file: './dist/ober.cjs.js',
       format: 'cjs'
     },
     {
-      file: './dist/umd/index.js',
+      file: './dist/ober.umd.js',
       format: 'umd',
-      name: "ober"
+      name: "Ober"
     },
     {
-      file: './dist/iife/index.js',
+      file: './dist/ober.iife.js',
       format: 'iife',
-      name: "ober"
+      name: "Ober"
     }
   ],
   plugins: []
-};
+});

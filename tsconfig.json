@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "outDir": "./dist/es",
+    "outDir": "./lib",
     "declarationDir": "./types/",
     "composite": false,
     "incremental": true,
