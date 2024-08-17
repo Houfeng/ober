@@ -9,22 +9,38 @@ import {
   AnyFunction,
   AnyObject,
   define,
+  isArrowFunction,
   isFunction,
   isObject,
+  logError,
 } from "./util";
 
-import { createProxy } from "./Proxy";
+import { createProxy, isNativeProxyUsed } from "./Proxy";
 import { $Identify, $Observable } from "./Symbols";
 import { getOwnValue } from "./util";
 
-const mark = "Observable";
+const OB_MARK = "Observable";
 
 export function isObservable(target: unknown) {
   if (!isObject(target) && !isFunction(target)) return false;
   return (
-    getOwnValue(target, $Identify) === mark ||
+    getOwnValue(target, $Identify) === OB_MARK ||
     !!getOwnValue(target, $Observable)
   );
+}
+
+function checkArrowFunction(target: unknown) {
+  // 只检查加了将要加 observable 的类
+  if (!isNativeProxyUsed() || !isObject(target)) return;
+  Object.entries(target).some(([key, value]) => {
+    if (isArrowFunction(value)) {
+      return logError(
+        `Cannot have arrow function '${key}',`,
+        `The bind decorator (also a high-order function)`,
+        `should be used to mark the method as bound to this`,
+      );
+    }
+  });
 }
 
 /**
@@ -45,14 +61,20 @@ export function observable<T = AnyObject | AnyClass | AnyFunction>(
     class ObservableClass extends target {
       constructor(...args: any[]) {
         super(...args);
+        // 只直接通过当前类他建实例时，才生成 Observable 实例
         if (this.constructor !== ObservableClass) return;
+        // 如果是开发模式 & 使用了 Native proxy，检查类中是否使用了箭头函数
+        checkArrowFunction(this);
+        // ----
         return createProxy(this);
       }
     }
     define(ObservableClass, "name", target.name);
-    define(ObservableClass, $Identify, mark);
+    define(ObservableClass, $Identify, OB_MARK);
     return ObservableClass;
   } else if (isObject(target)) {
+    // 如果是开发模式 & 使用了 Native proxy，检查类中是否使用了箭头函数
+    checkArrowFunction(target);
     return createProxy(target);
   } else {
     return target;

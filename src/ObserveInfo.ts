@@ -9,10 +9,15 @@ import { define, hasOwn, isArray, isObject } from "./util";
 import { $Observable } from "./Symbols";
 
 export type ObserveInfo<T extends object> = {
+  /** 当前对象唯一标识 */
   id: string;
+  /** 当前对象的 Proxy 对象，如果是 property 模式 proxy 是自身 */
   proxy: T;
+  /** 当前对象的 shadow 对象，如果是 proxy 模式 shadow 无用 */
   shadow: any;
+  /** Property 模式，标记对象类型为 object **/
   object: boolean;
+  /** Property 模式，标记对象类型为 array **/
   array: boolean;
 };
 

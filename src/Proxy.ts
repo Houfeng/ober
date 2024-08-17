@@ -12,13 +12,7 @@ import {
   logWarn,
   shouldAutoProxy,
 } from "./util";
-import {
-  ObjectMember,
-  isArrowFunction,
-  isBindRequired,
-  isObject,
-  isValidKey,
-} from "./util";
+import { ObjectMember, isBindRequired, isObject, isValidKey } from "./util";
 import { getOwnDescriptor, getValue, setValue } from "./Reflect";
 
 import { ObserveConfig } from "./ObserveConfig";
@@ -53,7 +47,7 @@ const createProxyInstance = (() => {
     : createNativeProxy;
 })();
 
-function isNativeProxy() {
+export function isNativeProxyUsed() {
   return createNativeProxy === createProxyInstance;
 }
 
@@ -91,9 +85,6 @@ export function createProxy<T extends object>(target: T): T {
     get(target: any, member: ObjectMember, receiver: any) {
       const value = getValue(target, member, receiver);
       if (!isValidKey(member)) return value;
-      if (isNativeProxy() && isArrowFunction(value)) {
-        throw new Error(`Cannot have arrow function: ${member}`);
-      }
       if (isBindRequired(value)) {
         return useBoundMethod(target, member, value, receiver);
       }
