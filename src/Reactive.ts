@@ -75,7 +75,7 @@ export function reactivable<T extends AnyFunction>(
   let subscribed = bind !== false;
   let listener: ObserveListener = null!;
   const wrapper = function () {
-    ReactiveOwner.run(wrapper, () => {
+    return ReactiveOwner.run(wrapper, () => {
       unrefFlag.run(false, () => unsubscribe("change", listener));
       const [result, dependencies] = collect(fn);
       listener.dependencies = dependencies;
