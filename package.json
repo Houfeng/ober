@@ -21,13 +21,12 @@
     "url": "http://houfeng.net"
   },
   "license": "MIT",
-  "dependencies": {},
   "devDependencies": {
     "@rollup/plugin-node-resolve": "15.2.3",
     "@rollup/plugin-terser": "0.4.4",
     "@types/jsdom": "21.1.6",
     "@types/node": "22.4.0",
-    "tslib": "*",
+    "@voxpelli/node-test-pretty-reporter": "1.1.2",
     "c8": "8.0.1",
     "eslint": "8.52.0",
     "eslint-config-prettier": "9.0.0",
@@ -46,6 +45,7 @@
     "taskd": "0.1.10",
     "ts-loader": "9.5.0",
     "ts-node": "10.9.2",
+    "tslib": "*",
     "tsx": "4.17.0",
     "typescript": "5.5.4",
     "typescript-eslint": "7.8.0",
