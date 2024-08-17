@@ -1,5 +1,3 @@
-import "./helpers/mode";
-
 import { nextTick } from "../src";
 import { strictEqual } from "node:assert";
 import { describe, it } from "node:test";

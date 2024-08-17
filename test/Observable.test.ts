@@ -1,5 +1,3 @@
-import "./helpers/mode";
-
 import { bind, isObservable, observable, spy } from "../src";
 import { strictEqual } from "node:assert";
 import { describe, it } from "node:test";
@@ -107,10 +105,10 @@ describe("Observable", () => {
     const C = observable(class InnerC extends B {});
     const x = new C();
     x.setC(3);
-    strictEqual(x.a, 3);
-    strictEqual(x.b, 3);
-    strictEqual(proxy!, true);
-    strictEqual(x === instance, true);
+    strictEqual(x.a, 3, "x.a=3");
+    strictEqual(x.b, 3, "x.b=3");
+    strictEqual(proxy!, true, "prox===true");
+    strictEqual(x === instance, true, "x===instance");
   });
 
   it("可观察特性子类不可继承", () => {

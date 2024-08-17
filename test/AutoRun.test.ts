@@ -1,5 +1,3 @@
-import "./helpers/mode";
-
 import { autorun } from "../src";
 import { observable } from "../src";
 import { strictEqual } from "node:assert";

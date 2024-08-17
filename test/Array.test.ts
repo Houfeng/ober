@@ -1,4 +1,3 @@
-import "./helpers/mode";
 import { describe, it } from "node:test";
 import { observable } from "../src";
 import { watch } from "../src";

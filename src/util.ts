@@ -45,7 +45,7 @@ export function isArrowFunction<T = AnyFunction>(value: any): value is T {
   return (
     isFunction(value) &&
     value.prototype === undefined &&
-    value.toString().indexOf("[native code]") < 0
+    value.toString().indexOf("=>") > 0
   );
 }
 
@@ -100,6 +100,7 @@ export function isSealed(value: any) {
 }
 
 export const hasOwn = (target: any, member: ObjectMember) => {
+  if (Object.hasOwn) return Object.hasOwn(target, member);
   return Object.prototype.hasOwnProperty.call(target, member);
 };
 

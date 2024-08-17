@@ -1,5 +1,3 @@
-import "./helpers/mode";
-
 import { strictEqual } from "node:assert";
 import { describe, it } from "node:test";
 import { observable } from "../src";

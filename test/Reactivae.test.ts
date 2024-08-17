@@ -1,7 +1,4 @@
-import "./helpers/mode";
-
 import { collect, untrack } from "../src";
-
 import { observable } from "../src";
 import { observeInfo } from "../src";
 import { reactivable } from "../src";

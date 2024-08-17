@@ -17,10 +17,12 @@ import { createProxy } from "./Proxy";
 import { $Identify, $Observable } from "./Symbols";
 import { getOwnValue } from "./util";
 
+const mark = "Observable";
+
 export function isObservable(target: unknown) {
-  if (!isObject(target)) return false;
+  if (!isObject(target) && !isFunction(target)) return false;
   return (
-    getOwnValue(target, $Identify) === "Observable" ||
+    getOwnValue(target, $Identify) === mark ||
     !!getOwnValue(target, $Observable)
   );
 }
@@ -48,7 +50,7 @@ export function observable<T = AnyObject | AnyClass | AnyFunction>(
       }
     }
     define(ObservableClass, "name", target.name);
-    define(ObservableClass, $Identify, "Observable");
+    define(ObservableClass, $Identify, mark);
     return ObservableClass;
   } else if (isObject(target)) {
     return createProxy(target);

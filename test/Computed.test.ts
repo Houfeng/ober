@@ -1,7 +1,4 @@
-import "./helpers/mode";
-
 import { computed, observable } from "../src";
-
 import { reactivable } from "../src";
 import { sleep } from "./helpers/utils";
 import { strictEqual } from "node:assert";

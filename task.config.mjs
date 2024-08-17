@@ -17,6 +17,7 @@ export const clean = task('清理', async () => {
 
 export const test = task('测试', async () => {
   const reporter = `--test-reporter=@voxpelli/node-test-pretty-reporter`;
+  console.log(`------------------------- proxy -------------------------`)
   await $`OBER_MODE=proxy c8 tsx --test ${reporter} test/*.test.ts`;
   // await $`OBER_MODE=property tsx --test test/*.test.ts`;
   // await $`OBER_MODE=auto c8 tsx --test test/*.test.ts`;
@@ -28,6 +29,6 @@ export const build = task('构建', [clean, lint], async () => {
   await $`rollup -c`;
 });
 
-export const dev = task('本地开发', [build], async () => {
-  $`ts-node --skip-project ./debug/index.ts`;
+export const dev = task('本地开发', async () => {
+  $`tsx ./debug/index.ts`;
 });
