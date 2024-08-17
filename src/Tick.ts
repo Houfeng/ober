@@ -4,10 +4,10 @@
  * @author Houfeng <houzhanfeng@gmail.com>
  */
 
-import { UNDEF } from "./ObserveConstants";
-import { error } from "./ObserveLogger";
+import { $Pending } from "./Symbols";
+import { logError } from "./util";
 
-type TickTask = (() => void) & { __pending: boolean };
+type TickTask = (() => void) & { [$Pending]: boolean };
 type TickOwner = { readonly tasks: TickTask[]; pending: boolean };
 
 const tickOwner: TickOwner = { tasks: [], pending: false };
@@ -15,7 +15,7 @@ const builtInBatch = (fn: () => void) => fn();
 
 function executeTickTask(task: TickTask) {
   task();
-  task.__pending = false;
+  task[$Pending] = false;
 }
 
 function executeTickTasks() {
@@ -27,12 +27,10 @@ function executeTickTasks() {
 }
 
 function createTickResolver() {
-  if (typeof Promise !== UNDEF) {
+  if (typeof Promise !== void 0) {
     const promise = Promise.resolve();
-    return () => promise.then(executeTickTasks).catch((err) => error(err));
-  } else if (typeof MutationObserver !== UNDEF) {
-    // use MutationObserver where native Promise is not available,
-    // e.g. PhantomJS IE11, iOS7, Android 4.4
+    return () => promise.then(executeTickTasks).catch(logError);
+  } else if (typeof MutationObserver !== void 0) {
     let counter = 1;
     const observer = new MutationObserver(executeTickTasks);
     const textNode = document.createTextNode(String(counter));
@@ -42,8 +40,6 @@ function createTickResolver() {
       textNode.data = String(counter);
     };
   } else {
-    // fallback to setTimeout
-    /* istanbul ignore next */
     return () => setTimeout(executeTickTasks, 0);
   }
 }
@@ -57,8 +53,8 @@ const resolveAllTickTasks = createTickResolver();
  */
 export function nextTick(callback: () => void): void {
   const task = callback as TickTask;
-  if (!task || task.__pending) return;
-  task.__pending = true;
+  if (!task || task[$Pending]) return;
+  task[$Pending] = true;
   tickOwner.tasks.push(task);
   if (!tickOwner.pending) {
     tickOwner.pending = true;

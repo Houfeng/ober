@@ -11,27 +11,26 @@ import {
   isPrivateKey,
   isSymbol,
   shallowEqual,
-} from "./ObserveUtil";
-import { CollectOptions, collect } from "./ObserveCollect";
-import { subscribe, unsubscribe } from "./ObserveBus";
+} from "./util";
+import { collect } from "./Collector";
+import {
+  ObserveEvent,
+  ObserveListener,
+  subscribe,
+  unrefFlag,
+  unsubscribe,
+} from "./EventBus";
 
-import { ObserveData } from "./ObserveData";
-import { ObserveFlags } from "./ObserveFlags";
-import { ObserveListener } from "./ObserveEvents";
-import { ObserveSymbols } from "./ObserveSymbols";
-import { createProxy } from "./ObserveProxy";
-import { nextTick } from "./ObserveTick";
+import { createProxy } from "./Proxy";
+import { nextTick } from "./Tick";
 import { observeInfo } from "./ObserveInfo";
+import { $None } from "./Symbols";
+import { Flag } from "./Flag";
 
-const { Nothing } = ObserveSymbols;
-
-export type ReactiveUnsubscribe = () => void;
-export type ReactiveSubscribe = () => void;
-
-export type ReactiveFunction<T extends AnyFunction = AnyFunction> = T & {
+export type ReactiveFunction<T extends () => any = () => any> = T & {
   dependencies: Set<string>;
-  subscribe: ReactiveSubscribe;
-  unsubscribe: ReactiveUnsubscribe;
+  subscribe: () => void;
+  unsubscribe: () => void;
 };
 
 export type ReactiveOptions = {
@@ -50,15 +49,15 @@ export type ReactiveOptions = {
    * ★当 batch 为 true，将不会向 update 函数传递 data 参数
    *
    */
-  update?: (data?: ObserveData) => any;
+  update?: () => any;
   /**
    * 是否自动绑定，设置为 false 时，在手动调用返回函数 .subscribe 方法才能激活
    * 默认为 true
    */
   bind?: boolean;
-} & Omit<CollectOptions<any>, "context" | "args">;
+};
 
-export const ReactiveCurrent: Ref<ReactiveFunction> = {};
+export const ReactiveOwner = Flag<ReactiveFunction | void>(void 0);
 
 /**
  * 创建一个可响应函数
@@ -73,37 +72,34 @@ export const ReactiveCurrent: Ref<ReactiveFunction> = {};
  */
 export function reactivable<T extends AnyFunction>(
   fn: T,
-  options?: ReactiveOptions
+  options?: ReactiveOptions,
 ) {
-  const { bind = true, batch, mark, ignore, update } = { ...options };
+  const { bind = true, batch, update } = { ...options };
   let subscribed = bind !== false;
-  let changeListener: ObserveListener<ObserveData> = null!;
-  const wrapper = function (this: any, ...args: Parameters<T>) {
-    ReactiveCurrent.value = wrapper;
-    ObserveFlags.unref = false;
-    unsubscribe("change", changeListener);
-    ObserveFlags.unref = true;
-    const collectOptions = { context: this, args, mark, ignore };
-    const { result, dependencies } = collect(fn, collectOptions);
-    changeListener.dependencies = dependencies;
-    wrapper.dependencies = dependencies;
-    if (subscribed) subscribe("change", changeListener);
-    ReactiveCurrent.value = null!;
-    return result;
+  let listener: ObserveListener<ObserveEvent> = null!;
+  const wrapper = function () {
+    ReactiveOwner.run(wrapper, () => {
+      unrefFlag.run(false, () => unsubscribe("change", listener));
+      const [result, dependencies] = collect(fn);
+      listener.dependencies = dependencies;
+      wrapper.dependencies = dependencies;
+      if (subscribed) subscribe("change", listener);
+      return result;
+    });
   } as ReactiveFunction<T>;
-  const requestUpdate = (it?: ObserveData) => (update ? update(it) : wrapper());
-  changeListener = (data: ObserveData) => {
+  const requestUpdate = () => (update ? update() : wrapper());
+  listener = (data: ObserveEvent) => {
     if (isSymbol(data.member) || isPrivateKey(data.member)) return;
-    return batch ? nextTick(requestUpdate) : requestUpdate(data);
+    return batch ? nextTick(requestUpdate) : requestUpdate();
   };
   wrapper.subscribe = () => {
     if (subscribed) return;
-    subscribe("change", changeListener);
+    subscribe("change", listener);
     subscribed = true;
   };
   wrapper.unsubscribe = () => {
     if (!subscribed) return;
-    unsubscribe("change", changeListener);
+    unsubscribe("change", listener);
     subscribed = false;
   };
   return wrapper;
@@ -140,13 +136,13 @@ export function autorun(handler: () => void) {
 export function watch<T>(
   selector: () => T,
   handler: (newValue?: T, oldValue?: T) => void,
-  immed = false
+  immed = false,
 ) {
-  let oldValue: any = Nothing;
+  let oldValue: any = $None;
   return autorun(() => {
     const value = selector();
     const newValue = isObject(value) ? { ...value } : value;
-    if (!shallowEqual(newValue, oldValue) && (oldValue !== Nothing || immed)) {
+    if (!shallowEqual(newValue, oldValue) && (oldValue !== $None || immed)) {
       handler(newValue, oldValue);
     }
     oldValue = newValue;
@@ -172,7 +168,7 @@ export function computable<T>(fn: () => T, options?: ComputableOptions) {
   let ref: Ref<T> = null!;
   let reactive: ReactiveFunction;
   const wrapper = function (this: any) {
-    if (!ReactiveCurrent.value && !subscribed) return fn();
+    if (!ReactiveOwner.current() && !subscribed) return fn();
     if (!ref || !reactive) {
       const target: Ref<T> = { value: null! };
       const { id: mark } = observeInfo(target);

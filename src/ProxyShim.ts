@@ -6,27 +6,26 @@
 
 import {
   AnyFunction,
-  Member,
+  ObjectMember,
   define,
   isArray,
   isExtensible,
   isObject,
   isSealed,
   isValidKey,
-} from "./ObserveUtil";
+  logError,
+} from "./util";
 
-import { ObserveSymbols } from "./ObserveSymbols";
-import { checkStrictMode } from "./ObserveStrictMode";
-import { getOwnDescriptor } from "./ObserveReflect";
-import { notify } from "./ObserveBus";
+import { assertStrictMode } from "./Action";
+import { getOwnDescriptor } from "./Reflect";
+import { emitChange } from "./EventBus";
 import { observeInfo } from "./ObserveInfo";
-import { report } from "./ObserveCollect";
-import { error, throwError } from "./ObserveLogger";
+import { emitCollect } from "./Collector";
 
 function createObservableMember<T extends object>(
   target: T,
-  member: Member,
-  handler: ProxyHandler<T>
+  member: ObjectMember,
+  handler: ProxyHandler<T>,
 ) {
   if (!target || !isValidKey(member)) return;
   const desc = getOwnDescriptor(target, member);
@@ -53,12 +52,12 @@ function createObservableMember<T extends object>(
 
 function createObservableObject<T extends object>(
   target: T,
-  handler: ProxyHandler<T>
+  handler: ProxyHandler<T>,
 ) {
   if (!isObject(target)) return target;
   const info = observeInfo(target);
-  if (info.isWrappedObject) return target;
-  info.isWrappedObject = true;
+  if (info.object) return target;
+  info.object = true;
   Object.keys(target).forEach((member: string) => {
     createObservableMember(target, member, handler);
   });
@@ -67,19 +66,19 @@ function createObservableObject<T extends object>(
 
 function createObservableArray<T extends Array<any>>(
   target: T,
-  handler: ProxyHandler<T>
+  handler: ProxyHandler<T>,
 ) {
   const info = observeInfo(target);
-  const { id, shadow, isWrappedArray } = info;
-  report({ id, member: "length", value: target });
+  const { id, shadow, array: isWrappedArray } = info;
+  emitCollect({ id, member: "length", value: target });
   if (!isArray(target) || isWrappedArray) return target;
-  info.isWrappedArray = true;
+  info.array = true;
   const methods = ["push", "pop", "shift", "unshift", "splice", "reverse"];
   methods.forEach((method: string) => {
     define(target, method, (...args: any[]) => {
-      checkStrictMode();
+      assertStrictMode();
       if (isSealed(target)) {
-        return error(`Cannot call ${method} of sealed object:`, target);
+        return logError(`Cannot call ${method} of sealed object:`, target);
       }
       const func = (Array.prototype as any)[method] as AnyFunction;
       const result = func.apply(shadow, args);
@@ -88,7 +87,7 @@ function createObservableArray<T extends Array<any>>(
         target[i] = shadow[i];
         createObservableMember(target, i, handler);
       }
-      notify({ id, member: "length", value: target });
+      emitChange({ id, member: "length", value: target });
       return result;
     });
   });
@@ -97,12 +96,11 @@ function createObservableArray<T extends Array<any>>(
 
 export function createLowProxy<T extends object>(
   target: T,
-  handler: ProxyHandler<T>
+  handler: ProxyHandler<T>,
 ) {
   if (isObject(target)) {
-    define(target, ObserveSymbols.Proxy, true);
     return createObservableObject(target, handler);
   } else {
-    throwError("Invalid LowProxy target");
+    throw new Error("Invalid LowProxy target");
   }
 }

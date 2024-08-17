@@ -1,24 +1,24 @@
 import "./helpers/mode";
 
-import { computed, observable } from "../src/ObserveHof";
+import { computed, observable } from "../src";
 
-import { AnyFunction } from "../src/ObserveUtil";
-import { reactivable } from '../src/ObserveReactive';
-import { sleep } from './helpers/utils';
-import { strictEqual } from "assert";
+import { reactivable } from "../src";
+import { sleep } from "./helpers/utils";
+import { strictEqual } from "node:assert";
+import { describe, it } from "node:test";
 
-describe('Computed', () => {
-
-  it('computed', async () => {
+describe("Computed", () => {
+  it("computed", async () => {
     const model = observable({ a: 2, b: 0 });
-    let throwError: AnyFunction;
+    //eslint-disable-next-line prefer-const
+    let throwError: (...args: any) => any;
     const func = computed(() => {
-      if (throwError) throwError('computed: unsubscribe failed');
+      if (throwError) throwError("computed: unsubscribe failed");
       return model.b * model.a;
     });
     let times = 0;
     const reactive = reactivable(() => {
-      if (throwError) throwError('reactive: unsubscribe failed');
+      if (throwError) throwError("reactive: unsubscribe failed");
       times++;
       const value = func();
       if (times === 1) strictEqual(value, 0, `+0 -${value}`);
@@ -37,9 +37,8 @@ describe('Computed', () => {
     reactive.unsubscribe?.();
     throwError = (message) => {
       throw new Error(message);
-    }
+    };
     model.a = 5;
     await sleep(0);
   });
-
 });

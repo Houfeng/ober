@@ -4,10 +4,8 @@
  * @author Houfeng <houzhanfeng@gmail.com>
  */
 
-import { OBJ, SMBL, SUPT_SMBL } from "./ObserveConstants";
-
-import { ObserveSymbols } from "./ObserveSymbols";
-import { getOwnDescriptor } from "./ObserveReflect";
+import { getOwnDescriptor } from "./Reflect";
+import { $BindRequired } from "./Symbols";
 
 export type AnyClass = (new (...args: any[]) => any) & {
   displayName?: string;
@@ -17,7 +15,7 @@ export type AnyFunction = (...args: any[]) => any;
 
 export type AnyObject = Record<string, any>;
 
-export type Member = string | number | symbol;
+export type ObjectMember = string | number | symbol;
 
 export function isString(value: any): value is string {
   return typeof value === "string";
@@ -28,7 +26,7 @@ function isNumber(value: any): value is number {
 }
 
 export function isObject(value: any): value is object {
-  return !isNullOrUndefined(value) && typeof value === OBJ;
+  return !isNullOrUndefined(value) && typeof value === "object";
 }
 
 export function isArray(value: any): value is Array<any> {
@@ -71,7 +69,7 @@ export function startsWith(str: string, sub: string) {
 }
 
 export function isSymbol(value: any): value is symbol {
-  return SUPT_SMBL ? typeof value === "symbol" : startsWith(value, SMBL);
+  return typeof value === "symbol";
 }
 
 export function isPrivateKey(value: any): value is string {
@@ -101,18 +99,14 @@ export function isSealed(value: any) {
   return Object.isSealed && Object.isSealed(value);
 }
 
-export const hasOwn = (target: any, member: Member) => {
+export const hasOwn = (target: any, member: ObjectMember) => {
   return Object.prototype.hasOwnProperty.call(target, member);
 };
 
-export const getOwnValue = (target: any, member: Member) => {
+export const getOwnValue = (target: any, member: ObjectMember) => {
   if (!hasOwn(target, member)) return;
   return target[member];
 };
-
-export function isProxy(target: any) {
-  return !!(target && hasOwn(target, ObserveSymbols.Proxy));
-}
 
 export function is(x: any, y: any) {
   if (x === y) {
@@ -125,9 +119,9 @@ export function is(x: any, y: any) {
 export function shallowEqual(objA: any, objB: any) {
   if (is(objA, objB)) return true;
   if (
-    typeof objA !== OBJ ||
+    typeof objA !== "object" ||
     objA === null ||
-    typeof objB !== OBJ ||
+    typeof objB !== "object" ||
     objB === null
   ) {
     return false;
@@ -143,20 +137,16 @@ export function shallowEqual(objA: any, objB: any) {
   return true;
 }
 
-export function isDevelopment() {
-  return process?.env?.NODE_ENV === "development";
-}
-
 export function shouldAutoProxy(value: any): value is any {
   if (!value || !isObject(value) || !isExtensible(value)) return false;
   const ctor = value.constructor;
   return !ctor || ctor === Object || ctor === Array;
 }
 
-export function isBindRequiredFunction<T extends AnyFunction>(
-  value: T | undefined
+export function isBindRequired<T extends AnyFunction>(
+  value: T | undefined,
 ): value is T {
-  return value && (value as any)[ObserveSymbols.BindRequired];
+  return value && (value as any)[$BindRequired];
 }
 
 export type Ref<T> = { value?: T };
@@ -177,23 +167,26 @@ export function isDecoratorContext(value: any): value is DecoratorContext {
   return value && value.kind && value.name;
 }
 
-export type FastMap<K extends string, V> = {
-  get: (key: K) => V | undefined;
-  set: (key: K, value: V) => void;
-  has: (key: K) => boolean;
-  del: (key: K) => void;
-};
+export function logError(...args: any) {
+  if (typeof console !== "undefined") {
+    console.error(...args);
+  }
+}
 
-/**
- * 原生 Map 性能相较 object 作为 map 性能有明显差距
- * 同时不需要 key 为字符串之外的类型，所以用 object 模似 map
- * @returns Map instance
- */
-export function FastMap<K extends string, V>(): FastMap<K, V> {
-  const store: Record<K, V | undefined> = Object.create(null);
-  const get = (key: K) => store[key];
-  const set = (key: K, value: V) => (store[key] = value);
-  const has = (key: K) => store[key] !== void 0;
-  const del = (key: K) => (store[key] = void 0);
-  return { get, set, has, del };
+export function logWarn(...args: any) {
+  if (typeof console !== "undefined") {
+    console.warn(...args);
+  }
+}
+
+export function logInfo(...args: any) {
+  if (typeof console !== "undefined") {
+    console.info(...args);
+  }
+}
+
+export function logTable(...args: any) {
+  if (typeof console !== "undefined") {
+    console.table(...args);
+  }
 }

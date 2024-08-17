@@ -4,39 +4,17 @@
  * @author Houfeng <houzhanfeng@gmail.com>
  */
 
-import { UNDEF } from "./ObserveConstants";
-import { isObject } from "./ObserveUtil";
-
-export type ObserveMode = "proxy" | "property" | "auto";
-
-type ObserveConfigDefinition = {
-  mode: ObserveMode;
+export type ObserveConfigType = {
+  mode: "proxy" | "property";
   strict: boolean;
   maxListeners: number;
-  logPrefix: string;
 };
 
-const DEFAULT_LOG_PREFIX = "OBER";
+const { OBER_MODE, OBER_STRICT, OBER_MAX_LISTENERS } =
+  typeof process !== "undefined" ? process.env : ({} as Record<string, string>);
 
-const ObserveENVConfig: Partial<ObserveConfigDefinition> = (() => {
-  if (typeof process === UNDEF) return {};
-  const OBER_CONFIG: any = process.env && process.env.OBER_CONFIG;
-  if (!OBER_CONFIG) return {};
-  if (isObject(OBER_CONFIG)) return OBER_CONFIG;
-  try {
-    return JSON.parse(OBER_CONFIG) || {};
-  } catch {
-    const prefix = DEFAULT_LOG_PREFIX;
-    throw new Error(`"${prefix}_CONFIG" has error`);
-  }
-})();
-
-export const ObserveConfig: ObserveConfigDefinition = Object.assign(
-  {
-    mode: "property",
-    strict: false,
-    maxListeners: 1024,
-    logPrefix: DEFAULT_LOG_PREFIX,
-  },
-  ObserveENVConfig
-);
+export const ObserveConfig: ObserveConfigType = {
+  mode: (OBER_MODE || "proxy") as ObserveConfigType["mode"],
+  strict: OBER_STRICT === "true",
+  maxListeners: OBER_MAX_LISTENERS ? Number(OBER_MAX_LISTENERS) : 1024,
+};

@@ -10,32 +10,29 @@ import {
   isArray,
   isFunction,
   shouldAutoProxy,
-} from "./ObserveUtil";
+} from "./util";
 import {
-  Member,
+  ObjectMember,
   isArrowFunction,
-  isBindRequiredFunction,
+  isBindRequired,
   isObject,
-  isProxy,
   isValidKey,
-} from "./ObserveUtil";
-import { getOwnDescriptor, getValue, setValue } from "./ObserveReflect";
+} from "./util";
+import { getOwnDescriptor, getValue, setValue } from "./Reflect";
 
 import { ObserveConfig } from "./ObserveConfig";
-import { ObserveSymbols } from "./ObserveSymbols";
-import { UNDEF } from "./ObserveConstants";
-import { checkStrictMode } from "./ObserveStrictMode";
-import { createLowProxy } from "./ObserveShim";
-import { notify } from "./ObserveBus";
+import { assertStrictMode } from "./Action";
+import { createLowProxy } from "./ProxyShim";
+import { emitChange } from "./EventBus";
 import { observeInfo } from "./ObserveInfo";
-import { report } from "./ObserveCollect";
-import { throwError } from "./ObserveLogger";
+import { emitCollect } from "./Collector";
+import { $BoundFunction, $Identify } from "./Symbols";
 
-const supportNativeProxy = typeof Proxy !== UNDEF;
+const isNativeProxySupported = typeof Proxy !== void 0;
 
 function createNativeProxy<T extends object>(
   target: T,
-  handler: ProxyHandler<T>
+  handler: ProxyHandler<T>,
 ): T {
   return new Proxy(target, handler);
 }
@@ -44,7 +41,7 @@ const createProxyInstance = (() => {
   const { mode } = ObserveConfig;
   if (mode === "property") return createLowProxy;
   if (mode === "proxy") return createNativeProxy;
-  return supportNativeProxy ? createNativeProxy : createLowProxy;
+  return isNativeProxySupported ? createNativeProxy : createLowProxy;
 })();
 
 function isNativeProxy() {
@@ -55,57 +52,57 @@ function useBoundMethod(
   target: any,
   member: string,
   value: AnyFunction,
-  receiver: any
+  receiver: any,
 ) {
-  if ((value as any)[ObserveSymbols.BoundMethod]) return value;
+  if ((value as any)[$BoundFunction]) return value;
   const boundMethod = value.bind(receiver);
-  define(boundMethod, ObserveSymbols.BoundMethod, true);
+  define(boundMethod, $BoundFunction, true);
   define(target, member, boundMethod);
   return boundMethod;
 }
 
-function isSetArrayLength(target: any, member: Member) {
+function isSetArrayLength(target: any, member: ObjectMember) {
   return isArray(target) && member === "length";
 }
 
 export function createProxy<T extends object>(target: T): T {
-  if (isProxy(target) || !isObject(target)) return target;
+  if (!isObject(target)) return target;
   const info = observeInfo(target);
   if (info.proxy) return info.proxy;
   //创建 proxy
   info.proxy = createProxyInstance(target, {
     //获取 descriptor 时
-    getOwnPropertyDescriptor(target: any, member: Member) {
-      if (member === ObserveSymbols.Proxy) {
-        return { configurable: true, enumerable: false, value: true };
+    getOwnPropertyDescriptor(target: any, member: ObjectMember) {
+      if (member === $Identify) {
+        return { configurable: true, enumerable: false, value: "Observable" };
       }
       return getOwnDescriptor(target, member);
     },
     //读到数据时
-    get(target: any, member: Member, receiver: any) {
+    get(target: any, member: ObjectMember, receiver: any) {
       const value = getValue(target, member, receiver);
       if (!isValidKey(member)) return value;
       if (isNativeProxy() && isArrowFunction(value)) {
-        throwError(`Cannot have arrow function: ${member}`);
+        throw new Error(`Cannot have arrow function: ${member}`);
       }
-      if (isBindRequiredFunction(value)) {
+      if (isBindRequired(value)) {
         return useBoundMethod(target, member, value, receiver);
       }
       if (isFunction(value)) return value;
       const proxy = shouldAutoProxy(value) ? createProxy(value) : value;
-      report({ id: info.id, member, value });
+      emitCollect({ id: info.id, member, value });
       return proxy;
     },
     //更新数据时
-    set(target: any, member: Member, value: any, receiver: any) {
-      checkStrictMode();
+    set(target: any, member: ObjectMember, value: any, receiver: any) {
+      assertStrictMode();
       if (info.shadow[member] === value && !isSetArrayLength(target, member)) {
         return true;
       }
       setValue(target, member, value, receiver);
       info.shadow[member] = value;
       if (!isValidKey(member)) return true;
-      notify({ id: info.id, member, value });
+      emitChange({ id: info.id, member, value });
       return true;
     },
   }) as any;

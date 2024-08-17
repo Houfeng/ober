@@ -4,18 +4,18 @@
  * @author Houfeng <houzhanfeng@gmail.com>
  */
 
-import { Member } from "./ObserveUtil";
+import { ObjectMember } from "./util";
 
 export function getOwnDescriptor(
   target: any,
-  key: Member
+  key: ObjectMember,
 ): PropertyDescriptor | undefined {
   return Object.getOwnPropertyDescriptor(target, key);
 }
 
 export function getDescriptor(
   target: any,
-  key: Member
+  key: ObjectMember,
 ): PropertyDescriptor | undefined {
   if (!target) return;
   return (
@@ -24,7 +24,7 @@ export function getDescriptor(
   );
 }
 
-export function getValue(target: any, key: Member, receiver: any) {
+export function getValue(target: any, key: ObjectMember, receiver: any) {
   if (target === receiver) {
     return target[key];
   }
@@ -36,7 +36,12 @@ export function getValue(target: any, key: Member, receiver: any) {
   }
 }
 
-export function setValue(target: any, key: Member, value: any, receiver: any) {
+export function setValue(
+  target: any,
+  key: ObjectMember,
+  value: any,
+  receiver: any,
+) {
   if (target === receiver) {
     target[key] = value;
     return;
