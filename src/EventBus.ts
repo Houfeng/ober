@@ -35,8 +35,8 @@ export function ObserveKey(event: ObserveEvent) {
   return `${event.id}.${event.member as string}`;
 }
 
-export type ObserveListener<T> = {
-  (event: T): void;
+export type ObserveListener = {
+  (event: ObserveEvent): void;
   dependencies?: Set<string>;
 };
 
@@ -44,17 +44,17 @@ export type ObserveEvents = {
   /**
    * 在属性值发生变化时触发
    */
-  change: ObserveListener<ObserveEvent>;
+  change: ObserveListener;
 
   /**
    * 在最后一个监听移除时触发
    */
-  unref: ObserveListener<ObserveEvent>;
+  unref: ObserveListener;
 
   /**
    * 在第一个监听建立时触发
    **/
-  ref: ObserveListener<ObserveEvent>;
+  ref: ObserveListener;
 };
 
 export type ObserveEventNames = keyof ObserveEvents;

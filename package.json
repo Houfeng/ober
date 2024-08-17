@@ -21,9 +21,7 @@
     "url": "http://houfeng.net"
   },
   "license": "MIT",
-  "dependencies": {
-    "tslib": "*"
-  },
+  "dependencies": {},
   "ts-node": {
     "swc": true,
     "esm": true,
@@ -34,6 +32,7 @@
     "@rollup/plugin-terser": "0.4.4",
     "@types/jsdom": "21.1.6",
     "@types/node": "22.4.0",
+    "tslib": "*",
     "c8": "8.0.1",
     "eslint": "8.52.0",
     "eslint-config-prettier": "9.0.0",

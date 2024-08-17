@@ -10,7 +10,7 @@
     "moduleResolution": "node",
     "pretty": true,
     "module": "ESNext",
-    "target": "ES2015",
+    "target": "ES6",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "emitDecoratorMetadata": true,

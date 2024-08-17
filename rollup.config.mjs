@@ -1,7 +1,3 @@
-import cleanup from 'rollup-plugin-cleanup';
-import resolve from 'rollup-plugin-node-resolve';
-// import { terser } from "rollup-plugin-terser";
-
 export default {
   input: './dist/es/index.js',
   output: [
@@ -20,11 +16,5 @@ export default {
       name: "ober"
     }
   ],
-  plugins: [
-    resolve(),
-    //terser(),
-    cleanup({
-      comments: "none"
-    }),
-  ]
+  plugins: []
 };
