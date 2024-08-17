@@ -16,9 +16,9 @@ export const clean = task('清理', async () => {
 });
 
 export const test = task('测试', async () => {
-  await $`OBER_MODE=proxy c8 node --require ts-node/register --test test/*.test.ts`;
-  await $`OBER_MODE=property c8 node --require ts-node/register --test test/*.test.ts`;
-  await $`OBER_MODE=auto c8 node --require ts-node/register --test test/*.test.ts`;
+  await $`OBER_MODE=proxy c8 tsx --test test/*.test.ts`;
+  await $`OBER_MODE=property tsx --test test/*.test.ts`;
+  await $`OBER_MODE=auto c8 tsx --test test/*.test.ts`;
 });
 
 export const build = task('构建', [clean, lint], async () => {

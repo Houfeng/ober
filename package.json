@@ -22,11 +22,6 @@
   },
   "license": "MIT",
   "dependencies": {},
-  "ts-node": {
-    "swc": true,
-    "esm": true,
-    "experimentalResolver": true
-  },
   "devDependencies": {
     "@rollup/plugin-node-resolve": "15.2.3",
     "@rollup/plugin-terser": "0.4.4",
@@ -51,7 +46,7 @@
     "taskd": "0.1.9",
     "ts-loader": "9.5.0",
     "ts-node": "10.9.2",
-    "tsx": "4.7.0",
+    "tsx": "4.17.0",
     "typescript": "5.5.4",
     "typescript-eslint": "7.8.0",
     "webpack": "5.89.0",
