@@ -18,7 +18,6 @@ describe("Reactivable", () => {
   it("创建 reactivable 函数", () => {
     const model = observable({ a: 1, b: 2 });
     const func = reactivable((num: number) => model.a + num);
-    console.log('++++++++++++', func(1))
     strictEqual(func(1), 2);
   });
 

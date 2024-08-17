@@ -19,8 +19,10 @@ export const test = task('测试', async () => {
   const reporter = `--test-reporter=@voxpelli/node-test-pretty-reporter`;
   console.log(`------------------------- proxy -------------------------`)
   await $`OBER_MODE=proxy c8 tsx --test ${reporter} test/*.test.ts`;
-  // await $`OBER_MODE=property tsx --test test/*.test.ts`;
-  // await $`OBER_MODE=auto c8 tsx --test test/*.test.ts`;
+  console.log(`------------------------ property ------------------------`)
+  await $`OBER_MODE=property tsx --test ${reporter} test/*.test.ts`;
+  console.log(`-------------------------- auto --------------------------`)
+  await $`OBER_MODE=auto c8 tsx --test ${reporter} test/*.test.ts`;
 });
 
 export const build = task('构建', [clean, lint], async () => {
