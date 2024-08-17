@@ -8,9 +8,9 @@ import { $Pending } from "./Symbols";
 import { logError } from "./util";
 
 type TickTask = (() => void) & { [$Pending]: boolean };
-type TickOwner = { readonly tasks: TickTask[]; pending: boolean };
+type TickOwner = { readonly tasks: TickTask[]; [$Pending]: boolean };
 
-const tickOwner: TickOwner = { tasks: [], pending: false };
+const tickOwner: TickOwner = { tasks: [], [$Pending]: false };
 const builtInBatch = (fn: () => void) => fn();
 
 function executeTickTask(task: TickTask) {
@@ -19,7 +19,7 @@ function executeTickTask(task: TickTask) {
 }
 
 function executeTickTasks() {
-  tickOwner.pending = false;
+  tickOwner[$Pending] = false;
   const tasks = tickOwner.tasks.slice(0);
   tickOwner.tasks.length = 0;
   const { batch = builtInBatch } = nextTick;
@@ -56,8 +56,8 @@ export function nextTick(callback: () => void): void {
   if (!task || task[$Pending]) return;
   task[$Pending] = true;
   tickOwner.tasks.push(task);
-  if (!tickOwner.pending) {
-    tickOwner.pending = true;
+  if (!tickOwner[$Pending]) {
+    tickOwner[$Pending] = true;
     resolveAllTickTasks();
   }
 }
