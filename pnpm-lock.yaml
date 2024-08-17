@@ -63,8 +63,8 @@ devDependencies:
     specifier: 5.0.0
     version: 5.0.0(webpack@5.89.0)
   taskd:
-    specifier: 0.1.9
-    version: 0.1.9
+    specifier: 0.1.10
+    version: 0.1.10
   ts-loader:
     specifier: 9.5.0
     version: 9.5.0(typescript@5.5.4)(webpack@5.89.0)
@@ -4969,8 +4969,8 @@ packages:
     engines: {node: '>=6'}
     dev: true
 
-  /taskd@0.1.9:
-    resolution: {integrity: sha512-ztnH4Y1s9AZ6/VP6PiBym6kGGGRig/EiwA8Eut1LLBF6yLRLGdEx/vWFAKgddG35HcYUmTMWq9lYAmjhsMQajw==, tarball: https://registry.npmjs.org/taskd/-/taskd-0.1.9.tgz}
+  /taskd@0.1.10:
+    resolution: {integrity: sha512-B2KQhj8H9v7zarTO3KA7OlRSVB9m6erbwOOjRgCGqiERmnQGSZliB8C2SMYz0VjtCDJxs7CkmR9rv64adtp0jw==, tarball: https://registry.npmjs.org/taskd/-/taskd-0.1.10.tgz}
     hasBin: true
     dependencies:
       chalk: 5.3.0

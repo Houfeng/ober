@@ -43,7 +43,7 @@
     "pnpm": "8.15.1",
     "rollup": "4.20.0",
     "source-map-loader": "5.0.0",
-    "taskd": "0.1.9",
+    "taskd": "0.1.10",
     "ts-loader": "9.5.0",
     "ts-node": "10.9.2",
     "tsx": "4.17.0",
