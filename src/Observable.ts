@@ -18,6 +18,7 @@ import {
 import { createProxy, isNativeProxyUsed } from "./Proxy";
 import { $Identify, $Observable } from "./Symbols";
 import { getOwnValue } from "./util";
+import { isDevelopment } from "./ObserveConfig";
 
 const OB_MARK = "Observable";
 
@@ -31,7 +32,7 @@ export function isObservable(target: unknown) {
 
 function checkArrowFunction(target: unknown) {
   // 只检查加了将要加 observable 的类
-  if (!isNativeProxyUsed() || !isObject(target)) return;
+  if (!isDevelopment() || !isNativeProxyUsed() || !isObject(target)) return;
   Object.entries(target).some(([key, value]) => {
     if (isArrowFunction(value)) {
       return logError(

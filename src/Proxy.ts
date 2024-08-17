@@ -15,7 +15,7 @@ import {
 import { ObjectMember, isBindRequired, isObject, isValidKey } from "./util";
 import { getOwnDescriptor, getValue, setValue } from "./Reflect";
 
-import { ObserveConfig } from "./ObserveConfig";
+import { isDevelopment, ObserveConfig } from "./ObserveConfig";
 import { assertStrictMode } from "./Action";
 import { createLowProxy } from "./ProxyShim";
 import { emitChange } from "./EventBus";
@@ -34,12 +34,10 @@ function createNativeProxy<T extends object>(
 
 const createProxyInstance = (() => {
   const { mode } = ObserveConfig;
-  if (mode === "proxy" && !isNativeProxySupported) {
+  if (isDevelopment() && mode === "proxy" && !isNativeProxySupported) {
     logWarn(
-      [
-        "Proxy mode has been specified, but the current environment",
-        "does not support proxy and has been downgraded to property mode",
-      ].join(" "),
+      "Proxy mode has been specified, but the current environment",
+      "does not support proxy and has been downgraded to property mode",
     );
   }
   return mode === "property" || !isNativeProxySupported

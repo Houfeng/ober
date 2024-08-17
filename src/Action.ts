@@ -6,7 +6,7 @@
 
 import { bind } from "./Bind";
 import { Flag } from "./Flag";
-import { ObserveConfig } from "./ObserveConfig";
+import { isDevelopment, ObserveConfig } from "./ObserveConfig";
 import {
   AnyFunction,
   AnyObject,
@@ -19,7 +19,7 @@ import {
 export const actionFlag = Flag(false);
 
 export function assertStrictMode() {
-  if (ObserveConfig.strict && !actionFlag.current()) {
+  if (isDevelopment() && ObserveConfig.strict && !actionFlag.current()) {
     throw new Error("Update outside of Action");
   }
 }
