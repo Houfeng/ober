@@ -40,11 +40,13 @@ function createNativeProxy<T extends object>(
 
 const createProxyInstance = (() => {
   const { mode } = ObserveConfig;
-  if (mode === 'proxy' && !isNativeProxySupported) {
-    logWarn([
-      'Proxy mode has been specified, but the current environment',
-      'does not support proxy and has been downgraded to property mode'
-    ].join(" "));
+  if (mode === "proxy" && !isNativeProxySupported) {
+    logWarn(
+      [
+        "Proxy mode has been specified, but the current environment",
+        "does not support proxy and has been downgraded to property mode",
+      ].join(" "),
+    );
   }
   return mode === "property" || !isNativeProxySupported
     ? createLowProxy

@@ -24,6 +24,11 @@
   "dependencies": {
     "tslib": "*"
   },
+  "ts-node": {
+    "swc": true,
+    "esm": true,
+    "experimentalResolver": true
+  },
   "devDependencies": {
     "@rollup/plugin-node-resolve": "15.2.3",
     "@rollup/plugin-terser": "0.4.4",
