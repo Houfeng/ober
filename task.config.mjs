@@ -25,7 +25,7 @@ export const test = task('测试', async () => {
   await $`OBER_MODE=auto c8 tsx --test ${reporter} test/*.test.ts`;
 });
 
-export const build = task('构建', [clean, lint], async () => {
+export const build = task('构建', [clean, lint, test], async () => {
   await $`tsc -v`;
   await $`tsc --locale zh-CN `;
   await $`rollup -c`;
