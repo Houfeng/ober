@@ -1,6 +1,6 @@
 {
   "name": "ober",
-  "version": "9.0.0-rc2",
+  "version": "9.0.0-rc3",
   "description": "",
   "main": "./dist/ober.cjs.js",
   "module": "./dist/ober.es.js",

@@ -23,9 +23,9 @@ import { emitCollect } from "./Collector";
 import { $BoundFunction, $Identify } from "./Symbols";
 import { ReflectShim } from "./Reflect.shim";
 
-const UsedReflect = typeof Reflect !== void 0 ? Reflect : ReflectShim;
+const UsedReflect = typeof Reflect !== "undefined" ? Reflect : ReflectShim;
 
-const isNativeProxySupported = typeof Proxy !== void 0;
+const isNativeProxySupported = typeof Proxy !== "undefined";
 
 const UsedProxy = (() => {
   const { mode } = ObserveConfig;

@@ -21,7 +21,7 @@ import { observeInfo } from "./ObserveInfo";
 import { emitCollect } from "./Collector";
 import { ReflectShim } from "./Reflect.shim";
 
-const UsedReflect = typeof Reflect !== void 0 ? Reflect : ReflectShim;
+const UsedReflect = typeof Reflect !== "undefined" ? Reflect : ReflectShim;
 
 function createObservableMember<T extends object>(
   target: T,

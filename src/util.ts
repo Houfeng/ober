@@ -7,7 +7,7 @@
 import { ReflectShim } from "./Reflect.shim";
 import { $BindRequired } from "./Symbols";
 
-const UsedReflect = typeof Reflect !== void 0 ? Reflect : ReflectShim;
+const UsedReflect = typeof Reflect !== "undefined" ? Reflect : ReflectShim;
 
 export type AnyClass = (new (...args: any[]) => any) & {
   displayName?: string;

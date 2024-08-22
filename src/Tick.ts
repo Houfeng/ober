@@ -27,10 +27,10 @@ function executeTickTasks() {
 }
 
 function createTickResolver() {
-  if (typeof Promise !== void 0) {
+  if (typeof Promise !== "undefined") {
     const promise = Promise.resolve();
     return () => promise.then(executeTickTasks).catch(logError);
-  } else if (typeof MutationObserver !== void 0) {
+  } else if (typeof MutationObserver !== "undefined") {
     let counter = 1;
     const observer = new MutationObserver(executeTickTasks);
     const textNode = document.createTextNode(String(counter));
