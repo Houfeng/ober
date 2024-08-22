@@ -19,7 +19,7 @@ import {
 export const actionFlag = Flag(false);
 
 export function assertStrictMode() {
-  if (isDevelopment() && ObserveConfig.strict && !actionFlag.current()) {
+  if (ObserveConfig.strict && isDevelopment() && !actionFlag.current()) {
     throw new Error("Update outside of Action");
   }
 }
