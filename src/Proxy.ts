@@ -10,29 +10,24 @@ import {
   isArray,
   isFunction,
   logWarn,
-  shouldAutoProxy,
+  canProxy,
 } from "./util";
-import { ObjectMember, isBindRequired, isObject, isValidKey } from "./util";
-import { getOwnDescriptor, getValue, setValue } from "./Reflect";
+import { isBindRequired, isObject, isValidKey } from "./util";
 
 import { isDevelopment, ObserveConfig } from "./ObserveConfig";
 import { assertStrictMode } from "./Action";
-import { createLowProxy } from "./ProxyShim";
+import { ProxyShim } from "./Proxy.shim";
 import { emitChange } from "./EventBus";
 import { observeInfo } from "./ObserveInfo";
 import { emitCollect } from "./Collector";
 import { $BoundFunction, $Identify } from "./Symbols";
+import { ReflectShim } from "./Reflect.shim";
+
+const UsedReflect = typeof Reflect !== void 0 ? Reflect : ReflectShim;
 
 const isNativeProxySupported = typeof Proxy !== void 0;
 
-function createNativeProxy<T extends object>(
-  target: T,
-  handler: ProxyHandler<T>,
-): T {
-  return new Proxy(target, handler);
-}
-
-const createProxyInstance = (() => {
+const UsedProxy = (() => {
   const { mode } = ObserveConfig;
   if (isDevelopment() && mode === "proxy" && !isNativeProxySupported) {
     logWarn(
@@ -40,13 +35,11 @@ const createProxyInstance = (() => {
       "does not support proxy and has been downgraded to property mode",
     );
   }
-  return mode === "property" || !isNativeProxySupported
-    ? createLowProxy
-    : createNativeProxy;
+  return mode === "property" || !isNativeProxySupported ? ProxyShim : Proxy;
 })();
 
 export function isNativeProxyUsed() {
-  return createNativeProxy === createProxyInstance;
+  return isNativeProxySupported && Proxy === UsedProxy;
 }
 
 function useBoundMethod(
@@ -62,7 +55,7 @@ function useBoundMethod(
   return boundMethod;
 }
 
-function isSetArrayLength(target: any, member: ObjectMember) {
+function isSetArrayLength(target: any, member: PropertyKey) {
   return isArray(target) && member === "length";
 }
 
@@ -70,35 +63,35 @@ export function createProxy<T extends object>(target: T): T {
   if (!isObject(target)) return target;
   const info = observeInfo(target);
   if (info.proxy) return info.proxy;
-  //创建 proxy
-  info.proxy = createProxyInstance(target, {
-    //获取 descriptor 时
-    getOwnPropertyDescriptor(target: any, member: ObjectMember) {
+  // 创建 proxy
+  info.proxy = new UsedProxy(target, {
+    // 获取 descriptor 时
+    getOwnPropertyDescriptor(target: any, member: PropertyKey) {
       if (member === $Identify) {
         return { configurable: true, enumerable: false, value: "Observable" };
       }
-      return getOwnDescriptor(target, member);
+      return UsedReflect.getOwnPropertyDescriptor(target, member);
     },
-    //读到数据时
-    get(target: any, member: ObjectMember, receiver: any) {
-      const value = getValue(target, member, receiver);
+    // 读到数据时
+    get(target: any, member: PropertyKey, receiver: any) {
+      const value = UsedReflect.get(target, member, receiver);
       if (!isValidKey(member)) return value;
       if (isBindRequired(value)) {
         return useBoundMethod(target, member, value, receiver);
       }
       if (isFunction(value)) return value;
-      const proxy = shouldAutoProxy(value) ? createProxy(value) : value;
+      const proxy = canProxy(value) ? createProxy(value) : value;
       emitCollect({ id: info.id, member, value });
       return proxy;
     },
-    //更新数据时
-    set(target: any, member: ObjectMember, value: any, receiver: any) {
+    // 更新数据时
+    set(target: any, member: PropertyKey, value: any, receiver: any) {
       assertStrictMode();
       if (info.shadow[member] === value && !isSetArrayLength(target, member)) {
         return true;
       }
-      setValue(target, member, value, receiver);
-      info.shadow[member] = value;
+      UsedReflect.set(target, member, value, receiver);
+      if (!isNativeProxyUsed()) info.shadow[member] = value;
       if (!isValidKey(member)) return true;
       emitChange({ id: info.id, member, value });
       return true;

@@ -39,5 +39,5 @@
   },
   "include": [
     "./src/**/*.ts"
-  ]
+, "src/Proxy.shim.ts"  ]
 }

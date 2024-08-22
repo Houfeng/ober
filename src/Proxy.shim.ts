@@ -6,7 +6,6 @@
 
 import {
   AnyFunction,
-  ObjectMember,
   define,
   isArray,
   isExtensible,
@@ -17,18 +16,20 @@ import {
 } from "./util";
 
 import { assertStrictMode } from "./Action";
-import { getOwnDescriptor } from "./Reflect";
 import { emitChange } from "./EventBus";
 import { observeInfo } from "./ObserveInfo";
 import { emitCollect } from "./Collector";
+import { ReflectShim } from "./Reflect.shim";
+
+const UsedReflect = typeof Reflect !== void 0 ? Reflect : ReflectShim;
 
 function createObservableMember<T extends object>(
   target: T,
-  member: ObjectMember,
+  member: PropertyKey,
   handler: ProxyHandler<T>,
 ) {
   if (!target || !isValidKey(member)) return;
-  const desc = getOwnDescriptor(target, member);
+  const desc = UsedReflect.getOwnPropertyDescriptor(target, member);
   if (!desc || !("value" in desc)) return;
   const { shadow } = observeInfo(target);
   if (!(member in shadow)) shadow[member] = desc.value;
@@ -94,13 +95,12 @@ function createObservableArray<T extends Array<any>>(
   return target;
 }
 
-export function createLowProxy<T extends object>(
-  target: T,
-  handler: ProxyHandler<T>,
-) {
-  if (isObject(target)) {
-    return createObservableObject(target, handler);
-  } else {
-    throw new Error("Invalid LowProxy target");
+export const ProxyShim = class ProxyShim {
+  constructor(target: any, handler: ProxyHandler<any>) {
+    if (isObject(target)) {
+      return createObservableObject(target, handler);
+    } else {
+      throw new Error("Invalid LowProxy target");
+    }
   }
-}
+} as unknown as ProxyConstructor;

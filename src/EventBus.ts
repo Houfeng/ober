@@ -4,7 +4,7 @@
  * @author Houfeng <houzhanfeng@gmail.com>
  */
 
-import { isPrivateKey, isSymbol, logWarn, ObjectMember } from "./util";
+import { isPrivateKey, isSymbol, logWarn } from "./util";
 import { ObserveConfig } from "./ObserveConfig";
 import { Flag } from "./Flag";
 import { FastMap } from "./FastMap";
@@ -27,7 +27,7 @@ export const refFlag = Flag(true);
 
 export type ObserveEvent = {
   id: string;
-  member: ObjectMember;
+  member: PropertyKey;
   value?: any;
 };
 

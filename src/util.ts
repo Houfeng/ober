@@ -4,8 +4,10 @@
  * @author Houfeng <houzhanfeng@gmail.com>
  */
 
-import { getOwnDescriptor } from "./Reflect";
+import { ReflectShim } from "./Reflect.shim";
 import { $BindRequired } from "./Symbols";
+
+const UsedReflect = typeof Reflect !== void 0 ? Reflect : ReflectShim;
 
 export type AnyClass = (new (...args: any[]) => any) & {
   displayName?: string;
@@ -15,13 +17,11 @@ export type AnyFunction = (...args: any[]) => any;
 
 export type AnyObject = Record<string, any>;
 
-export type ObjectMember = string | number | symbol;
-
 export function isString(value: any): value is string {
   return typeof value === "string";
 }
 
-function isNumber(value: any): value is number {
+export function isNumber(value: any): value is number {
   return typeof value === "number";
 }
 
@@ -38,7 +38,10 @@ export function isFunction<T = AnyFunction>(value: any): value is T {
 }
 
 export function isNativeClass<T = AnyFunction>(value: any): value is T {
-  return isFunction(value) && !getOwnDescriptor(value, "prototype")?.writable;
+  return (
+    isFunction(value) &&
+    !UsedReflect.getOwnPropertyDescriptor(value, "prototype")?.writable
+  );
 }
 
 export function isArrowFunction<T = AnyFunction>(value: any): value is T {
@@ -86,9 +89,7 @@ export function define(target: any, member: string | symbol, value: any) {
 }
 
 export function isValidKey(key: any): key is string {
-  return (
-    (isString(key) || isNumber(key)) && !isSymbol(key) && !isPrivateKey(key)
-  );
+  return !isSymbol(key) && !isPrivateKey(key);
 }
 
 export function isExtensible(value: any) {
@@ -99,12 +100,12 @@ export function isSealed(value: any) {
   return Object.isSealed && Object.isSealed(value);
 }
 
-export const hasOwn = (target: any, member: ObjectMember) => {
+export const hasOwn = (target: any, member: PropertyKey) => {
   if (Object.hasOwn) return Object.hasOwn(target, member);
   return Object.prototype.hasOwnProperty.call(target, member);
 };
 
-export const getOwnValue = (target: any, member: ObjectMember) => {
+export const getOwnValue = (target: any, member: PropertyKey) => {
   if (!hasOwn(target, member)) return;
   return target[member];
 };
@@ -138,7 +139,7 @@ export function shallowEqual(objA: any, objB: any) {
   return true;
 }
 
-export function shouldAutoProxy(value: any): value is any {
+export function canProxy(value: any): value is any {
   if (!value || !isObject(value) || !isExtensible(value)) return false;
   const ctor = value.constructor;
   return !ctor || ctor === Object || ctor === Array;
