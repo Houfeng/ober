@@ -10,7 +10,7 @@ import { isDevelopment, ObserveConfig } from "./ObserveConfig";
 import {
   AnyFunction,
   AnyObject,
-  isBindRequired,
+  needBind,
   isDecoratorContext,
   isFunction,
   isString,
@@ -75,7 +75,7 @@ export function action(
         }.bind(this),
       );
     };
-    return isBindRequired(target) ? bind(wrapper) : wrapper;
+    return needBind(target) ? bind(wrapper) : wrapper;
   } else if (isFunction(target) && isDecoratorContext(context)) {
     // stage-3 规范装饰器 @action
     return action(target);

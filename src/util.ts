@@ -145,7 +145,7 @@ export function canProxy(value: any): value is any {
   return !ctor || ctor === Object || ctor === Array;
 }
 
-export function isBindRequired<T extends AnyFunction>(
+export function needBind<T extends AnyFunction>(
   value: T | undefined,
 ): value is T {
   return value && (value as any)[$BindRequired];

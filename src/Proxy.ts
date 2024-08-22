@@ -12,7 +12,7 @@ import {
   logWarn,
   canProxy,
 } from "./util";
-import { isBindRequired, isObject, isValidKey } from "./util";
+import { needBind, isObject, isValidKey } from "./util";
 
 import { isDevelopment, ObserveConfig } from "./ObserveConfig";
 import { assertStrictMode } from "./Action";
@@ -42,7 +42,7 @@ export function isNativeProxyUsed() {
   return isNativeProxySupported && Proxy === UsedProxy;
 }
 
-function useBoundMethod(
+function bindFunc(
   target: any,
   member: string,
   value: AnyFunction,
@@ -53,10 +53,6 @@ function useBoundMethod(
   define(boundMethod, $BoundFunction, true);
   define(target, member, boundMethod);
   return boundMethod;
-}
-
-function isSetArrayLength(target: any, member: PropertyKey) {
-  return isArray(target) && member === "length";
 }
 
 export function createProxy<T extends object>(target: T): T {
@@ -76,9 +72,7 @@ export function createProxy<T extends object>(target: T): T {
     get(target: any, member: PropertyKey, receiver: any) {
       const value = UsedReflect.get(target, member, receiver);
       if (!isValidKey(member)) return value;
-      if (isBindRequired(value)) {
-        return useBoundMethod(target, member, value, receiver);
-      }
+      if (needBind(value)) return bindFunc(target, member, value, receiver);
       if (isFunction(value)) return value;
       const proxy = canProxy(value) ? createProxy(value) : value;
       emitCollect({ id: info.id, member, value });
@@ -87,11 +81,15 @@ export function createProxy<T extends object>(target: T): T {
     // 更新数据时
     set(target: any, member: PropertyKey, value: any, receiver: any) {
       assertStrictMode();
-      if (info.shadow[member] === value && !isSetArrayLength(target, member)) {
-        return true;
+      const isArrLen = member === "length" && isArray(target);
+      if (isNativeProxyUsed()) {
+        if (!isArrLen && target[member] === value) return true;
+      } else {
+        const { shadow } = info;
+        if (!isArrLen && shadow[member] === value) return true;
+        shadow[member] = value;
       }
       UsedReflect.set(target, member, value, receiver);
-      if (!isNativeProxyUsed()) info.shadow[member] = value;
       if (!isValidKey(member)) return true;
       emitChange({ id: info.id, member, value });
       return true;

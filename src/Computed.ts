@@ -10,7 +10,7 @@ import {
 import {
   AnyFunction,
   AnyObject,
-  isBindRequired,
+  needBind,
   isDecoratorContext,
   isFunction,
   isObject,
@@ -124,7 +124,7 @@ export function computed<T extends AnyObject | AnyFunction>(
   if (isFunction(target) && !context) {
     // 高阶函数，等价于没有 options 的 computable
     const wrapper = computable(target);
-    return isBindRequired(target) ? bind(wrapper) : wrapper;
+    return needBind(target) ? bind(wrapper) : wrapper;
   } else if (isFunction(target) && isDecoratorContext(context)) {
     // stage-3 规范装饰器 @computed, getter 无需 isBindRequiredFunction 检查
     return computable(target);
