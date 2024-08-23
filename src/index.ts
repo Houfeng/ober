@@ -6,7 +6,6 @@
 
 export { Flag } from "./Flag";
 export { FastMap } from "./FastMap";
-export { hasOwn, define, getOwnValue } from "./util";
 
 export { ObserveConfig } from "./ObserveConfig";
 export { takeDependencies, spy } from "./DevTool";
