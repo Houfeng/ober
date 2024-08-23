@@ -4,8 +4,7 @@
  * @author Houfeng <houzhanfeng@gmail.com>
  */
 
-import { define, hasOwn, isNativeArray, isObject } from "./util";
-
+import { hasOwn, isNativeArray, isObject } from "./util";
 import { $Observable } from "./Symbols";
 
 export type ObserveInfo<T extends object> = {
@@ -37,7 +36,7 @@ export function observeInfo<T extends object = any>(
   if (!hasOwn(target, $Observable)) {
     const id = createObserveId(target);
     const shadow = isNativeArray(target) ? target.slice(0) : {};
-    define(target, $Observable, { id, shadow });
+    target[$Observable] = { id, shadow };
   }
   return target[$Observable] as ObserveInfo<T>;
 }
