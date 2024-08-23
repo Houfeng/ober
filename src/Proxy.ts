@@ -14,7 +14,6 @@ import {
 import { needBind, isObject, isValidKey } from "./util";
 
 import { isDevelopment, ObserveConfig } from "./ObserveConfig";
-import { assertStrictMode } from "./Action";
 import { ProxyShim } from "./Proxy.shim";
 import { emitChange } from "./EventBus";
 import { observeInfo } from "./ObserveInfo";
@@ -73,7 +72,6 @@ export function createProxy<T extends object>(target: T): T {
     },
     // 更新数据时
     set(target: any, member: PropertyKey, value: any, receiver: any) {
-      assertStrictMode();
       const isArrLen = member === "length" && isArray(target);
       if (isNativeProxyUsed()) {
         if (!isArrLen && target[member] === value) return true;

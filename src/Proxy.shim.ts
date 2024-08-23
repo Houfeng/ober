@@ -15,7 +15,6 @@ import {
   logError,
 } from "./util";
 
-import { assertStrictMode } from "./Action";
 import { emitChange } from "./EventBus";
 import { observeInfo } from "./ObserveInfo";
 import { emitCollect } from "./Collector";
@@ -77,7 +76,6 @@ function createObservableArray<T extends Array<any>>(
   const methods = ["push", "pop", "shift", "unshift", "splice", "reverse"];
   methods.forEach((method: string) => {
     define(target, method, (...args: any[]) => {
-      assertStrictMode();
       if (isSealed(target)) {
         return logError(`Cannot call ${method} of sealed object:`, target);
       }

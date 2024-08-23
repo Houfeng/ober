@@ -14,7 +14,6 @@ export { takeDependencies, spy } from "./DevTool";
 export { observeInfo } from "./ObserveInfo";
 export { track, untrack, collect } from "./Collector";
 
-export { action } from "./Action";
 export { bind } from "./Bind";
 export { observable, isObservable } from "./Observable";
 
