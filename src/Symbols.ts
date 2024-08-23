@@ -6,7 +6,6 @@
 
 export const $Observable = Symbol("Observable");
 export const $None = Symbol("None");
-export const $BindRequired = Symbol("BindRequired");
-export const $BoundFunction = Symbol("BoundFunction");
+export const $Bind = Symbol("Bind");
 export const $Pending = Symbol("Pending");
 export const $Identify = Symbol("Identify");

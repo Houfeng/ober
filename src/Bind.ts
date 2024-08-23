@@ -1,8 +1,7 @@
-import { $BindRequired } from "./Symbols";
+import { $Bind } from "./Symbols";
 import {
   AnyFunction,
   AnyObject,
-  define,
   isDecoratorContext,
   isFunction,
   isString,
@@ -53,7 +52,7 @@ export function bind(
 ): any {
   if (isFunction(target) && !context) {
     // 高阶函数
-    define(target, $BindRequired, true);
+    (target as any)[$Bind] = true;
     return target;
   } else if (isFunction(target) && isDecoratorContext(context)) {
     // stage-3 规范装饰器 @bind

@@ -5,7 +5,7 @@
  */
 
 import { ReflectShim } from "./Reflect.shim";
-import { $BindRequired } from "./Symbols";
+import { $Bind } from "./Symbols";
 
 const UsedReflect = typeof Reflect !== "undefined" ? Reflect : ReflectShim;
 
@@ -137,7 +137,7 @@ export function canAutoProxy(value: any): value is any {
 export function needBind<T extends AnyFunction>(
   value: T | undefined,
 ): value is T {
-  return value && (value as any)[$BindRequired];
+  return value && (value as any)[$Bind];
 }
 
 export type Ref<T> = { value?: T };

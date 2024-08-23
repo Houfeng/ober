@@ -6,7 +6,6 @@
 
 import {
   AnyFunction,
-  define,
   isArray,
   isFunction,
   logWarn,
@@ -20,7 +19,7 @@ import { ProxyShim } from "./Proxy.shim";
 import { emitChange } from "./EventBus";
 import { observeInfo } from "./ObserveInfo";
 import { emitCollect } from "./Collector";
-import { $BoundFunction, $Identify } from "./Symbols";
+import { $Identify } from "./Symbols";
 import { ReflectShim } from "./Reflect.shim";
 
 const UsedReflect = typeof Reflect !== "undefined" ? Reflect : ReflectShim;
@@ -42,17 +41,10 @@ export function isNativeProxyUsed() {
   return isNativeProxySupported && Proxy === UsedProxy;
 }
 
-function bindFunc(
-  target: any,
-  member: string,
-  value: AnyFunction,
-  receiver: any,
-) {
-  if ((value as any)[$BoundFunction]) return value;
-  const boundMethod = value.bind(receiver);
-  define(boundMethod, $BoundFunction, true);
-  define(target, member, boundMethod);
-  return boundMethod;
+function bind(target: any, member: string, fn: AnyFunction, receiver: any) {
+  const wrapper = fn.bind(receiver);
+  target[member] = wrapper;
+  return wrapper;
 }
 
 export function createProxy<T extends object>(target: T): T {
@@ -72,8 +64,9 @@ export function createProxy<T extends object>(target: T): T {
     get(target: any, member: PropertyKey, receiver: any) {
       const value = UsedReflect.get(target, member, receiver);
       if (!isValidKey(member)) return value;
-      if (needBind(value)) return bindFunc(target, member, value, receiver);
-      if (isFunction(value)) return value;
+      if (isFunction(value)) {
+        return needBind(value) ? bind(target, member, value, receiver) : value;
+      }
       const proxy = canAutoProxy(value) ? createProxy(value) : value;
       emitCollect({ id: info.id, member, value });
       return proxy;
