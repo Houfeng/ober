@@ -30,7 +30,7 @@ export function isObject(value: any): value is object {
 }
 
 export function isArray(value: any): value is Array<any> {
-  return Array.isArray ? Array.isArray(value) : value instanceof Array;
+  return value && value.constructor === Array;
 }
 
 export function isFunction<T = AnyFunction>(value: any): value is T {
