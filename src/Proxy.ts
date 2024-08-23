@@ -6,7 +6,7 @@
 
 import {
   AnyFunction,
-  isArray,
+  isNativeArray,
   isFunction,
   logWarn,
   canAutoProxy,
@@ -72,7 +72,7 @@ export function createProxy<T extends object>(target: T): T {
     },
     // 更新数据时
     set(target: any, member: PropertyKey, value: any, receiver: any) {
-      const isArrLen = member === "length" && isArray(target);
+      const isArrLen = member === "length" && isNativeArray(target);
       if (isNativeProxyUsed()) {
         if (!isArrLen && target[member] === value) return true;
       } else {

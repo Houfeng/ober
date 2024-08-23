@@ -29,7 +29,7 @@ export function isObject(value: any): value is object {
   return !isNullOrUndefined(value) && typeof value === "object";
 }
 
-export function isArray(value: any): value is Array<any> {
+export function isNativeArray(value: any): value is Array<any> {
   return value && value.constructor === Array;
 }
 

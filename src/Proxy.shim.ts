@@ -7,7 +7,7 @@
 import {
   AnyFunction,
   define,
-  isArray,
+  isNativeArray,
   isExtensible,
   isObject,
   isSealed,
@@ -37,7 +37,7 @@ function createObservableMember<T extends object>(
       const value = handler.get
         ? handler.get(shadow, member, target)
         : shadow[member];
-      return isArray(value) && isExtensible(value)
+      return isNativeArray(value) && isExtensible(value)
         ? createObservableArray(value, handler as ProxyHandler<Array<any>>)
         : value;
     },
@@ -71,7 +71,7 @@ function createObservableArray<T extends Array<any>>(
   const info = observeInfo(target);
   const { id, shadow, array: isWrappedArray } = info;
   emitCollect({ id, member: "length", value: target });
-  if (!isArray(target) || isWrappedArray) return target;
+  if (!isNativeArray(target) || isWrappedArray) return target;
   info.array = true;
   const methods = ["push", "pop", "shift", "unshift", "splice", "reverse"];
   methods.forEach((method: string) => {
