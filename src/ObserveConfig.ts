@@ -16,8 +16,8 @@ const {
   NODE_ENV,
   OBER_ENV = NODE_ENV,
 } = typeof process !== "undefined"
-    ? process.env
-    : ({} as Record<string, string>);
+  ? process.env
+  : ({} as Record<string, string>);
 
 export const ObserveConfig: ConfigType = {
   env: (OBER_ENV || "production") as ConfigType["env"],
