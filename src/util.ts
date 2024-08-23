@@ -64,21 +64,6 @@ export function isNullOrUndefined(value: any): value is undefined | null {
   return isNull(value) || isUndefined(value);
 }
 
-export function startsWith(str: string, sub: string) {
-  if (!str || !sub) return false;
-  return str.startsWith
-    ? str.startsWith(sub)
-    : str.slice && str.slice(0, sub.length) === sub;
-}
-
-export function isSymbol(value: any): value is symbol {
-  return typeof value === "symbol";
-}
-
-export function isPrivateKey(value: any): value is string {
-  return startsWith(value, "__");
-}
-
 export function define(target: any, member: string | symbol, value: any) {
   if (!isExtensible(target)) return;
   Object.defineProperty(target, member, {
@@ -89,7 +74,11 @@ export function define(target: any, member: string | symbol, value: any) {
 }
 
 export function isValidKey(key: any): key is string {
-  return !isSymbol(key) && !isPrivateKey(key);
+  const ctor = key.constructor;
+  return (
+    (ctor === Number || (ctor === String && key.indexOf("__") !== 0)) &&
+    ctor !== Symbol
+  );
 }
 
 export function isExtensible(value: any) {

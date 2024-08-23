@@ -4,7 +4,7 @@
  * @author Houfeng <houzhanfeng@gmail.com>
  */
 
-import { isPrivateKey, isSymbol, logWarn } from "./util";
+import { isValidKey, logWarn } from "./util";
 import { ObserveConfig } from "./ObserveConfig";
 import { Flag } from "./Flag";
 import { FastMap } from "./FastMap";
@@ -107,7 +107,7 @@ function publish<T extends ObserveEventNames>(
   data: Parameters<ObserveEvents[T]>[0],
 ) {
   const store = listenerStores[type];
-  if (!store || isSymbol(data.member) || isPrivateKey(data.member)) return;
+  if (!store || !isValidKey(data.member)) return;
   const key = ObserveKey(data);
   const listeners = Array.from(store.get(key) || []);
   if (listeners.length > ObserveConfig.maxListeners) {

@@ -4,13 +4,7 @@
  * @author Houfeng <houzhanfeng@gmail.com>
  */
 
-import {
-  AnyFunction,
-  isObject,
-  isPrivateKey,
-  isSymbol,
-  shallowEqual,
-} from "./util";
+import { AnyFunction, isObject, isValidKey, shallowEqual } from "./util";
 import { collect } from "./Collector";
 import {
   ObserveEvent,
@@ -86,7 +80,7 @@ export function reactivable<T extends AnyFunction>(
   } as ReactiveFunction<T>;
   const requestUpdate = () => (update ? update() : wrapper());
   listener = (data: ObserveEvent) => {
-    if (isSymbol(data.member) || isPrivateKey(data.member)) return;
+    if (!isValidKey(data.member)) return;
     return batch ? nextTick(requestUpdate) : requestUpdate();
   };
   wrapper.subscribe = () => {
