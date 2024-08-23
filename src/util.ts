@@ -128,10 +128,10 @@ export function shallowEqual(objA: any, objB: any) {
   return true;
 }
 
-export function canProxy(value: any): value is any {
-  if (!value || !isObject(value) || !isExtensible(value)) return false;
+export function canAutoProxy(value: any): value is any {
+  if (!value) return false;
   const ctor = value.constructor;
-  return !ctor || ctor === Object || ctor === Array;
+  return (!ctor || ctor === Object || ctor === Array) && isExtensible(value);
 }
 
 export function needBind<T extends AnyFunction>(

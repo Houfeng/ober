@@ -10,7 +10,7 @@ import {
   isArray,
   isFunction,
   logWarn,
-  canProxy,
+  canAutoProxy,
 } from "./util";
 import { needBind, isObject, isValidKey } from "./util";
 
@@ -74,7 +74,7 @@ export function createProxy<T extends object>(target: T): T {
       if (!isValidKey(member)) return value;
       if (needBind(value)) return bindFunc(target, member, value, receiver);
       if (isFunction(value)) return value;
-      const proxy = canProxy(value) ? createProxy(value) : value;
+      const proxy = canAutoProxy(value) ? createProxy(value) : value;
       emitCollect({ id: info.id, member, value });
       return proxy;
     },
