@@ -7,24 +7,21 @@
 export type ConfigType = {
   env: "production" | "development";
   mode: "proxy" | "property";
-  strict: boolean;
   maxListeners: number;
 };
 
 const {
   OBER_MODE,
-  OBER_STRICT,
   OBER_MAX_LISTENERS,
   NODE_ENV,
   OBER_ENV = NODE_ENV,
 } = typeof process !== "undefined"
-  ? process.env
-  : ({} as Record<string, string>);
+    ? process.env
+    : ({} as Record<string, string>);
 
 export const ObserveConfig: ConfigType = {
   env: (OBER_ENV || "production") as ConfigType["env"],
   mode: (OBER_MODE || "proxy") as ConfigType["mode"],
-  strict: OBER_STRICT === "true",
   maxListeners: OBER_MAX_LISTENERS ? Number(OBER_MAX_LISTENERS) : 1024,
 };
 
